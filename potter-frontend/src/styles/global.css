@@ -1,0 +1,376 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+.root {
+  width: 100%;
+  height: 100%;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* ─────────────────────────────────────────
+     Core semantic colors
+     ───────────────────────────────────────── */
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ─────────────────────────────────────────
+     Product-specific semantic colors
+     ───────────────────────────────────────── */
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-ai: var(--ai);
+  --color-ai-foreground: var(--ai-foreground);
+
+  /* ─────────────────────────────────────────
+     Brand palette
+     ───────────────────────────────────────── */
+
+  --color-teal: var(--teal);
+  --color-teal-foreground: var(--teal-foreground);
+
+  --color-sage: var(--sage);
+  --color-sage-foreground: var(--sage-foreground);
+
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-foreground: var(--terracotta-foreground);
+
+  --color-ochre: var(--ochre);
+  --color-ochre-foreground: var(--ochre-foreground);
+
+  --color-plum: var(--plum);
+  --color-plum-foreground: var(--plum-foreground);
+
+  --color-clay: var(--clay);
+  --color-clay-foreground: var(--clay-foreground);
+
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+
+  /* ─────────────────────────────────────────
+     Charts
+     ───────────────────────────────────────── */
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* ─────────────────────────────────────────
+     Radius
+     ───────────────────────────────────────── */
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ─────────────────────────────────────────
+     Sidebar
+     ───────────────────────────────────────── */
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ═══════════════════════════════════════════
+   LIGHT THEME
+   ═══════════════════════════════════════════ */
+
+:root {
+  --radius: 0.625rem;
+
+  /* ─────────────────────────────────────────
+     Base
+     ───────────────────────────────────────── */
+
+  --background: oklch(0.975 0.012 90);
+  --foreground: oklch(0.205 0.035 145);
+
+  --card: oklch(0.995 0.006 90);
+  --card-foreground: oklch(0.205 0.035 145);
+
+  --popover: oklch(0.995 0.006 90);
+  --popover-foreground: oklch(0.205 0.035 145);
+
+  /* ─────────────────────────────────────────
+     Primary — Botanical Teal
+     #176B62
+     ───────────────────────────────────────── */
+
+  --primary: #005745;
+  --primary-foreground: oklch(0.985 0.008 90);
+
+  /* ─────────────────────────────────────────
+     Secondary — Sage
+     #DDE8DF
+     ───────────────────────────────────────── */
+
+  --secondary: oklch(0.895 0.035 145);
+  --secondary-foreground: oklch(0.285 0.055 145);
+
+  /* ─────────────────────────────────────────
+     Muted
+     ───────────────────────────────────────── */
+
+  --muted: oklch(0.945 0.018 90);
+  --muted-foreground: oklch(0.475 0.025 145);
+
+  /* ─────────────────────────────────────────
+     Accent — Warm Clay
+     #EDE3D8
+     ───────────────────────────────────────── */
+
+  --accent: oklch(0.91 0.035 65);
+  --accent-foreground: oklch(0.285 0.045 45);
+
+  /* ─────────────────────────────────────────
+     Destructive
+     ───────────────────────────────────────── */
+
+  --destructive: oklch(0.555 0.19 25);
+  --destructive-foreground: oklch(0.985 0.008 90);
+
+  /* ─────────────────────────────────────────
+     Borders / Inputs
+     ───────────────────────────────────────── */
+
+  --border: oklch(0.88 0.018 90);
+  --input: oklch(0.88 0.018 90);
+  --ring: oklch(0.405 0.085 174);
+
+  /* ═══════════════════════════════════════════
+     PRODUCT SEMANTIC COLORS
+     ═══════════════════════════════════════════ */
+
+  /* Healthy / alive */
+  --success: oklch(0.48 0.105 145);
+  --success-foreground: oklch(0.985 0.008 90);
+
+  /* Attention / sunlight */
+  --warning: oklch(0.64 0.125 78);
+  --warning-foreground: oklch(0.23 0.035 70);
+
+  /* Information */
+  --info: oklch(0.52 0.09 220);
+  --info-foreground: oklch(0.985 0.008 90);
+
+  /* AI / plant intelligence */
+  --ai: oklch(0.43 0.075 325);
+  --ai-foreground: oklch(0.985 0.008 90);
+
+  /* ═══════════════════════════════════════════
+     BRAND PALETTE
+     ═══════════════════════════════════════════ */
+
+  /* Botanical Teal */
+  --teal: oklch(0.405 0.085 174);
+  --teal-foreground: oklch(0.985 0.008 90);
+
+  /* Sage */
+  --sage: oklch(0.895 0.035 145);
+  --sage-foreground: oklch(0.285 0.055 145);
+
+  /* Terracotta */
+  --terracotta: oklch(0.595 0.125 40);
+  --terracotta-foreground: oklch(0.985 0.008 90);
+
+  /* Ochre */
+  --ochre: oklch(0.64 0.125 78);
+  --ochre-foreground: oklch(0.23 0.035 70);
+
+  /* Plum */
+  --plum: oklch(0.43 0.075 325);
+  --plum-foreground: oklch(0.985 0.008 90);
+
+  /* Clay */
+  --clay: oklch(0.91 0.035 65);
+  --clay-foreground: oklch(0.285 0.045 45);
+
+  /* Ink */
+  --ink: oklch(0.205 0.035 145);
+  --ink-foreground: oklch(0.985 0.008 90);
+
+  /* ═══════════════════════════════════════════
+     CHART COLORS
+     ═══════════════════════════════════════════ */
+
+  --chart-1: oklch(0.405 0.085 174); /* teal */
+  --chart-2: oklch(0.595 0.125 40);  /* terracotta */
+  --chart-3: oklch(0.64 0.125 78);   /* ochre */
+  --chart-4: oklch(0.43 0.075 325);  /* plum */
+  --chart-5: oklch(0.48 0.105 145);  /* green */
+
+  /* ═══════════════════════════════════════════
+     SIDEBAR
+     ═══════════════════════════════════════════ */
+
+  --sidebar: oklch(0.94 0.025 145);
+  --sidebar-foreground: oklch(0.25 0.045 145);
+
+  --sidebar-primary: oklch(0.405 0.085 174);
+  --sidebar-primary-foreground: oklch(0.985 0.008 90);
+
+  --sidebar-accent: oklch(0.895 0.035 145);
+  --sidebar-accent-foreground: oklch(0.285 0.055 145);
+
+  --sidebar-border: oklch(0.87 0.025 145);
+  --sidebar-ring: oklch(0.405 0.085 174);
+}
+
+/* ═══════════════════════════════════════════
+   DARK THEME
+   ═══════════════════════════════════════════ */
+
+.dark {
+  --background: oklch(0.17 0.025 145);
+  --foreground: oklch(0.94 0.012 90);
+
+  --card: oklch(0.205 0.028 145);
+  --card-foreground: oklch(0.94 0.012 90);
+
+  --popover: oklch(0.205 0.028 145);
+  --popover-foreground: oklch(0.94 0.012 90);
+
+  /* Primary */
+  --primary: oklch(0.68 0.105 174);
+  --primary-foreground: oklch(0.16 0.025 145);
+
+  /* Secondary */
+  --secondary: oklch(0.28 0.035 145);
+  --secondary-foreground: oklch(0.91 0.015 90);
+
+  /* Muted */
+  --muted: oklch(0.255 0.025 145);
+  --muted-foreground: oklch(0.68 0.02 90);
+
+  /* Accent */
+  --accent: oklch(0.29 0.035 65);
+  --accent-foreground: oklch(0.91 0.015 90);
+
+  /* Destructive */
+  --destructive: oklch(0.64 0.17 25);
+  --destructive-foreground: oklch(0.98 0.008 90);
+
+  /* Borders */
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.68 0.105 174);
+
+  /* Semantic */
+  --success: oklch(0.67 0.105 145);
+  --success-foreground: oklch(0.16 0.025 145);
+
+  --warning: oklch(0.72 0.125 78);
+  --warning-foreground: oklch(0.20 0.03 70);
+
+  --info: oklch(0.68 0.09 220);
+  --info-foreground: oklch(0.16 0.025 145);
+
+  --ai: oklch(0.66 0.085 325);
+  --ai-foreground: oklch(0.16 0.025 145);
+
+  /* Brand */
+  --teal: oklch(0.68 0.105 174);
+  --teal-foreground: oklch(0.16 0.025 145);
+
+  --sage: oklch(0.42 0.045 145);
+  --sage-foreground: oklch(0.91 0.015 90);
+
+  --terracotta: oklch(0.68 0.125 40);
+  --terracotta-foreground: oklch(0.16 0.025 145);
+
+  --ochre: oklch(0.72 0.125 78);
+  --ochre-foreground: oklch(0.20 0.03 70);
+
+  --plum: oklch(0.66 0.085 325);
+  --plum-foreground: oklch(0.16 0.025 145);
+
+  --clay: oklch(0.38 0.035 65);
+  --clay-foreground: oklch(0.91 0.015 90);
+
+  --ink: oklch(0.94 0.012 90);
+  --ink-foreground: oklch(0.17 0.025 145);
+
+  /* Charts */
+  --chart-1: oklch(0.68 0.105 174);
+  --chart-2: oklch(0.68 0.125 40);
+  --chart-3: oklch(0.72 0.125 78);
+  --chart-4: oklch(0.66 0.085 325);
+  --chart-5: oklch(0.67 0.105 145);
+
+  /* Sidebar */
+  --sidebar: oklch(0.205 0.028 145);
+  --sidebar-foreground: oklch(0.91 0.015 90);
+
+  --sidebar-primary: oklch(0.68 0.105 174);
+  --sidebar-primary-foreground: oklch(0.16 0.025 145);
+
+  --sidebar-accent: oklch(0.28 0.035 145);
+  --sidebar-accent-foreground: oklch(0.91 0.015 90);
+
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.68 0.105 174);
+}
+
+/* ═══════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════ */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Geist Variable", sans-serif;
+  }
+}
