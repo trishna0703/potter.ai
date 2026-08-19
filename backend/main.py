@@ -1,0 +1,30 @@
+from fastapi import FastAPI, APIRouter
+
+from app.routes import auth, users, plants
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+router = APIRouter()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/")
+def root():
+    return {"message": "Potter.ai backend is running."}
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "Running ok."}
+
+
+app.include_router(auth.router, prefix="/api/auth")
+app.include_router(users.router, prefix="/api/users")
+app.include_router(plants.router, prefix="/api/plants")
