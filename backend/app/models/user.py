@@ -29,6 +29,10 @@ class User(Base):
 
     plants: Mapped[list["Plant"]] = relationship(back_populates="user")
 
+    concerns: Mapped[list["HealthConcern"]] = relationship(back_populates="user")
+
     photos: Mapped[list["PlantPhoto"]] = relationship(back_populates="user")
 
     sessions: Mapped[list["UserSession"]] = relationship(back_populates="user")
+
+    evidences: Mapped[list["Evidence"]] = relationship(back_populates="user")

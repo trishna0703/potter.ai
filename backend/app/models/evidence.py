@@ -11,6 +11,8 @@ class Evidence(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+
     evidence_type: Mapped[str] = mapped_column(String(40), nullable=False)
 
     evidence_value: Mapped[str] = mapped_column(String(500), nullable=False)
@@ -30,4 +32,10 @@ class Evidence(Base):
 
     assessments: Mapped[list["Assessment"]] = relationship(
         secondary="assessment_evidences", back_populates="evidences"
+    )
+
+    user: Mapped["User"] = relationship(back_populates="evidences")
+
+    identification: Mapped["PlantIdentification"] = relationship(
+        back_populates="evidence"
     )

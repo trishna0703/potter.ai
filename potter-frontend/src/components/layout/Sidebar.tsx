@@ -1,5 +1,6 @@
 // src/components/Sidebar.tsx
 
+import { ROUTES } from "#lib/routes";
 import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
@@ -7,7 +8,7 @@ const Sidebar = () => {
     <aside className="w-64 min-h-[calc(100vh-4rem)] border-r p-4">
       <nav className="space-y-2">
         <NavLink
-          to="/dashboard"
+          to={ROUTES.DASHBOARD}
           className={({ isActive }) =>
             `block rounded-md px-3 py-2 ${
               isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
@@ -18,7 +19,7 @@ const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/plants"
+          to={ROUTES.PLANTS}
           className={({ isActive }) =>
             `block rounded-md px-3 py-2 ${
               isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
@@ -29,7 +30,7 @@ const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/shelves"
+          to={ROUTES.SHELVES}
           className={({ isActive }) =>
             `block rounded-md px-3 py-2 ${
               isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
@@ -37,6 +38,16 @@ const Sidebar = () => {
           }
         >
           Shelves
+        </NavLink>
+        <NavLink
+          to={ROUTES.CONCERNS}
+          className={({ isActive }) =>
+            `block rounded-md px-3 py-2 ${
+              isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+            }`
+          }
+        >
+          Concerns
         </NavLink>
       </nav>
     </aside>

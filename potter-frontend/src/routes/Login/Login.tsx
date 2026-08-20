@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import useUserStore, { type UserType } from "../../store/UserStore";
 import { useEffect } from "react";
 import { ROUTES } from "../../lib/routes";
-import Heading from "#components/layout/Heading";
 import { Card } from "#components/ui/card";
 
 const Login = () => {

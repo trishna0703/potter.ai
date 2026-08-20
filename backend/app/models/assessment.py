@@ -35,3 +35,7 @@ class Assessment(Base):
     concern: Mapped["HealthConcern"] = relationship(
         back_populates="assessments", foreign_keys=[concern_id]
     )
+
+    messages: Mapped[list["AssessmentMessage"]] = relationship(
+        back_populates="assessment",
+    )

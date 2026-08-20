@@ -7,6 +7,8 @@ import { ROUTES } from "./lib/routes";
 import Plants from "./routes/Plants/Plants";
 import Shelves from "./routes/Shelves/Shelves";
 import AppShell from "#components/layout/AppShell";
+import HealthConcerns from "./routes/HealthConcerns/HealthConcerns";
+import RaiseConcernForm from "./routes/HealthConcerns/components/RaiseConcernForm";
 
 const queryClient = new QueryClient();
 function App() {
@@ -19,8 +21,10 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
               <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-              <Route path="/plants" element={<Plants />} />
-              <Route path="/shelves" element={<Shelves />} />
+              <Route path={ROUTES.PLANTS} element={<Plants />} />
+              <Route path={ROUTES.SHELVES} element={<Shelves />} />
+              <Route path={ROUTES.CONCERNS} element={<HealthConcerns />} />
+              <Route path={ROUTES.RAISE} element={<RaiseConcernForm />} />
             </Route>
           </Route>
         </Routes>

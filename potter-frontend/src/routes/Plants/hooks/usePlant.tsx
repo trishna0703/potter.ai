@@ -1,29 +1,23 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
+import type { Plant } from "@/types/plantTypes";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-
-export interface Plant {
-  id: number;
-  name: string | null;
-  species: string;
-  location_type: "INDOOR" | "OUTDOOR" | null;
-  height_cm: number | null;
-  pot_size: number | null;
-}
 
 export default function usePlant() {
   const client = useQueryClient();
 
-  const getAllPlants = useQuery({
+  const allPlants = useQuery({
     queryKey: ["all-plants"],
     queryFn: async (): Promise<Plant[]> => {
       const response = await apiClient(API_ENDPOINTS.PLANTS, {
         method: "GET",
+        credentials: "include",
       });
 
       return response.json();
     },
+    retry: false,
   });
 
   const getPlantDetail = (plantId: number) => {
@@ -49,7 +43,7 @@ export default function usePlant() {
   };
 
   return {
-    getAllPlants,
+    allPlants,
     getPlantDetail,
     invalidate: {
       plants: invalidatePlants,

@@ -1,70 +1,25 @@
-import { useState, type FormEvent } from "react";
-import { useCreatePlant } from "../hooks/useCreatePlant";
+import { useEffect, useState, type FormEvent } from "react";
+import {
+  useCreateOrUpdatePlant,
+  useCreatePlantOperations,
+} from "../hooks/useCreatePlant";
 import { toast } from "sonner";
+import type { Plant } from "@/types/plantTypes";
 
 interface AddPlantProps {
+  plant?: Plant;
   open: boolean;
   onClose: () => void;
 }
 
-interface PlantFormData {
-  name: string;
-  species: string;
-  location_type: "INDOOR" | "OUTDOOR" | undefined;
-  height_cm: string;
-  pot_size: string;
-}
-
-const initialFormData: PlantFormData = {
-  name: "",
-  species: "",
-  location_type: undefined,
-  height_cm: "",
-  pot_size: "",
-};
-
-const CreatePlantForm = ({ open, onClose }: AddPlantProps) => {
-  const { mutateAsync: createNewPlant } = useCreatePlant();
-  const [formData, setFormData] = useState<PlantFormData>(initialFormData);
+const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
+  const isEditing = !!plant;
+  const { handleChange, handleSubmit, handleClose, formData } =
+    useCreatePlantOperations({ plant, onClose });
 
   if (!open) {
     return null;
   }
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const added_on = new Date().toISOString().split("T")[0];
-    const payload = {
-      name: formData.name || null,
-      species: formData.species,
-      location_type: formData.location_type ?? undefined,
-      height_cm: formData.height_cm ? Number(formData.height_cm) : null,
-      pot_size: formData.pot_size ? Number(formData.pot_size) : null,
-      added_on
-    };
-
-    let newPlant = await createNewPlant(payload);
-    toast(`${newPlant.name} has been added to your shelf.`);
-
-    onClose();
-  };
-
-  const handleClose = () => {
-    setFormData(initialFormData);
-    onClose();
-  };
 
   return (
     <div
@@ -77,7 +32,9 @@ const CreatePlantForm = ({ open, onClose }: AddPlantProps) => {
       >
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Add Plant</h2>
+            <h2 className="text-xl font-semibold">
+              {isEditing ? "Edit" : "Add"} Plant
+            </h2>
             <p className="mt-1 text-sm text-gray-500">
               Add some basic information about your plant.
             </p>
@@ -209,7 +166,7 @@ const CreatePlantForm = ({ open, onClose }: AddPlantProps) => {
               type="submit"
               className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
             >
-              Add Plant
+              {isEditing ? "Update" : "Add"} Plant
             </button>
           </div>
         </form>

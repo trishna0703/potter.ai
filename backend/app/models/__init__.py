@@ -13,3 +13,5 @@ from .assessment_evidence import AssessmentEvidence
 from .recommendation import Recommendation
 from .outcome import Outcome
 from .session import UserSession
+from .assessment_message import AssessmentMessage
+from .plant_identification import PlantIdentification
