@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.database import Session, get_db
+from app.database import get_db
 from app.models import User, Plant
 from app.routes.users import get_current_user
 from pydantic import BaseModel
 from datetime import date
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -29,12 +30,27 @@ class PlantResponse(BaseModel):
     added_on: date
     location_type: str | None
     status: str | None
-    avatar_id: int | None
+    avatar: str | None
 
     model_config = {"from_attributes": True}
 
 
+def plant_to_response(plant: Plant) -> PlantResponse:
+    return PlantResponse(
+        id=plant.id,
+        name=plant.name,
+        species=plant.species,
+        height_cm=plant.height_cm,
+        pot_size=plant.pot_size,
+        added_on=plant.added_on,
+        location_type=plant.location_type,
+        status=plant.status,
+        avatar=plant.avatar.photo_url if plant.avatar else None,
+    )
+
+
 class PlantUpdate(BaseModel):
+    id: int
     name: str | None = None
     species: str | None = None
     location_type: str | None = None
@@ -45,7 +61,7 @@ class PlantUpdate(BaseModel):
     status: str | None = None
 
 
-@router.post("/add", response_model=PlantResponse)
+@router.post("/", response_model=PlantResponse)
 def create_plant(
     plant_data: PlantCreate,
     current_user: User = Depends(get_current_user),
@@ -82,11 +98,12 @@ def create_plant(
 def get_all_plants(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
+
     stmt = select(Plant).where(Plant.user_id == current_user.id)
 
     plant_list = db.scalars(stmt).all()
 
-    return plant_list
+    return [plant_to_response(plant) for plant in plant_list]
 
 
 @router.get("/{plant_id}", response_model=PlantResponse)
@@ -105,14 +122,15 @@ def get_plant_details(
     return plant
 
 
-@router.patch("/{plant_id}", response_model=PlantResponse)
+@router.patch("/", response_model=PlantResponse)
 def update_plant(
-    plant_id: int,
     plant_data: PlantUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    stmt = select(Plant).where(Plant.id == plant_id, Plant.user_id == current_user.id)
+    stmt = select(Plant).where(
+        Plant.id == plant_data.id, Plant.user_id == current_user.id
+    )
 
     plant = db.scalars(stmt).first()
 

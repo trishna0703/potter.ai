@@ -1,15 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from app.database import Session, get_db
+from pydantic import BaseModel
+from app.database import get_db
 from sqlalchemy import select
-from app.models import User, UserSession
+from app.models import UserSession
 from datetime import datetime, timezone
+from sqlalchemy.orm import Session
 
 import hashlib
 
 router = APIRouter()
 
 
-@router.get("/me")
+class UserResponse(BaseModel):
+    id: int
+    name: str | None
+    email: str | None
+    avatar: str | None
+    joined_on: datetime | None
+    planting_experience: str | None
+
+    model_config = {"from_attributes": True}
+
+
+@router.get("/me", response_model=UserResponse)
 def get_current_user(
     request: Request,
     db: Session = Depends(get_db),
@@ -31,6 +44,4 @@ def get_current_user(
     if existing_session.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=401, detail="Session expired. Login again.")
 
-    current_user = existing_session.user
-
-    return current_user
+    return existing_session.user
