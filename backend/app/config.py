@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     aws_access_key_id: str
     aws_secret_access_key: str
     aws_s3_bucket_name: str
+    openai_api_key: str
+    openrouter_api_key: str
 
     class Config:
         env_file = ".env"

@@ -18,6 +18,7 @@ import {
   getDraftConcerns,
   type DraftConcern,
 } from "./utils/draft-concern-utils";
+import useGetConcerns from "./hooks/useGetConcerns";
 
 const S3_URL = import.meta.env.VITE_S3_URL;
 const UploadConcernPhotoModal = ({
@@ -52,7 +53,7 @@ const UploadConcernPhotoModal = ({
           <Input
             type="file"
             onChange={handleChange}
-            accept=".png , .jpg, .webp, .heic"
+            accept=".png , .jpg, .jpeg, .webp, .heic"
           />
         </div>
       </DialogContent>
@@ -63,6 +64,9 @@ const UploadConcernPhotoModal = ({
 const HealthConcerns = ({}) => {
   const [drafts, setDrafts] = useState<DraftConcern[]>([]);
   const { handleFileChange } = usePhotoUpload();
+  const { allActiveConcerns } = useGetConcerns();
+
+  console.log({ concerns: allActiveConcerns.data });
 
   const navigate = useNavigate();
 
@@ -92,7 +96,7 @@ const HealthConcerns = ({}) => {
         <UploadConcernPhotoModal selectFile={handleSelectFile} />
       </header>
 
-      {drafts ? (
+      {drafts.length ? (
         <section className="h-auto flex flex-col gap-4 pt-8">
           <h2>Draft concerns</h2>
           <div className="flex gap-4">
@@ -121,6 +125,38 @@ const HealthConcerns = ({}) => {
 
                 <p className="text-primary/50 text-xs">
                   {formatRelativeDate(draft.created_at)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {allActiveConcerns && allActiveConcerns.data ? (
+        <section className="h-auto flex flex-col gap-4 pt-8">
+          <h2>Active concerns</h2>
+          <div className="flex gap-4">
+            {allActiveConcerns.data.map((concern) => (
+              <div
+                key={concern.id}
+                className="flex flex-col gap-2 items-center"
+              >
+                <Button
+                  variant={"outline"}
+                  className={
+                    "h-20 w-20 px-0 rounded-2xl overflow-hidden shadow-xl cursor-pointer"
+                  }
+                  onClick={() => navigate(`active/${concern.id}`)}
+                >
+                  {/* <img
+                    src={S3_URL + "/" + concern.object_key}
+                    alt=""
+                    className="size-full"
+                  /> */}
+                </Button>
+
+                <p className="text-primary/50 text-xs">
+                  {formatRelativeDate(concern.reported_on)}
                 </p>
               </div>
             ))}

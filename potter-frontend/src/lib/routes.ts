@@ -4,6 +4,7 @@ export const ROUTES = {
   PLANTS: "/plants",
   SHELVES: "/shelves",
   CONCERNS: "/concerns",
+  CONCERNSACTIVE: "/concerns/active/:concernID",
   RAISE: "/concerns/raise",
 } as const;
 

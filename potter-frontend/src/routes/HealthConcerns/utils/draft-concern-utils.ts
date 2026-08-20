@@ -37,7 +37,7 @@ export const addDraftConcern = (draft: DraftConcern) => {
   localStorage.setItem(DRAFT_CONCERNS_KEY, JSON.stringify([...drafts, draft]));
 };
 
-export const removeDraftConcern = (id: string) => {
+export const removeDraftConcern = async (id: string) => {
   const drafts = getDraftConcerns();
 
   localStorage.setItem(
@@ -80,4 +80,3 @@ export function formatRelativeDate(dateString: string): string {
     year: "numeric",
   });
 }
-

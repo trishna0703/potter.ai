@@ -10,19 +10,19 @@ import {
   QuestionnaireNext,
   QuestionnairePrevious,
   QuestionnaireProgress,
-  QuestionnaireSkip,
   QuestionnaireSubmit,
   QuestionnaireTitle,
 } from "@/components/ui/questionnaire";
 import { QUESTIONNAIRE } from "#lib/concern-questionnaire";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import useRaiseConcern from "../hooks/useRaiseConcern";
 import {
   getDraftConcern,
   removeDraftConcern,
 } from "../utils/draft-concern-utils";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { generateInitialContext } from "../utils/context-utils";
+import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 
 interface QuestionnaireAnswers {
   [key: string]: string | undefined;
@@ -33,6 +33,9 @@ const RaiseConcernForm = () => {
   const { raiseConcern } = useRaiseConcern();
   const [answers, setAnswers] = useState<QuestionnaireAnswers>({});
   const draftId = searchParams.get("draft");
+  const navigate = useNavigate();
+  const { setPlantIdentity } = usePlantIdentityStore();
+  const submissionId = useRef(crypto.randomUUID());
 
   const handleSubmit = async () => {
     console.log({ answers });
@@ -53,6 +56,7 @@ const RaiseConcernForm = () => {
 
     try {
       let payload = {
+        submission_id: submissionId.current,
         photo_url: draft.object_key,
         occurred_on:
           draft.created_at?.split("T")[0] ??
@@ -61,13 +65,15 @@ const RaiseConcernForm = () => {
       };
       console.log({ payload });
 
-      // send after plan identification
       let data = await raiseConcern(payload);
-      // The concern was successfully created.
-      // Remove the temporary draft from localStorage.
-      removeDraftConcern(draftId);
 
-      // Navigate to the concern / plant page here.
+      if (data.concern_id) {
+        setPlantIdentity(data);
+        await removeDraftConcern(draftId);
+
+        navigate(`/concerns/active/${data.concern_id}`);
+      }
+
       console.log("Concern created successfully");
     } catch (error) {
       console.error("Failed to raise concern:", error);

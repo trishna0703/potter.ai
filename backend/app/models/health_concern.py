@@ -23,6 +23,12 @@ class HealthConcern(Base):
 
     reported_on: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
 
+    submission_id: Mapped[str] = mapped_column(
+        String(36),
+        unique=True,
+        nullable=False,
+    )
+
     plant: Mapped["Plant"] = relationship(back_populates="concerns")
 
     user: Mapped["User"] = relationship(back_populates="concerns")

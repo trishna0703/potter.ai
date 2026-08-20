@@ -1,5 +1,6 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
+import type { PlantIdentificationResponse } from "@/store/PlantIdentificationStore";
 
 interface RaiseConcernPayload {
   photo_url: string;
@@ -8,7 +9,9 @@ interface RaiseConcernPayload {
 }
 
 const useRaiseConcern = () => {
-  const raiseConcern = async (payload: RaiseConcernPayload) => {
+  const raiseConcern = async (
+    payload: RaiseConcernPayload,
+  ): Promise<PlantIdentificationResponse> => {
     const response = await apiClient(API_ENDPOINTS.CONCERN, {
       method: "POST",
       body: JSON.stringify(payload),

@@ -9,6 +9,7 @@ import Shelves from "./routes/Shelves/Shelves";
 import AppShell from "#components/layout/AppShell";
 import HealthConcerns from "./routes/HealthConcerns/HealthConcerns";
 import RaiseConcernForm from "./routes/HealthConcerns/components/RaiseConcernForm";
+import ActiveConcern from "./routes/HealthConcerns/components/ActiveConcern";
 
 const queryClient = new QueryClient();
 function App() {
@@ -25,6 +26,7 @@ function App() {
               <Route path={ROUTES.SHELVES} element={<Shelves />} />
               <Route path={ROUTES.CONCERNS} element={<HealthConcerns />} />
               <Route path={ROUTES.RAISE} element={<RaiseConcernForm />} />
+              <Route path={ROUTES.CONCERNSACTIVE} element={<ActiveConcern />} />
             </Route>
           </Route>
         </Routes>

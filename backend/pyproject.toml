@@ -12,6 +12,7 @@ dependencies = [
     "boto3>=1.43.74",
     "fastapi[standard]>=0.141.1",
     "google-auth>=2.56.3",
+    "openai>=3.3.1",
     "openrouter>=1.1.67",
     "psycopg>=3.3.4",
     "pydantic-settings>=2.15.0",
