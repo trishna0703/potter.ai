@@ -5,17 +5,15 @@ import { Toaster } from "../ui/sonner";
 
 const AppShell = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background overflow-hidden">
       <Toaster />
-      {/* Top navigation */}
+
       <Navbar />
 
-      <div className="flex">
-        {/* Sidebar */}
+      <div className="flex h-[calc(100vh-64px)] overflow-hidden">
         <Sidebar />
 
-        {/* Main content */}
-        <main className="flex-1 p-6">
+        <main className="min-w-0 flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>

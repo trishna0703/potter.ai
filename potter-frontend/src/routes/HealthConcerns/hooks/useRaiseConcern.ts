@@ -3,25 +3,22 @@ import { API_ENDPOINTS } from "#lib/endpoints";
 import type { PlantIdentificationResponse } from "@/store/PlantIdentificationStore";
 
 interface RaiseConcernPayload {
-  photo_url: string;
-  occurred_on: string;
+  submission_id: string;
+  photo_id: number;
   initial_context: string;
+  occurred_on: string;
+  evidence_id: number;
+  plant_id?: number;
 }
 
 const useRaiseConcern = () => {
   const raiseConcern = async (
     payload: RaiseConcernPayload,
   ): Promise<PlantIdentificationResponse> => {
-    const response = await apiClient(API_ENDPOINTS.CONCERN, {
+    return await apiClient(API_ENDPOINTS.CONCERN, {
       method: "POST",
       body: JSON.stringify(payload),
     });
-
-    if (!response.ok) {
-      throw new Error("Failed to raise concern");
-    }
-
-    return response.json();
   };
 
   return {

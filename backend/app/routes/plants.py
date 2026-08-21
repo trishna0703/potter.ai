@@ -2,63 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.database import get_db
 from app.models import User, Plant
 from app.routes.users import get_current_user
-from pydantic import BaseModel
-from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from app.schemas.plant import PlantResponse, PlantCreate, PlantUpdate, plant_to_response
 
 router = APIRouter()
-
-
-class PlantCreate(BaseModel):
-    name: str | None = None
-    species: str
-    location_type: str | None = None
-    height_cm: float | None = None
-    pot_size: float | None = None
-    added_on: date
-    avatar_id: int | None = None
-    status: str | None = None
-
-
-class PlantResponse(BaseModel):
-    id: int
-    name: str | None
-    species: str
-    height_cm: float | None
-    pot_size: float | None
-    added_on: date
-    location_type: str | None
-    status: str | None
-    avatar: str | None
-
-    model_config = {"from_attributes": True}
-
-
-def plant_to_response(plant: Plant) -> PlantResponse:
-    return PlantResponse(
-        id=plant.id,
-        name=plant.name,
-        species=plant.species,
-        height_cm=plant.height_cm,
-        pot_size=plant.pot_size,
-        added_on=plant.added_on,
-        location_type=plant.location_type,
-        status=plant.status,
-        avatar=plant.avatar.photo_url if plant.avatar else None,
-    )
-
-
-class PlantUpdate(BaseModel):
-    id: int
-    name: str | None = None
-    species: str | None = None
-    location_type: str | None = None
-    height_cm: float | None = None
-    pot_size: float | None = None
-    added_on: date | None = None
-    avatar_id: int | None = None
-    status: str | None = None
 
 
 @router.post("/", response_model=PlantResponse)
@@ -91,7 +39,7 @@ def create_plant(
         db.rollback()
         raise
 
-    return new_plant
+    return plant_to_response(new_plant)
 
 
 @router.get("/", response_model=list[PlantResponse])
@@ -119,7 +67,7 @@ def get_plant_details(
     if plant is None:
         raise HTTPException(status_code=404, detail="Plant not found.")
 
-    return plant
+    return plant_to_response(plant)
 
 
 @router.patch("/", response_model=PlantResponse)
@@ -150,4 +98,12 @@ def update_plant(
         db.rollback()
         raise
 
-    return plant
+    return plant_to_response(plant)
+
+
+def get_plant_list_for_species(species: str, user_id: int, db: Session) -> list[Plant]:
+    stmt = select(Plant).where(Plant.species == species, Plant.user_id == user_id)
+
+    found_plants = db.scalars(stmt).all()
+
+    return found_plants

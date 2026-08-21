@@ -14,73 +14,52 @@ import {
   QuestionnaireTitle,
 } from "@/components/ui/questionnaire";
 import { QUESTIONNAIRE } from "#lib/concern-questionnaire";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import useRaiseConcern from "../hooks/useRaiseConcern";
-import {
-  getDraftConcern,
-  removeDraftConcern,
-} from "../utils/draft-concern-utils";
 import { useRef, useState } from "react";
 import { generateInitialContext } from "../utils/context-utils";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
+
+import { getToday } from "#lib/utils";
 
 interface QuestionnaireAnswers {
   [key: string]: string | undefined;
 }
 
-const RaiseConcernForm = () => {
-  const [searchParams] = useSearchParams();
+const RaiseConcernStep1 = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const params = new URLSearchParams(searchParams);
   const { raiseConcern } = useRaiseConcern();
   const [answers, setAnswers] = useState<QuestionnaireAnswers>({});
-  const draftId = searchParams.get("draft");
-  const navigate = useNavigate();
-  const { setPlantIdentity } = usePlantIdentityStore();
+  const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
   const submissionId = useRef(crypto.randomUUID());
 
+  console.log({ plantIdentity });
   const handleSubmit = async () => {
-    console.log({ answers });
-    if (!draftId) {
-      console.error("No draft concern found");
-      return;
-    }
-    let id = decodeURIComponent(draftId);
-    const draft = getDraftConcern(id);
-    console.log({ id, draft });
-
-    if (!draft) {
-      console.error("Draft concern not found");
-      return;
-    }
-
     const initial_context = generateInitialContext(answers);
-
     try {
+      if (!plantIdentity) {
+        return;
+      }
       let payload = {
         submission_id: submissionId.current,
-        photo_url: draft.object_key,
-        occurred_on:
-          draft.created_at?.split("T")[0] ??
-          new Date().toISOString().split("T")[0],
+        photo_id: plantIdentity.photo_id,
+        occurred_on: getToday(),
         initial_context,
+        evidence_id: plantIdentity.evidence_id,
+        plant_id: plantIdentity?.plant_id,
       };
-      console.log({ payload });
 
       let data = await raiseConcern(payload);
 
-      if (data.concern_id) {
-        setPlantIdentity(data);
-        await removeDraftConcern(draftId);
-
-        navigate(`/concerns/active/${data.concern_id}`);
-      }
-
-      console.log("Concern created successfully");
+      setPlantIdentity({ ...plantIdentity, concern_id: data.concern_id });
+      params.set("step", "2");
+      setSearchParams(params);
     } catch (error) {
       console.error("Failed to raise concern:", error);
     }
   };
 
-  console.log({ answers });
   return (
     <div>
       <Questionnaire
@@ -155,4 +134,4 @@ const RaiseConcernForm = () => {
   );
 };
 
-export default RaiseConcernForm;
+export default RaiseConcernStep1;

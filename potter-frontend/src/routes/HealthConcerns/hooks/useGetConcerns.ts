@@ -22,7 +22,7 @@ export default function useGetConcerns() {
         method: "GET",
       });
 
-      return response.json();
+      return response;
     },
     retry: false,
   });

@@ -1,10 +1,9 @@
 import apiClient from "#lib/client";
-import useUserStore from "@/store/UserStore";
-import { addDraftConcern } from "../utils/draft-concern-utils";
 import { API_ENDPOINTS } from "#lib/endpoints";
+import { getToday } from "#lib/utils";
+import type { PlantPhotoUploadResponse } from "@/types/plantTypes";
 
 const usePhotoUpload = () => {
-  const { user } = useUserStore();
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -13,17 +12,11 @@ const usePhotoUpload = () => {
     if (!file) return null;
 
     try {
-      const { object_key } = await uploadPhoto(file);
+      const { object_key } = await getPresignURL(file);
 
       if (!object_key) {
         return null;
       }
-
-      addDraftConcern({
-        id: String(user?.id) ?? crypto.randomUUID(),
-        object_key,
-        created_at: new Date().toISOString(),
-      });
 
       return object_key as string;
     } catch (error) {
@@ -31,20 +24,17 @@ const usePhotoUpload = () => {
     }
   };
 
-  const uploadPhoto = async (file: File) => {
-    const response = await apiClient(API_ENDPOINTS.PRESIGN_UPLOAD, {
-      method: "POST",
-      body: JSON.stringify({
-        file_name: file.name,
-        content_type: file.type,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to get presigned URL");
-    }
-
-    const { upload_url, object_key } = await response.json();
+  const getPresignURL = async (file: File) => {
+    const { upload_url, object_key } = await apiClient(
+      API_ENDPOINTS.PRESIGN_UPLOAD,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          file_name: file.name,
+          content_type: file.type,
+        }),
+      },
+    );
 
     // 2. Upload directly to S3
     const uploadResponse = await fetch(upload_url, {
@@ -65,9 +55,19 @@ const usePhotoUpload = () => {
     };
   };
 
+  const handleUpload = async (
+    url: string,
+  ): Promise<PlantPhotoUploadResponse> => {
+    return await apiClient(API_ENDPOINTS.UPLOAD, {
+      method: "POST",
+      body: JSON.stringify({ photo_url: url, captured_on: getToday() }),
+    });
+  };
+
   return {
-    uploadPhoto,
+    getPresignURL,
     handleFileChange,
+    handleUpload,
   };
 };
 

@@ -1,12 +1,7 @@
 from openai import OpenAI
 from app.config import settings
-from pydantic import BaseModel
+from app.schemas.plant import PlantIdentificationResult
 import json
-
-
-class PlantIdentificationResult(BaseModel):
-    species: str
-    confidence: float
 
 
 class AIClient:
@@ -24,7 +19,8 @@ class AIClient:
     ) -> PlantIdentificationResult:
 
         response = self.client.chat.completions.create(
-            model="google/gemini-2.5-flash",
+            model="qwen/qwen3.7-flash",
+            # model="google/gemini-2.5-flash",
             messages=[
                 {
                     "role": "user",
@@ -50,6 +46,7 @@ class AIClient:
                                 - confidence must be a number between 0 and 1.
                                 - Do not include any other fields.
                                 - Do not include markdown or explanation.
+                                - plant names must be capitalized
                                 """,
                         },
                         {

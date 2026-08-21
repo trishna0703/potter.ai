@@ -8,6 +8,7 @@ export interface Plant {
   location_type: string | null;
   status: string | null;
   avatar: string | null;
+  avatar_id: number | null;
 }
 
 export interface PlantCreate {
@@ -31,3 +32,11 @@ export interface PlantUpdate {
   avatar_id?: number | null;
   status?: string | null;
 }
+
+export type PlantPhotoUploadResponse = {
+  id: number;
+  photo_url: string;
+  captured_on: string;
+  uploaded_on: string;
+  expires_on: string;
+};

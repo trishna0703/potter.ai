@@ -10,8 +10,8 @@ class PlantIdentification(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    concern_id: Mapped[int] = mapped_column(
-        ForeignKey("health_concerns.id"), nullable=False
+    concern_id: Mapped[int | None] = mapped_column(
+        ForeignKey("health_concerns.id"), nullable=True
     )
 
     evidence_id: Mapped[int] = mapped_column(ForeignKey("evidences.id"), nullable=False)

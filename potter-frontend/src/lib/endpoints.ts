@@ -10,5 +10,7 @@ export const API_ENDPOINTS = {
   SHELVES: `${API_URL}/shelves`,
   GET_SHELF: (id: number) => `${API_URL}/shelves/${id}`,
   PRESIGN_UPLOAD: `${API_URL}/uploads/presign`,
+  UPLOAD: `${API_URL}/uploads`,
   CONCERN: `${API_URL}/concerns`,
+  IDENTIFY: `${API_URL}/identify`,
 };

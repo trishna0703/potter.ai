@@ -14,7 +14,7 @@ const apiClient = async (url: string, options: RequestInit = {}) => {
     throw new Error(error?.detail || "Something went wrong");
   }
 
-  return response;
+  return await response.json();
 };
 
 export default apiClient;
