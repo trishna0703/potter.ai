@@ -1,9 +1,9 @@
-from sqlalchemy import Integer, String, Date, ForeignKey
+from sqlalchemy import Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
-from datetime import date
+from datetime import datetime
 
 
 class CareEvent(Base):
@@ -17,6 +17,8 @@ class CareEvent(Base):
 
     description: Mapped[str | None] = mapped_column(String(2000), nullable=True)
 
-    occurred_on: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
+    occurred_on: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.today, nullable=False
+    )
 
     plant: Mapped["Plant"] = relationship(back_populates="events")

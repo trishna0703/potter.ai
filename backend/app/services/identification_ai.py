@@ -4,7 +4,7 @@ from app.schemas.plant import PlantIdentificationResult
 import json
 
 
-class AIClient:
+class IdentificationAI:
 
     def __init__(self):
         self.client = OpenAI(
@@ -19,7 +19,7 @@ class AIClient:
     ) -> PlantIdentificationResult:
 
         response = self.client.chat.completions.create(
-            model="qwen/qwen3.7-flash",
+            model=settings.ai_model,
             # model="google/gemini-2.5-flash",
             messages=[
                 {

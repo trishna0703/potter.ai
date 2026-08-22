@@ -1,7 +1,7 @@
 from app.database import Base
 from sqlalchemy import Integer, String, DateTime, ForeignKey, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import date, datetime
+from datetime import datetime
 
 
 class PlantIdentification(Base):
@@ -23,7 +23,7 @@ class PlantIdentification(Base):
     status: Mapped[str] = mapped_column(String(20), default="PENDING", nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=date.today, nullable=False
+        DateTime, default=datetime.today, nullable=False
     )
 
     concern: Mapped["HealthConcern"] = relationship(back_populates="identification")

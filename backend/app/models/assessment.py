@@ -1,9 +1,9 @@
-from sqlalchemy import Integer, String, Date, ForeignKey
+from sqlalchemy import Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
-from datetime import date
+from datetime import datetime
 
 
 class Assessment(Base):
@@ -15,17 +15,27 @@ class Assessment(Base):
         ForeignKey("health_concerns.id"), nullable=False
     )
 
-    problem: Mapped[str] = mapped_column(String(2000), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+    )
 
-    problem_cause: Mapped[str] = mapped_column(String(100), nullable=False)
+    current_interaction_id: Mapped[int | None] = mapped_column(
+        ForeignKey("assessment_messages.id"),
+        nullable=True,
+    )
 
-    confidence: Mapped[str] = mapped_column(String(50), nullable=False)
+    problem: Mapped[str | None] = mapped_column(String(2000), nullable=True)
 
-    explanation: Mapped[str] = mapped_column(String(2000), nullable=False)
+    problem_cause: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
-    status: Mapped[str] = mapped_column(String(30), nullable=False)
+    confidence: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
-    created_on: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
+    explanation: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+
+    created_on: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.today, nullable=False
+    )
 
     evidences: Mapped[list["Evidence"]] = relationship(
         secondary="assessment_evidences",
@@ -38,4 +48,5 @@ class Assessment(Base):
 
     messages: Mapped[list["AssessmentMessage"]] = relationship(
         back_populates="assessment",
+        cascade="all, delete-orphan",
     )

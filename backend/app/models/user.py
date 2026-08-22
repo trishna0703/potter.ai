@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import datetime
 
-from sqlalchemy import Date, Integer, String
+from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -15,7 +15,9 @@ class User(Base):
 
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
-    joined_on: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
+    joined_on: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.today, nullable=False
+    )
 
     planting_experience: Mapped[str | None] = mapped_column(String(20))
 

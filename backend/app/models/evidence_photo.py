@@ -1,9 +1,7 @@
-from sqlalchemy import Integer, String, Date, ForeignKey, PrimaryKeyConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
-
-from datetime import date
 
 
 class EvidencePhoto(Base):

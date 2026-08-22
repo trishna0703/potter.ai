@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from pydantic import BaseModel, ConfigDict
 
-from app.service.s3_service import generate_upload_url
+from app.services.s3_service import generate_upload_url
 
 from app.routes.users import get_current_user
 

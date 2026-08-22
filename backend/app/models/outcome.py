@@ -1,9 +1,9 @@
-from sqlalchemy import Integer, String, Date, ForeignKey
+from sqlalchemy import Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
-from datetime import date
+from datetime import datetime
 
 
 class Outcome(Base):
@@ -19,8 +19,8 @@ class Outcome(Base):
 
     description: Mapped[str | None] = mapped_column(String(2000), nullable=True)
 
-    recorded_on: Mapped[date] = mapped_column(
-        Date, default=date.today, nullable=False
+    recorded_on: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.today, nullable=False
     )
 
     concern: Mapped["HealthConcern"] = relationship(

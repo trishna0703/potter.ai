@@ -5,9 +5,9 @@ from app.models.user import User
 from app.routes.plants import get_plant_list_for_species
 from app.routes.upload import UploadRequestModel, upload_plant_photo
 from app.routes.users import get_current_user
-from app.service.helper_services import create_new_evidence, link_photo_to_evidence
-from app.service.s3_service import generate_download_url
-from app.routes.ai_client import AIClient
+from app.services.helper_services import create_new_evidence, link_photo_to_evidence
+from app.services.s3_service import generate_download_url
+from app.services.identification_ai import IdentificationAI
 from app.models import PlantIdentification, Plant
 from datetime import datetime
 from sqlalchemy import select
@@ -128,7 +128,7 @@ def identify_plant_from_photo(
     download_url = generate_download_url(photo_id, user_id=current_user.id, db=db)
 
     # AI identifies
-    client = AIClient()
+    client = IdentificationAI()
     result = client.identify_plant(photo=download_url, initial_context=initial_context)
 
     found_plants = get_plant_list_for_species(

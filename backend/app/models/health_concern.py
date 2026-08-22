@@ -1,9 +1,9 @@
-from sqlalchemy import Integer, String, Date, ForeignKey
+from sqlalchemy import Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
-from datetime import date
+from datetime import datetime
 
 
 class HealthConcern(Base):
@@ -19,9 +19,13 @@ class HealthConcern(Base):
 
     status: Mapped[str] = mapped_column(String(30), nullable=False)
 
-    occurred_on: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
+    occurred_on: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.today, nullable=False
+    )
 
-    reported_on: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
+    reported_on: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.today, nullable=False
+    )
 
     submission_id: Mapped[str] = mapped_column(
         String(36),

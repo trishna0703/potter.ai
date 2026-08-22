@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Integer, String, Date
+from sqlalchemy import ForeignKey, Integer, String, DateTime
 
 from app.database import Base
 
-from datetime import date
+from datetime import datetime
 
 
 class PlantPhoto(Base):
@@ -17,11 +17,13 @@ class PlantPhoto(Base):
 
     photo_url: Mapped[str] = mapped_column(String(500), nullable=False)
 
-    captured_on: Mapped[date | None] = mapped_column(Date, nullable=True)
+    captured_on: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    uploaded_on: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
+    uploaded_on: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.today, nullable=False
+    )
 
-    expires_on: Mapped[date | None] = mapped_column(Date, nullable=True)
+    expires_on: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     plant: Mapped["Plant | None"] = relationship(
         back_populates="photos", foreign_keys=[plant_id]

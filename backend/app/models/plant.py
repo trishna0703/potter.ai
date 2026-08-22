@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import datetime
 
-from sqlalchemy import Integer, String, Date, Float, ForeignKey, UniqueConstraint
+from sqlalchemy import Integer, String, DateTime, Float, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -21,7 +21,9 @@ class Plant(Base):
 
     pot_size: Mapped[float | None] = mapped_column(Float, nullable=True)
 
-    added_on: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
+    added_on: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.today, nullable=False
+    )
 
     location_type: Mapped[str | None] = mapped_column(String, nullable=True)
 

@@ -9,7 +9,7 @@ from app.routes.users import get_current_user
 from app.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from app.service.helper_services import (
+from app.services.helper_services import (
     link_evidence_to_concern,
 )
 from app.schemas.route import RequestModel, ResponseModel
