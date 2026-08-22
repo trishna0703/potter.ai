@@ -11,12 +11,13 @@ from app.services.assessment_flow_service import AssessmentFlowService
 from app.services.assessment_service import AssessmentService
 from app.services.auth import get_user_by_session
 from app.services.health_concern_service import HealthConcernService
+from app.services.helper_services import link_evidence_to_Assessment
 from app.services.interaction_service import InteractionService
 
 router = APIRouter()
 
 
-async def authenticate_websocket_user(
+def authenticate_websocket_user(
     websocket: WebSocket,
     db: Session,
 ):
@@ -26,8 +27,8 @@ async def authenticate_websocket_user(
         return None
 
     return get_user_by_session(
-        db,
         session_id,
+        db,
     )
 
 
@@ -42,7 +43,7 @@ async def health_concern_websocket(
     try:
         # We'll replace this with your existing session
         # authentication logic.
-        user = await authenticate_websocket_user(websocket, db)
+        user = authenticate_websocket_user(websocket, db)
 
         if user is None:
             await websocket.close(code=1008)
@@ -79,19 +80,38 @@ async def health_concern_websocket(
             concern_id=concern.id,
             initial_status="WAITING_FOR_AI",
         )
+        latest_evidence = max(
+            concern.evidences,
+            key=lambda evidence: evidence.created_at,
+        )
+        link_evidence_to_Assessment(
+            assessment_id=assessment.id,
+            evidence_id=latest_evidence.id,
+            db=db,
+        )
 
         db.commit()
 
-        if assessment.current_interaction_id is None:
-            interaction = flow_service.start_assessment(db, concern, assessment)
-
-            await websocket.send_json(
-                {
-                    "type": interaction.message_type,
-                    "interaction_id": interaction.id,
-                    "payload": interaction.payload,
-                }
+        if assessment.status == "COMPLETED":
+            interaction = message_service.get_latest_assessment_message(
+                db,
+                assessment_id=assessment.id,
             )
+            if interaction:
+                await send_interaction(websocket, interaction)
+
+            await websocket.close(code=1000)
+            return
+
+        if assessment.current_interaction_id is None:
+            interaction = flow_service.generate_next_interaction(
+                db,
+                concern=concern,
+                assessment=assessment,
+            )
+
+            await send_interaction(websocket, interaction)
+
         else:
             interaction = message_service.get_assessment_message(
                 db,
@@ -99,13 +119,7 @@ async def health_concern_websocket(
             )
 
             if interaction:
-                await websocket.send_json(
-                    {
-                        "type": interaction.message_type,
-                        "interaction_id": interaction.id,
-                        "payload": interaction.payload,
-                    }
-                )
+                await send_interaction(websocket, interaction)
 
         while True:
             raw_message = await websocket.receive_json()
@@ -138,13 +152,11 @@ async def health_concern_websocket(
                     value=message.payload.get("value"),
                 )
 
-                await websocket.send_json(
-                    {
-                        "type": interaction.message_type,
-                        "interaction_id": interaction.id,
-                        "payload": interaction.payload,
-                    }
-                )
+                await send_interaction(websocket, interaction)
+
+                if interaction.message_type == "assessment":
+                    await websocket.close(code=1000)
+                    return
 
             except ValueError as exc:
                 await websocket.send_json(
@@ -162,3 +174,16 @@ async def health_concern_websocket(
 
     finally:
         db.close()
+
+
+async def send_interaction(
+    websocket: WebSocket,
+    interaction,
+):
+    await websocket.send_json(
+        {
+            "type": interaction.message_type,
+            "interaction_id": interaction.id,
+            "payload": interaction.payload,
+        }
+    )

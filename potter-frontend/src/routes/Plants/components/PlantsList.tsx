@@ -106,10 +106,10 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
   const [editPlant, setEditPlant] = useState<Plant | undefined>(undefined);
 
   return (
-    <div>
-      <ul className="grid grid-cols-4">
+    <div className="w-full">
+      <ul className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 grid-cols-1">
         {plantList?.map((plant: Plant) => (
-          <li key={plant.id}>
+          <li key={plant.id} className="w-full">
             <PlantCard
               plant={plant}
               editPlant={(plant: Plant) => setEditPlant(plant)}

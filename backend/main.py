@@ -1,6 +1,14 @@
 from fastapi import FastAPI, APIRouter
 
-from app.routes import assessment_websocket, auth, identify, users, plants, concerns, upload
+from app.routes import (
+    assessment_websocket,
+    auth,
+    identify,
+    users,
+    plants,
+    concerns,
+    upload,
+)
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()

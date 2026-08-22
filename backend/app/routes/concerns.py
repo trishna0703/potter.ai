@@ -9,6 +9,8 @@ from app.routes.users import get_current_user
 from app.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from app.schemas.assessment import AssessmentMessageResponse
+from app.services.interaction_service import InteractionService
 from app.services.helper_services import (
     link_evidence_to_concern,
 )
@@ -63,6 +65,9 @@ def raise_concern(
         db.commit()
         db.refresh(new_concern)
 
+    
+    # TODO: Update AssessmentEvidence Table after raise concern
+
     except Exception:
         db.rollback()
         raise
@@ -90,3 +95,21 @@ def create_health_concern(
     db.flush()
 
     return new_concern
+
+
+@router.get(
+    "/{concern_id}/messages",
+    response_model=list[AssessmentMessageResponse],
+)
+def get_assessment_messages(
+    concern_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    interaction_service = InteractionService()
+
+    return interaction_service.get_messages_for_concern(
+        db,
+        concern_id=concern_id,
+        user_id=current_user.id,
+    )

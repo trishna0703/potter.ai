@@ -20,6 +20,7 @@ import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 import IdentifiedPlantModal from "#components/utils/IdentifiedPlantModal";
 import CreatePlantForm from "@/routes/Plants/components/CreatePlantForm";
 import Overlay from "./Overlay";
+import { useLogout } from "@/routes/Login/useAuth";
 
 type MenuType = {
   label: string;
@@ -30,10 +31,10 @@ const menuItems: MenuType[] = [
     label: "Plants",
     path: "/plants",
   },
-  {
-    label: "Shelves",
-    path: "/shelves",
-  },
+  // {
+  //   label: "Shelves",
+  //   path: "/shelves",
+  // },
   {
     label: "Concerns",
     path: "/concerns",
@@ -46,15 +47,15 @@ const menuItems: MenuType[] = [
 
 const Menu = () => {
   const open = useRef<boolean | null>(null);
-  const { user } = useUserStore();
+  const { user, setUser } = useUserStore();
   const navigate = useNavigate();
+
+  const { mutate: logout } = useLogout();
 
   const handleMenuClick = async (item: MenuType) => {
     if (item.path === "/logout") {
-      await fetch("/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      await logout();
+      setUser(null);
 
       navigate("/login");
       return;
@@ -109,6 +110,8 @@ const Navbar = () => {
   const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
   const [isLoadingIdentification, setIsLoadingIdentification] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  
   const onPhotoSelected = async (
     event: React.ChangeEvent<HTMLInputElement, Element>,
   ) => {

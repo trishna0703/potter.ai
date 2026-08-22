@@ -9,7 +9,7 @@ export interface UserType {
 
 interface UserState {
   user: UserType | null;
-  setUser: (user: UserType) => void;
+  setUser: (user: UserType | null) => void;
 }
 
 const useUserStore = create<UserState>()((set) => ({

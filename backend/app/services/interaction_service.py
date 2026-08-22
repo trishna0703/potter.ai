@@ -2,10 +2,71 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.models.assessment import Assessment
 from app.models.assessment_message import AssessmentMessage
+from app.models.health_concern import HealthConcern
 
 
 class InteractionService(BaseModel):
+
+    def get_assessment_messages_for_user(
+        self,
+        db: Session,
+        *,
+        assessment_id: int,
+        user_id: int,
+    ) -> list[AssessmentMessage]:
+
+        stmt = (
+            select(AssessmentMessage)
+            .join(
+                Assessment,
+                Assessment.id == AssessmentMessage.assessment_id,
+            )
+            .join(
+                HealthConcern,
+                HealthConcern.id == Assessment.concern_id,
+            )
+            .where(
+                AssessmentMessage.assessment_id == assessment_id,
+                HealthConcern.user_id == user_id,
+            )
+            .order_by(AssessmentMessage.sequence.asc())
+        )
+
+        return list(db.scalars(stmt).all())
+
+    def get_messages_for_concern(
+        self,
+        db: Session,
+        *,
+        concern_id: int,
+        user_id: int,
+    ) -> list[AssessmentMessage]:
+        latest_assessment = (
+            select(Assessment.id)
+            .join(
+                HealthConcern,
+                Assessment.concern_id == HealthConcern.id,
+            )
+            .where(
+                HealthConcern.id == concern_id,
+                HealthConcern.user_id == user_id,
+            )
+            .order_by(Assessment.id.desc())
+            .limit(1)
+            .scalar_subquery()
+        )
+
+        stmt = (
+            select(AssessmentMessage)
+            .where(
+                AssessmentMessage.assessment_id == latest_assessment,
+            )
+            .order_by(AssessmentMessage.sequence.asc())
+        )
+
+        return list(db.scalars(stmt).all())
 
     def create_assessment_message(
         self,
@@ -14,7 +75,6 @@ class InteractionService(BaseModel):
         role: str,
         message_type: str,
         payload: dict,
-        client_message_id: str | None = None,
     ) -> AssessmentMessage:
 
         sequence_stmt = (
@@ -34,7 +94,6 @@ class InteractionService(BaseModel):
             role=role,
             message_type=message_type,
             payload=payload,
-            client_message_id=client_message_id,
         )
 
         db.add(message)
@@ -71,19 +130,6 @@ class InteractionService(BaseModel):
             select(AssessmentMessage)
             .where(AssessmentMessage.assessment_id == assessment_id)
             .order_by(AssessmentMessage.sequence.desc())
-            .limit(1)
-        )
-
-        return db.scalar(stmt)
-
-    def get_message_by_client_id(
-        self,
-        db: Session,
-        client_message_id: str,
-    ) -> AssessmentMessage | None:
-        stmt = (
-            select(AssessmentMessage)
-            .where(AssessmentMessage.client_message_id == client_message_id)
             .limit(1)
         )
 

@@ -2,6 +2,7 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
+from app.models.assessment_evidence import AssessmentEvidence
 from app.models.concern_evidence import ConcernEvidence
 from app.models.evidence import Evidence
 from app.models.evidence_photo import EvidencePhoto
@@ -40,6 +41,19 @@ def link_evidence_to_concern(
     db.flush()
 
     return new_concern_evidence
+
+
+def link_evidence_to_Assessment(
+    assessment_id: int,
+    evidence_id: int,
+    db: Session,
+) -> AssessmentEvidence:
+    new_assessment_evidence = AssessmentEvidence(assessment_id, evidence_id)
+
+    db.add(new_assessment_evidence)
+    db.flush()
+
+    return new_assessment_evidence
 
 
 def link_photo_to_evidence(

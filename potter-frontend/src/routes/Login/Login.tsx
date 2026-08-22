@@ -14,7 +14,7 @@ const Login = () => {
   useEffect(() => {
     console.log({ user });
     if (user) {
-      navigate(ROUTES.DASHBOARD);
+      navigate(ROUTES.PLANTS);
     }
   }, [user]);
 
@@ -30,7 +30,7 @@ const Login = () => {
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center">
-      <Card className="bg-card border-border shadow-sm w-1/4 flex flex-col items-center justify-center gap-4 p-8 h-auto">
+      <Card className="bg-card border-border shadow-sm w-full sm:w-8/10 md:w-6/10 lg:w-4/10 flex flex-col items-center justify-center gap-4 p-8 h-screen md:h-auto">
         <img src="/Plant.svg" alt="Logo" className="w-48 h-48 mt-8" />
         <div className="flex flex-col items-center">
           <h2 className="text-foreground text-lg font-medium">

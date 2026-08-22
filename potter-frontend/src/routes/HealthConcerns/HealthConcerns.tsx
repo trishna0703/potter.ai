@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { formatRelativeDate } from "./utils/draft-concern-utils";
 import useGetConcerns from "./hooks/useGetConcerns";
+import { ROUTES } from "#lib/routes";
 
 const HealthConcerns = ({}) => {
   const { allActiveConcerns } = useGetConcerns();
@@ -34,7 +35,9 @@ const HealthConcerns = ({}) => {
                   className={
                     "h-20 w-20 px-0 rounded-2xl overflow-hidden shadow-xl cursor-pointer"
                   }
-                  onClick={() => navigate(`active/${concern.id}`)}
+                  onClick={() =>
+                    navigate(`${ROUTES.CONCERNSACTIVE}/${concern.id}`)
+                  }
                 >
                   {/* <img
                     src={S3_URL + "/" + concern.object_key}

@@ -35,4 +35,4 @@ class AssessmentMessage(Base):
         DateTime, default=datetime.today, nullable=False
     )
 
-    assessment: Mapped["Assessment"] = relationship(back_populates="messages")
+    assessment: Mapped["Assessment"] = relationship(back_populates="messages", foreign_keys=[assessment_id])

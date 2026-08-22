@@ -1,15 +1,17 @@
-from fastapi import Depends, HTTPException, APIRouter, Response
+from fastapi import Depends, HTTPException, APIRouter, Request, Response, status
+from sqlalchemy.orm import Session
 from app.database import settings, get_db
 
 from app.models import User, UserSession
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
+
+from app.services.auth import get_session
 
 router = APIRouter()
 
@@ -81,3 +83,24 @@ def login_with_google(
         "email": existing_user.email,
         "avatar": existing_user.avatar,
     }
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+):
+    session_id = request.cookies.get("session")
+
+    if session_id is not None:
+        session = get_session(session_id, db)
+
+        if session is not None:
+            db.delete(session)
+            db.commit()
+
+    response.delete_cookie(
+        key="session",
+        path="/",
+    )

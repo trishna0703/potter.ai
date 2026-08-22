@@ -1,8 +1,9 @@
 import json
 
 from openai import OpenAI
+from pydantic import TypeAdapter
 
-from app.schemas.assessment import AssessmentAIResponse
+from app.schemas.assessment import AIResponse, AssessmentAIResponse
 from app.config import settings
 
 SYSTEM_PROMPT = """
@@ -28,12 +29,16 @@ Rules:
 7. Do not return conversational text outside the required JSON structure.
 8. The response must follow the supplied JSON schema.
 """
+AIResponseAdapter = TypeAdapter(AIResponse)
 
 
 class AssessmentAIService:
 
     def __init__(self):
-        self.client = OpenAI()
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=settings.openrouter_api_key,
+        )
 
     def generate_next_interaction(
         self,
@@ -49,7 +54,7 @@ class AssessmentAIService:
                     "type": "json_schema",
                     "name": "assessment_interaction",
                     "strict": True,
-                    "schema": AssessmentAIResponse.model_json_schema(),
+                    "schema": AIResponseAdapter.json_schema(),
                 }
             },
         )
@@ -57,4 +62,4 @@ class AssessmentAIService:
         if not response.output_text:
             raise ValueError("AI returned an empty response.")
 
-        return AssessmentAIResponse.model_validate_json(response.output_text)
+        return AIResponseAdapter.validate_json(response.output_text)

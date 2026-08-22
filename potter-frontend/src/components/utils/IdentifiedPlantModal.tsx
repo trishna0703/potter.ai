@@ -9,7 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import usePlantIdentityStore from "@/store/PlantIdentificationStore";
+import usePlantIdentityStore, {
+  type PlantIdentificationResponse,
+} from "@/store/PlantIdentificationStore";
 import type { Plant } from "@/types/plantTypes";
 import { useNavigate } from "react-router-dom";
 
@@ -228,17 +230,19 @@ export default function IdentifiedPlantModal({
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
 }) {
-  const { plantIdentity } = usePlantIdentityStore();
+  const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
 
   const isNew = plantIdentity?.is_new_plant;
   const navigate = useNavigate();
   const handleRaise = (id?: number) => {
     setIsOpen(false);
     if (id) {
-      navigate(ROUTES.RAISE + `?plant=${id}&step=1`);
-      return;
+      setPlantIdentity({
+        ...plantIdentity,
+        plant_id: id,
+      } as PlantIdentificationResponse);
     }
-    navigate(ROUTES.RAISE + "?step=1");
+    navigate(ROUTES.RAISE);
   };
 
   return (

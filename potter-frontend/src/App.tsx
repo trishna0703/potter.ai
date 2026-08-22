@@ -8,8 +8,8 @@ import Plants from "./routes/Plants/Plants";
 import Shelves from "./routes/Shelves/Shelves";
 import AppShell from "#components/layout/AppShell";
 import HealthConcerns from "./routes/HealthConcerns/HealthConcerns";
-import ActiveConcern from "./routes/HealthConcerns/components/ActiveConcern";
 import RaiseConcern from "./routes/HealthConcerns/RaiseConcern";
+import ChatInterface from "./routes/Assessment/ChatInterface";
 
 const queryClient = new QueryClient();
 function App() {
@@ -26,7 +26,10 @@ function App() {
               <Route path={ROUTES.SHELVES} element={<Shelves />} />
               <Route path={ROUTES.CONCERNS} element={<HealthConcerns />} />
               <Route path={ROUTES.RAISE} element={<RaiseConcern />} />
-              <Route path={ROUTES.CONCERNSACTIVE} element={<ActiveConcern />} />
+              <Route
+                path={"/concerns/active/:concern_id"}
+                element={<ChatInterface />}
+              />
             </Route>
           </Route>
         </Routes>

@@ -1,6 +1,8 @@
+from typing import Annotated, Literal
+
 from datetime import datetime
 
-from openai import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AssessmentRequest(BaseModel):
@@ -17,28 +19,60 @@ class AssessmentRequest(BaseModel):
 class AssessmentResponse(BaseModel):
     assessment_id: int
 
-from typing import Literal
-
-from pydantic import BaseModel, Field
-
 
 class QuestionOption(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     value: str
     label: str
 
 
 class Question(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     prompt: str
     input_type: Literal["single_choice"]
     options: list[QuestionOption]
-    required: bool = True
+    required: bool
 
 
-class QuestionInteraction(BaseModel):
+class QuestionAIResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     type: Literal["question"]
     question: Question
 
 
+class AssessmentResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    problem: str
+    problem_cause: str
+    confidence: str
+    explanation: str
+
+
 class AssessmentAIResponse(BaseModel):
-    interaction: QuestionInteraction
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["assessment"]
+    assessment: AssessmentResult
+
+
+AIResponse = Annotated[
+    QuestionAIResponse | AssessmentAIResponse,
+    Field(discriminator="type"),
+]
+
+
+class AssessmentMessageResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    assessment_id: int
+    sequence: int
+    role: str
+    message_type: str
+    payload: dict
+    created_at: datetime

@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import useUserStore from "../../store/UserStore";
 import { API_ENDPOINTS } from "#lib/endpoints";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import apiClient from "#lib/client";
 
 export default function useAuth() {
   const { setUser } = useUserStore();
@@ -46,4 +48,13 @@ export default function useAuth() {
   }
 
   return { SignInWithGoogle };
+}
+
+export function useLogout() {
+  return useMutation({
+    mutationKey: ["logout"],
+    mutationFn: async () => {
+      return await apiClient(API_ENDPOINTS.LOGOUT, { method: "POST" });
+    },
+  });
 }

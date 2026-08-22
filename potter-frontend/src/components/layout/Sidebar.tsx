@@ -5,12 +5,12 @@ import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
   return (
-    <aside className="w-64 min-h-[calc(100vh-4rem)] border-r p-4">
+    <aside className="w-64 min-h-[calc(100vh-4rem)] border-r p-4 md:block hidden">
       <nav className="space-y-2">
         <NavLink
           to={ROUTES.DASHBOARD}
           className={({ isActive }) =>
-            `block rounded-md px-3 py-2 ${
+            `hidden block rounded-md px-3 py-2 ${
               isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
             }`
           }
@@ -32,7 +32,7 @@ const Sidebar = () => {
         <NavLink
           to={ROUTES.SHELVES}
           className={({ isActive }) =>
-            `block rounded-md px-3 py-2 ${
+            `hidden rounded-md px-3 py-2 ${
               isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
             }`
           }

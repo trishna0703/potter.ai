@@ -20,14 +20,6 @@ class AssessmentFlowService:
         self.ai_service = ai_service
         self.context_service = context_service
 
-    def start_assessment(self, db: Session, concern, assessment):
-
-        return self.generate_next_interaction(
-            db,
-            concern=concern,
-            assessment=assessment,
-        )
-
     def generate_next_interaction(
         self,
         db: Session,
@@ -43,14 +35,35 @@ class AssessmentFlowService:
 
         ai_response = self.ai_service.generate_next_interaction(context)
 
-        interaction = ai_response.interaction
+        if ai_response.type == "question":
+            return self._handle_question_response(
+                db,
+                assessment=assessment,
+                ai_response=ai_response,
+            )
 
+        if ai_response.type == "assessment":
+            return self._handle_assessment_response(
+                db,
+                assessment=assessment,
+                ai_response=ai_response,
+            )
+
+        raise ValueError(f"Unsupported AI response type: {ai_response.type}")
+
+    def _handle_question_response(
+        self,
+        db: Session,
+        *,
+        assessment,
+        ai_response,
+    ):
         message = self.message_service.create_assessment_message(
             db,
             assessment_id=assessment.id,
             role="assistant",
-            message_type=interaction.type,
-            payload=interaction.model_dump(),
+            message_type=ai_response.type,
+            payload=ai_response.question.model_dump(),
         )
 
         self.assessment_service.set_current_interaction(
@@ -63,6 +76,48 @@ class AssessmentFlowService:
             db,
             assessment_id=assessment.id,
             status="WAITING_FOR_USER",
+        )
+
+        db.commit()
+
+        return message
+
+    def _handle_assessment_response(
+        self,
+        db: Session,
+        *,
+        assessment,
+        ai_response,
+    ):
+        result = ai_response.assessment
+
+        self.assessment_service.update_assessment_result(
+            db,
+            assessment_id=assessment.id,
+            problem=result.problem,
+            problem_cause=result.problem_cause,
+            confidence=result.confidence,
+            explanation=result.explanation,
+        )
+
+        self.assessment_service.set_current_interaction(
+            db,
+            assessment_id=assessment.id,
+            interaction_id=None,
+        )
+
+        self.assessment_service.update_assessment_status(
+            db,
+            assessment_id=assessment.id,
+            status="COMPLETED",
+        )
+
+        message = self.message_service.create_assessment_message(
+            db,
+            assessment_id=assessment.id,
+            role="assistant",
+            message_type="assessment",
+            payload=result.model_dump(),
         )
 
         db.commit()

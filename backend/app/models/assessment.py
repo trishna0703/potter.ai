@@ -47,6 +47,13 @@ class Assessment(Base):
     )
 
     messages: Mapped[list["AssessmentMessage"]] = relationship(
+        "AssessmentMessage",
         back_populates="assessment",
         cascade="all, delete-orphan",
+        foreign_keys="AssessmentMessage.assessment_id",
+    )
+    current_interaction = relationship(
+        "AssessmentMessage",
+        foreign_keys=[current_interaction_id],
+        post_update=True,
     )
