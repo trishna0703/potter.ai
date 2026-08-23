@@ -11,10 +11,14 @@ interface RaiseConcernPayload {
   plant_id?: number;
 }
 
+interface NewConcernResponse {
+  concern_id: number;
+  assessment_id: number;
+}
 const useRaiseConcern = () => {
   const raiseConcern = async (
     payload: RaiseConcernPayload,
-  ): Promise<PlantIdentificationResponse> => {
+  ): Promise<NewConcernResponse> => {
     return await apiClient(API_ENDPOINTS.CONCERN, {
       method: "POST",
       body: JSON.stringify(payload),

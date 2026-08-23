@@ -5,13 +5,16 @@ from app.database import Base
 
 from datetime import datetime
 
+
 class Recommendation(Base):
     __tablename__ = "recommendations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    concern_id: Mapped[int] = mapped_column(
-        ForeignKey("health_concerns.id"), nullable=False
+    assessment_id: Mapped[int] = mapped_column(
+        ForeignKey("assessments.id"),
+        nullable=False,
+        unique=True,
     )
 
     recommendation_type: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -20,4 +23,10 @@ class Recommendation(Base):
 
     performed_on: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    concern: Mapped["HealthConcern"] = relationship(back_populates="recommendations", foreign_keys=[concern_id])
+    assessment: Mapped["Assessment"] = relationship(back_populates="recommendation")
+
+    outcome: Mapped["Outcome | None"] = relationship(
+        back_populates="recommendation",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )

@@ -53,7 +53,7 @@ const RaiseConcern = () => {
         let data = await raiseConcern(payload);
 
         setPlantIdentity({ ...plantIdentity, concern_id: data.concern_id });
-        navigate(`${ROUTES.CONCERNSACTIVE}/${data.concern_id}`);
+        navigate(`${ROUTES.CONCERNSACTIVE}/${data.assessment_id}`);
       } catch (e) {
         showErrorToast(e);
       }

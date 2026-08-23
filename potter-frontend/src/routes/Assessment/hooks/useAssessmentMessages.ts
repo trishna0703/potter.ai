@@ -5,14 +5,14 @@ import type { AssessmentMessage } from "@/types/messages";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-const useAssessmentMessages = (concernId: number) => {
+const useAssessmentMessages = (assessmentId: number) => {
   const { setMessages } = useActiveMessages();
 
   const query = useQuery({
-    queryKey: ["assessment-messages", concernId],
+    queryKey: ["assessment-messages", assessmentId],
     queryFn: async (): Promise<AssessmentMessage[]> =>
-      await apiClient(API_ENDPOINTS.MESSAGES(concernId)),
-    enabled: Boolean(concernId),
+      await apiClient(API_ENDPOINTS.MESSAGES(assessmentId)),
+    enabled: Boolean(assessmentId),
   });
 
   useEffect(() => {

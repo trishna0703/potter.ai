@@ -32,38 +32,31 @@ def authenticate_websocket_user(
     )
 
 
-@router.websocket("/{concern_id}")
+@router.websocket("/{assessment_id}")
 async def health_concern_websocket(
     websocket: WebSocket,
-    concern_id: int,
+    assessment_id: int,
 ):
 
     db: Session = SessionLocal()
 
     try:
-        # We'll replace this with your existing session
-        # authentication logic.
         user = authenticate_websocket_user(websocket, db)
 
         if user is None:
             await websocket.close(code=1008)
             return
 
-        concern_service = HealthConcernService()
+        assessment_service = AssessmentService()
 
-        concern = concern_service.get_health_concern_for_user(
-            db,
-            concern_id=concern_id,
-            user_id=user.id,
-        )
+        assessment = assessment_service.get_assessment(db, assessment_id)
 
-        if concern is None:
+        if assessment is None:
             await websocket.close(code=1008)
             return
 
         await websocket.accept()
 
-        assessment_service = AssessmentService()
         message_service = InteractionService()
         ai_service = AssessmentAIService()
         context_service = AssessmentContextService()
@@ -75,28 +68,12 @@ async def health_concern_websocket(
             context_service=context_service,
         )
 
-        assessment = assessment_service.get_or_create_assessment(
-            db,
-            concern_id=concern.id,
-            initial_status="WAITING_FOR_AI",
-        )
-        latest_evidence = max(
-            concern.evidences,
-            key=lambda evidence: evidence.created_at,
-        )
-        link_evidence_to_Assessment(
-            assessment_id=assessment.id,
-            evidence_id=latest_evidence.id,
-            db=db,
-        )
-
-        db.commit()
-
         if assessment.status == "COMPLETED":
             interaction = message_service.get_latest_assessment_message(
                 db,
                 assessment_id=assessment.id,
             )
+
             if interaction:
                 await send_interaction(websocket, interaction)
 
@@ -106,7 +83,7 @@ async def health_concern_websocket(
         if assessment.current_interaction_id is None:
             interaction = flow_service.generate_next_interaction(
                 db,
-                concern=concern,
+                concern_id=assessment.concern_id,
                 assessment=assessment,
             )
 
@@ -146,7 +123,7 @@ async def health_concern_websocket(
             try:
                 interaction = flow_service.handle_answer(
                     db,
-                    concern=concern,
+                    concern_id=assessment.concern_id,
                     assessment=assessment,
                     interaction_id=message.interaction_id,
                     value=message.payload.get("value"),

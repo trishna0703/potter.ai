@@ -23,6 +23,11 @@ class HealthConcern(Base):
         DateTime, default=datetime.today, nullable=False
     )
 
+    initial_evidence_id: Mapped[int] = mapped_column(
+        ForeignKey("evidences.id"),
+        nullable=False,
+    )
+
     reported_on: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.today, nullable=False
     )
@@ -43,14 +48,6 @@ class HealthConcern(Base):
 
     assessments: Mapped[list["Assessment"]] = relationship(
         back_populates="concern", foreign_keys="Assessment.concern_id"
-    )
-
-    recommendations: Mapped[list["Recommendation"]] = relationship(
-        back_populates="concern", foreign_keys="Recommendation.concern_id"
-    )
-
-    outcomes: Mapped[list["Outcome"]] = relationship(
-        back_populates="concern", foreign_keys="Outcome.concern_id"
     )
 
     identification: Mapped["PlantIdentification | None"] = relationship(

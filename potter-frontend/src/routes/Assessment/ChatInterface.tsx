@@ -12,9 +12,9 @@ import { useParams } from "react-router-dom";
 
 const ChatInterface = () => {
   const params = useParams();
-  const concernId = params.concern_id;
+  const assessmentId = params.assessment_id;
   const { messages, latestMessage, interactionState } = useActiveMessages();
-  const { isLoading, isError } = useAssessmentMessages(Number(concernId));
+  const { isLoading, isError } = useAssessmentMessages(Number(assessmentId));
 
   const { sendMessage } = useAssessmentConnection();
 

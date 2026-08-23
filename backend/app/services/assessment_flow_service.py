@@ -24,13 +24,15 @@ class AssessmentFlowService:
         self,
         db: Session,
         *,
-        concern,
+        concern_id: int,
         assessment,
     ):
+        previous_assessment = self.assessment_service.get_previous_assessment(
+            db, concern_id=concern_id, current_assessment_id=assessment.id
+        )
 
         context = self.context_service.build_context(
-            concern,
-            assessment,
+            db, concern_id, assessment, previous_assessment
         )
 
         ai_response = self.ai_service.generate_next_interaction(context)
@@ -128,7 +130,7 @@ class AssessmentFlowService:
         self,
         db: Session,
         *,
-        concern,
+        concern_id: int,
         assessment,
         interaction_id: int,
         value,
@@ -183,6 +185,6 @@ class AssessmentFlowService:
 
         return self.generate_next_interaction(
             db,
-            concern=concern,
+            concern_id=concern_id,
             assessment=assessment,
         )

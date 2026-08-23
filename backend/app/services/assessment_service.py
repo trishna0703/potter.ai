@@ -147,3 +147,38 @@ class AssessmentService(BaseModel):
             concern_id=concern_id,
             status=initial_status,
         )
+
+    def get_evidence_for_reassessment(
+        self,
+        db: Session,
+        previous_assessment_id: int,
+    ) -> list[int]:
+        previous_assessment = self.get_assessment(
+            db,
+            assessment_id=previous_assessment_id,
+        )
+
+        if previous_assessment is None:
+            return []
+
+        return list(previous_assessment.evidences)
+
+    
+    def get_previous_assessment(
+        self,
+        db: Session,
+        *,
+        concern_id: int,
+        current_assessment_id: int,
+    ) -> Assessment | None:
+        stmt = (
+            select(Assessment)
+            .where(
+                Assessment.concern_id == concern_id,
+                Assessment.id != current_assessment_id,
+            )
+            .order_by(Assessment.id.desc())
+            .limit(1)
+        )
+
+        return db.scalar(stmt)

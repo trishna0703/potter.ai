@@ -1,7 +1,9 @@
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.models.assessment import Assessment
 from app.models.health_concern import HealthConcern
+from app.services.health_concern_service import HealthConcernService
 from app.services.s3_service import generate_download_url
 
 
@@ -9,8 +11,10 @@ class AssessmentContextService(BaseModel):
 
     def build_context(
         self,
-        concern: HealthConcern,
+        db: Session,
+        concern_id: int,
         assessment: Assessment,
+        previous_assessment: Assessment | None = None,
     ) -> dict:
 
         messages = sorted(
@@ -19,10 +23,13 @@ class AssessmentContextService(BaseModel):
         )
 
         return {
-            "concern": self._build_concern_context(concern),
-            "assessment": self._build_assessment_context(assessment),
-            "plant": self._build_plant_context(concern),
-            "identification": self._build_identification_context(concern),
+            "concern": self._build_concern_context(db, concern_id),
+            "assessment": self._build_assessment_context(
+                assessment,
+                previous_assessment,
+            ),
+            "plant": self._build_plant_context(db, concern_id),
+            "identification": self._build_identification_context(db, concern_id),
             "evidence": self._build_evidence_context(assessment),
             "previous_interactions": [
                 {
@@ -36,8 +43,14 @@ class AssessmentContextService(BaseModel):
 
     @staticmethod
     def _build_concern_context(
-        concern: HealthConcern,
+        db: Session,
+        concern_id: int,
     ) -> dict:
+
+        concern_service = HealthConcernService()
+
+        concern = concern_service.get_health_concern(db, concern_id)
+
         return {
             "id": concern.id,
             "initial_context": concern.initial_context,
@@ -49,16 +62,55 @@ class AssessmentContextService(BaseModel):
     @staticmethod
     def _build_assessment_context(
         assessment: Assessment,
+        previous_assessment: Assessment | None,
     ) -> dict:
-        return {
+
+        context = {
             "id": assessment.id,
             "status": assessment.status,
         }
 
+        if previous_assessment is not None:
+            recommendation = previous_assessment.recommendation
+            outcome = recommendation.outcome if recommendation else None
+
+            context["previous_assessment"] = {
+                "previous_assessment_id": previous_assessment.id,
+                "previous_assessment_status": previous_assessment.status,
+                "problem": previous_assessment.problem,
+                "problem_cause": previous_assessment.problem_cause,
+                "confidence": previous_assessment.confidence,
+                "explanation": previous_assessment.explanation,
+                "recommendation": (
+                    {
+                        "type": recommendation.recommendation_type,
+                        "description": recommendation.description,
+                        "performed_on": recommendation.performed_on,
+                    }
+                    if recommendation
+                    else None
+                ),
+                "outcome": (
+                    {
+                        "type": outcome.outcome_type,
+                        "description": outcome.description,
+                        "recorded_on": outcome.recorded_on,
+                    }
+                    if outcome
+                    else None
+                ),
+            }
+
+        return context
+
     @staticmethod
     def _build_plant_context(
-        concern: HealthConcern,
+        db,
+        concern_id: int,
     ) -> dict | None:
+        concern_service = HealthConcernService()
+
+        concern = concern_service.get_health_concern(db, concern_id)
 
         if concern.plant is None:
             return None
@@ -76,8 +128,13 @@ class AssessmentContextService(BaseModel):
 
     @staticmethod
     def _build_identification_context(
-        concern: HealthConcern,
+        db,
+        concern_id: int,
     ) -> dict | None:
+
+        concern_service = HealthConcernService()
+
+        concern = concern_service.get_health_concern(db, concern_id)
 
         if concern.identification is None:
             return None

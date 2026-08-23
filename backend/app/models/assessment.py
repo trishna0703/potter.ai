@@ -57,3 +57,9 @@ class Assessment(Base):
         foreign_keys=[current_interaction_id],
         post_update=True,
     )
+
+    recommendation: Mapped["Recommendation | None"] = relationship(
+        back_populates="assessment",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )

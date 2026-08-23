@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.assessment_evidence import AssessmentEvidence
+from app.models.concern_evidence import ConcernEvidence
 from app.models.evidence import Evidence
 
 

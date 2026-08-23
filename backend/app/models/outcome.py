@@ -11,8 +11,8 @@ class Outcome(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    concern_id: Mapped[int] = mapped_column(
-        ForeignKey("health_concerns.id"), nullable=False
+    recommendation_id: Mapped[int] = mapped_column(
+        ForeignKey("recommendations.id"), nullable=False, unique=True
     )
 
     outcome_type: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -23,6 +23,4 @@ class Outcome(Base):
         DateTime, default=datetime.today, nullable=False
     )
 
-    concern: Mapped["HealthConcern"] = relationship(
-        back_populates="outcomes", foreign_keys=[concern_id]
-    )
+    recommendation: Mapped["Recommendation"] = relationship(back_populates="outcome")

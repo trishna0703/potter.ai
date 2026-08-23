@@ -27,7 +27,7 @@ function App() {
               <Route path={ROUTES.CONCERNS} element={<HealthConcerns />} />
               <Route path={ROUTES.RAISE} element={<RaiseConcern />} />
               <Route
-                path={"/concerns/active/:concern_id"}
+                path={"/concerns/active/:assessment_id"}
                 element={<ChatInterface />}
               />
             </Route>
