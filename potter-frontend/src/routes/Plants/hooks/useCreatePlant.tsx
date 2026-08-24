@@ -2,7 +2,7 @@ import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
 import type { Plant } from "@/types/plantTypes";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import usePlant from "./usePlant";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
@@ -13,8 +13,9 @@ interface PlantFormData {
   location_type: string | undefined;
   height_cm: string;
   pot_size: string;
-  avatar: string | null;
   avatar_id?: number | null;
+  avatar?: string | null;
+  added_on: string | null;
 }
 
 const initialFormData: PlantFormData = {
@@ -23,8 +24,9 @@ const initialFormData: PlantFormData = {
   location_type: undefined,
   height_cm: "",
   pot_size: "",
-  avatar: null,
   avatar_id: null,
+  added_on: null,
+  avatar: null,
 };
 
 const createPlant = async (
@@ -60,7 +62,7 @@ export const useCreatePlantOperations = ({
   const { mutateAsync: createNewPlant } = useCreateOrUpdatePlant();
   const [formData, setFormData] = useState<PlantFormData>(initialFormData);
   const { invalidate } = usePlant();
-  const { handleFileChange, handleUpload } = usePhotoUpload();
+  const { handleFileChange } = usePhotoUpload();
 
   useEffect(() => {
     if (plant) {
@@ -69,15 +71,15 @@ export const useCreatePlantOperations = ({
         species: plant.species || "",
         location_type: plant.location_type || undefined,
         height_cm: plant.height_cm?.toString() || "",
-        avatar: plant.avatar || null,
         pot_size: plant.pot_size?.toString() || "",
-        avatar_id: plant.avatar_id || null,
+        avatar_id: plant.avatar_id,
+        added_on: plant.added_on ?? null,
+        avatar: plant.avatar,
       });
     }
   }, [plant]);
 
-  console.log({ plant });
-
+  console.log({formData})
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -102,8 +104,8 @@ export const useCreatePlantOperations = ({
     if (photo_url) setFormData((prev) => ({ ...prev, avatar: photo_url }));
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
     console.info("Process Add plant - STARTED");
     const added_on = new Date().toISOString().split("T")[0];
@@ -113,25 +115,11 @@ export const useCreatePlantOperations = ({
       location_type: formData.location_type ?? undefined,
       height_cm: formData.height_cm ? Number(formData.height_cm) : null,
       pot_size: formData.pot_size ? Number(formData.pot_size) : null,
+      avatar_id: formData.avatar_id,
       added_on,
     };
-    if (formData.avatar) {
-      console.log("Avatar upload detected. Initiating Photo Upload");
-      try {
-        let uploaded_photo = await handleUpload(formData.avatar);
 
-        console.info("Avatar upload SUCCESSFUL.");
-
-        payload.avatar_id = uploaded_photo.id;
-        payload.avatar = uploaded_photo.photo_url;
-      } catch (error) {
-        console.info("Avatar upload FAILED.");
-
-        toast(error instanceof Error ? error.message : "Something went wrong.");
-      }
-    }
-
-    if (plant) {
+    if (plant && plant.id) {
       console.info("Detected plant update.");
 
       payload["id"] = plant.id;

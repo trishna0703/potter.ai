@@ -48,7 +48,9 @@ def link_evidence_to_Assessment(
     evidence_id: int,
     db: Session,
 ) -> AssessmentEvidence:
-    new_assessment_evidence = AssessmentEvidence(assessment_id, evidence_id)
+    new_assessment_evidence = AssessmentEvidence(
+        assessment_id=assessment_id, evidence_id=evidence_id
+    )
 
     db.add(new_assessment_evidence)
     db.flush()

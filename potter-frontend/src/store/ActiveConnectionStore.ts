@@ -2,6 +2,7 @@ import type {
   AnswerValue,
   AssessmentServerMessage,
   AssessmentUIStatus,
+  QuestionServerMessage,
 } from "@/types/assessment";
 import type { AssessmentMessage } from "@/types/messages";
 import { create } from "zustand";
@@ -13,7 +14,7 @@ interface ActiveMessageState {
   setLatestMessage: (message: AssessmentServerMessage | null) => void;
   setInteractionState: (status: AssessmentUIStatus | null) => void;
   setMessages: (messages: AssessmentMessage[]) => void;
-
+  appendQuestion: (message: QuestionServerMessage) => void;
   appendUserAnswer: (interactionId: number, value: AnswerValue) => void;
 }
 
@@ -44,6 +45,36 @@ const useActiveMessages = create<ActiveMessageState>()((set) => ({
         },
       ],
     })),
+  appendQuestion: (message) =>
+    set((state) => {
+      // Never add the same interaction twice.
+      const alreadyExists = state.messages.some(
+        (item) => item.id === message.interaction_id,
+      );
+
+      if (alreadyExists) {
+        return state;
+      }
+
+      const nextSequence =
+        Math.max(0, ...state.messages.map((item) => item.sequence)) + 1;
+
+      return {
+        messages: [
+          ...state.messages,
+          {
+            id: message.interaction_id,
+            assessment_id: 0,
+            sequence: nextSequence,
+            role: "assistant",
+            message_type: "question",
+            payload: message.payload,
+            created_at: new Date().toISOString(),
+            optimistic: true,
+          },
+        ],
+      };
+    }),
 }));
 
 export default useActiveMessages;

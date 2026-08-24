@@ -2,15 +2,16 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
-from app.routes.plants import get_plant_list_for_species
-from app.routes.upload import UploadRequestModel, upload_plant_photo
+from app.routes.upload import (
+    UploadRequestModel,
+    handle_photo_upload_and_links,
+)
 from app.routes.users import get_current_user
-from app.services.helper_services import create_new_evidence, link_photo_to_evidence
+from app.services.plant_service import PlantService
 from app.services.s3_service import generate_download_url
 from app.services.identification_ai import IdentificationAI
 from app.models import PlantIdentification, Plant
 from datetime import datetime
-from sqlalchemy import select
 from pydantic import BaseModel
 from app.schemas.plant import PlantResponse, plant_to_response
 
@@ -50,25 +51,12 @@ def plant_idenfication_entry_point(
     db: Session = Depends(get_db),
 ) -> IdentificationResponse:
 
-    # upload to plantphoto
-    plant_photo = upload_plant_photo(photo, current_user, db)
-
-    # upload to evidence
-    evidence = create_new_evidence(
-        photo_url=plant_photo.photo_url,
-        occurred_on=plant_photo.captured_on,
-        user_id=current_user.id,
-        db=db,
-    )
-
-    #  upload to evidence photo
-    link_photo_to_evidence(evidence_id=evidence.id, photo_id=plant_photo.id, db=db)
-
+    photo_evidence = handle_photo_upload_and_links(photo, current_user, db)
     # call identify_and_save
     identified_plant = identify_and_save(
         concern_id=None,
-        evidence_id=evidence.id,
-        photo_id=plant_photo.id,
+        evidence_id=photo_evidence["evidence_id"],
+        photo_id=photo_evidence["photo_id"],
         initial_context="",
         current_user=current_user,
         db=db,
@@ -131,7 +119,8 @@ def identify_plant_from_photo(
     client = IdentificationAI()
     result = client.identify_plant(photo=download_url, initial_context=initial_context)
 
-    found_plants = get_plant_list_for_species(
+    plant_service = PlantService()
+    found_plants = plant_service.get_plant_list_for_species(
         species=result.species, user_id=current_user.id, db=db
     )
 

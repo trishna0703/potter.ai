@@ -21,18 +21,18 @@ class AssessmentFlowService:
         self.context_service = context_service
 
     def generate_next_interaction(
-        self,
-        db: Session,
-        *,
-        concern_id: int,
-        assessment,
+        self, db: Session, *, concern_id: int, user_id: int, assessment
     ):
         previous_assessment = self.assessment_service.get_previous_assessment(
             db, concern_id=concern_id, current_assessment_id=assessment.id
         )
 
         context = self.context_service.build_context(
-            db, concern_id, assessment, previous_assessment
+            db,
+            concern_id=concern_id,
+            assessment=assessment,
+            previous_assessment=previous_assessment,
+            user_id=user_id,
         )
 
         ai_response = self.ai_service.generate_next_interaction(context)
@@ -134,6 +134,7 @@ class AssessmentFlowService:
         assessment,
         interaction_id: int,
         value,
+        user_id: int,
     ):
         assessment = self.assessment_service.get_assessment(
             db,
@@ -184,7 +185,5 @@ class AssessmentFlowService:
         db.commit()
 
         return self.generate_next_interaction(
-            db,
-            concern_id=concern_id,
-            assessment=assessment,
+            db, concern_id=concern_id, assessment=assessment, user_id=user_id
         )

@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.session import UserSession
+from app.models.user import User
 
 
 def get_session(session_id: str, db: Session):
@@ -18,7 +19,7 @@ def get_session(session_id: str, db: Session):
     return db.scalars(stmt).first()
 
 
-def get_user_by_session(session_id: str, db: Session):
+def get_user_by_session(session_id: str, db: Session) -> User:
 
     current_session = get_session(session_id, db)
     if current_session is None:

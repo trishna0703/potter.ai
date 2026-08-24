@@ -1,7 +1,6 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
-import { getToday } from "#lib/utils";
-import type { PlantPhotoUploadResponse } from "@/types/plantTypes";
+import type { PlantPhotoUploadResponse, UploadPlantPhotoRequest } from "@/types/plantTypes";
 
 const usePhotoUpload = () => {
   const handleFileChange = async (
@@ -55,19 +54,19 @@ const usePhotoUpload = () => {
     };
   };
 
-  const handleUpload = async (
-    url: string,
+  const handleUploadPlantPhoto = async (
+    payload: UploadPlantPhotoRequest,
   ): Promise<PlantPhotoUploadResponse> => {
     return await apiClient(API_ENDPOINTS.UPLOAD, {
       method: "POST",
-      body: JSON.stringify({ photo_url: url, captured_on: getToday() }),
+      body: JSON.stringify(payload),
     });
   };
 
   return {
     getPresignURL,
     handleFileChange,
-    handleUpload,
+    handleUploadPlantPhoto,
   };
 };
 

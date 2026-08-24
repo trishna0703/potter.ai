@@ -28,29 +28,31 @@ const ChatInterface = () => {
   if (interactionState === "connecting" || isLoading) {
     return <AssessmentSkeleton />;
   }
+
   if (isError) {
     return <div>Something went wrong. Refresh the page.</div>;
   }
 
+  console.log({ messages });
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className="flex flex-col relative h-[calc(100vh-7rem)]">
       {/* Conversation history */}
       <ScrollArea className="flex-1">
-        <div className="mx-auto w-full max-w-3xl px-4 py-8">
-          <AssessmentMessageList messages={historyMessages} />
-        </div>
+        <AssessmentMessageList messages={historyMessages} />
       </ScrollArea>
 
       {messages.length === 0 && interactionState === "waiting_for_ai" && (
-        <div className="py-8 text-center">
+        <div className="py-8 text-center absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+          <img src="/loading.svg" />
+          <p className="text-lg text-primary">Your assessment has started.</p>
           <p className="text-sm text-muted-foreground">
-            Your assessment has started.
+            Please wait while we analyse the issue.
           </p>
         </div>
       )}
 
       {/* Current interaction */}
-      <div className="shrink-0 border-t bg-background">
+      <div className="shrink-0 bg-background">
         <div className="mx-auto w-full max-w-3xl px-4 py-6">
           <LatestMessageSection sendMessage={sendMessage} />
         </div>

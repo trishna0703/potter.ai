@@ -101,9 +101,4 @@ def update_plant(
     return plant_to_response(plant)
 
 
-def get_plant_list_for_species(species: str, user_id: int, db: Session) -> list[Plant]:
-    stmt = select(Plant).where(Plant.species == species, Plant.user_id == user_id)
 
-    found_plants = db.scalars(stmt).all()
-
-    return found_plants

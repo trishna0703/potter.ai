@@ -1,3 +1,4 @@
+import useActiveMessages from "@/store/ActiveConnectionStore";
 import type { AssessmentMessage } from "@/types/messages";
 
 type AssessmentMessageListProps = {
@@ -42,6 +43,7 @@ const getAnswerText = (message: AssessmentMessage) => {
 };
 
 const AssessmentMessageList = ({ messages }: AssessmentMessageListProps) => {
+  const { interactionState } = useActiveMessages();
   const sortedMessages = messages
     .slice()
     .sort((a, b) => a.sequence - b.sequence);
@@ -51,53 +53,63 @@ const AssessmentMessageList = ({ messages }: AssessmentMessageListProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      {sortedMessages.map((message) => {
-        const isAssistant = message.role === "assistant";
+    <div className="mx-auto w-full max-w-3xl px-4 py-8 min-h-0 ">
+      <div className="flex flex-col gap-5">
+        {sortedMessages.map((message) => {
+          const isAssistant = message.role === "assistant";
 
-        const content =
-          message.message_type === "question"
-            ? getQuestionText(message)
-            : message.message_type === "answer"
-              ? getAnswerText(message)
-              : null;
+          const content =
+            message.message_type === "question"
+              ? getQuestionText(message)
+              : message.message_type === "answer"
+                ? getAnswerText(message)
+                : null;
 
-        if (!content) {
-          return null;
-        }
+          if (!content) {
+            return null;
+          }
 
-        return (
-          <div
-            key={message.id}
-            className={[
-              "flex w-full",
-              isAssistant ? "justify-start" : "justify-end",
-            ].join(" ")}
-          >
+          return (
             <div
+              key={message.id}
               className={[
-                "max-w-[85%] rounded-2xl px-4 py-3 shadow-sm",
-                isAssistant
-                  ? "rounded-bl-md border bg-card"
-                  : "rounded-br-md bg-primary text-primary-foreground",
+                "flex w-full",
+                isAssistant ? "justify-start" : "justify-end",
               ].join(" ")}
             >
               <div
                 className={[
-                  "mb-1.5 text-xs font-medium",
+                  "max-w-[85%] rounded-2xl px-4 py-3 shadow-sm",
                   isAssistant
-                    ? "text-muted-foreground"
-                    : "text-primary-foreground/70",
+                    ? "rounded-bl-md border bg-card"
+                    : "rounded-br-md bg-primary text-primary-foreground",
                 ].join(" ")}
               >
-                {isAssistant ? "Potter.ai" : "You"}
-              </div>
+                <div
+                  className={[
+                    "mb-1.5 text-xs font-medium",
+                    isAssistant
+                      ? "text-muted-foreground"
+                      : "text-primary-foreground/70",
+                  ].join(" ")}
+                >
+                  {isAssistant ? "Potter.ai" : "You"}
+                </div>
 
-              <p className="whitespace-pre-wrap text-sm leading-6">{content}</p>
+                <p className="whitespace-pre-wrap text-sm leading-6">
+                  {content}
+                </p>
+              </div>
             </div>
+          );
+        })}
+        {interactionState === "waiting_for_ai" ? (
+          <div className="flex items-center">
+            <img src="/thinking.svg" className="w-15" alt="" />
+            <span className="text-muted-foreground text-sm">Analysing...</span>
           </div>
-        );
-      })}
+        ) : null}
+      </div>
     </div>
   );
 };

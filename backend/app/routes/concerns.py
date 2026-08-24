@@ -4,6 +4,10 @@ from app.models import (
     HealthConcern,
     PlantIdentification,
 )
+from app.models.assessment import Assessment
+from app.models.evidence import Evidence
+from app.models.evidence_photo import EvidencePhoto
+from app.models.plant import Plant
 from app.models.plant_photo import PlantPhoto
 from app.routes.users import get_current_user
 from app.database import get_db
@@ -18,6 +22,7 @@ from app.services.helper_services import (
     link_evidence_to_concern,
 )
 from app.schemas.route import RequestModel, ResponseModel
+from app.services.s3_service import generate_download_url
 
 router = APIRouter()
 
@@ -27,11 +32,50 @@ def get_active_concerns(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
 
+    latest_assessment_id = (
+        select(Assessment.id)
+        .where(
+            Assessment.concern_id == HealthConcern.id,
+        )
+        .order_by(Assessment.id.desc())
+        .limit(1)
+        .correlate(HealthConcern)
+        .scalar_subquery()
+    )
+
     stmt = (
-        select(HealthConcern, PlantIdentification.species)
+        select(
+            HealthConcern,
+            Plant.species.label("species"),
+            PlantIdentification.species.label("identified_species"),
+            PlantPhoto.id.label("photo_id"),
+            PlantPhoto.photo_url,
+            latest_assessment_id.label("assessment_id"),
+        )
+        .outerjoin(
+            Plant,
+            Plant.id == HealthConcern.plant_id,
+        )
         .outerjoin(
             PlantIdentification,
             PlantIdentification.concern_id == HealthConcern.id,
+        )
+        .outerjoin(
+            Evidence,
+            Evidence.id == HealthConcern.initial_evidence_id,
+        )
+        .outerjoin(
+            EvidencePhoto,
+            EvidencePhoto.evidence_id == Evidence.id,
+        )
+        .outerjoin(
+            PlantPhoto,
+            PlantPhoto.id == EvidencePhoto.photo_id,
+        )
+        .outerjoin(
+            Assessment,
+            (Assessment.concern_id == HealthConcern.id)
+            & (Assessment.status.in_(["WAITING_FOR_AI", "WAITING_FOR_USER"])),
         )
         .where(
             HealthConcern.user_id == current_user.id,
@@ -40,17 +84,23 @@ def get_active_concerns(
     )
 
     concerns = db.execute(stmt).all()
+
     return [
         {
             "id": concern.id,
             "plant_id": concern.plant_id,
-            "initial_context": concern.initial_context,
-            "status": concern.status,
+            "identified_species": (
+                plant_species if plant_species is not None else identified_species
+            ),
+            "photo_url": photo_url,
+            "photo_id": photo_id,
             "occurred_on": concern.occurred_on,
             "reported_on": concern.reported_on,
-            "identified_species": species,
+            "status": concern.status,
+            "initial_context": concern.initial_context,
+            "assessment_id": assessment_id,
         }
-        for concern, species in concerns
+        for concern, plant_species, identified_species, photo_id, photo_url, assessment_id in concerns
     ]
 
 
@@ -85,7 +135,11 @@ def raise_concern(
         db.rollback()
         raise
 
-    return {"concern_id": new_concern.id, "assessment_id": new_assessment.id}
+    return {
+        "concern_id": new_concern.id,
+        "status": "OPEN",
+        "assessment_id": new_assessment.id,
+    }
 
 
 @router.post("/reassessment", response_model=ResponseModel)

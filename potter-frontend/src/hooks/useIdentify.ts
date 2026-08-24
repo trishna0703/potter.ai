@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 type IdentifyPayload = {
   photo_url: string;
   captured_on: string;
+  plant_id?: number;
 };
 
 const identifyPlant = async (

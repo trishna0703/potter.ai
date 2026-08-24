@@ -3,15 +3,21 @@ import { useNavigate } from "react-router-dom";
 
 import { formatRelativeDate } from "./utils/draft-concern-utils";
 import useGetConcerns from "./hooks/useGetConcerns";
-import { ROUTES } from "#lib/routes";
+import { ROUTES, S3_URL } from "#lib/routes";
+import usePlantStore from "@/store/PlantStore";
+import usePlantIdentityStore, {
+  type PlantIdentificationResponse,
+} from "@/store/PlantIdentificationStore";
+import Overlay from "#components/layout/Overlay";
 
 const HealthConcerns = ({}) => {
   const { allActiveConcerns } = useGetConcerns();
-
+  const { setShowForm } = usePlantStore();
+  const { setPlantIdentity } = usePlantIdentityStore();
   const navigate = useNavigate();
 
   return (
-    <div className="p-6">
+    <div className="sm:p-6">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Health Concerns</h1>
@@ -21,34 +27,64 @@ const HealthConcerns = ({}) => {
         </div>
       </header>
 
+      {allActiveConcerns.isLoading ? <Overlay /> : null}
       {allActiveConcerns && allActiveConcerns.data ? (
         <section className="h-auto flex flex-col gap-4 pt-8 w-full">
-          <h2>Active concerns</h2>
-          <div className="flex gap-4 flex-wrap">
+          <h2 className="text-muted-foreground text-sm font-bold">Active</h2>
+          <div className="flex gap-4 flex-col">
             {allActiveConcerns.data.map((concern) => (
               <div
                 key={concern.id}
-                className="flex flex-col gap-2 items-center"
+                className="flex gap-4 border-[0.5px] rounded-xl flex-col sm:flex-row"
               >
-                <Button
-                  variant={"outline"}
-                  className={
-                    "h-20 w-20 px-0 rounded-2xl overflow-hidden shadow-xl cursor-pointer"
-                  }
-                  onClick={() =>
-                    navigate(`${ROUTES.CONCERNSACTIVE}/${concern.id}`)
-                  }
-                >
-                  {/* <img
-                    src={S3_URL + "/" + concern.object_key}
+                <div className="object-cover w-full sm:w-2/5 lg:w-1/4 max-h-48 sm:max-h-64 lg:max-h-48 overflow-hidden">
+                  <img
+                    src={S3_URL + "/" + concern.photo_url}
                     alt=""
-                    className="size-full"
-                  /> */}
-                </Button>
+                    className="size-full object-cover sm:rounded-l-xl rounded-t-xl rounded-b-none sm:rounded-r-none"
+                  />
+                </div>
 
-                <p className="text-primary/50 text-xs">
-                  {formatRelativeDate(concern.reported_on)}
-                </p>
+                <div className="flex gap-4 lg:flex-row flex-col p-6 w-full sm:w-3/5 lg:w-3/4">
+                  <div className="flex flex-col h-full lg:w-2/3 gap-2">
+                    <h3 className="text-md font-semibold text-primary">
+                      {concern.identified_species}
+                    </h3>
+                    <p className="text-sm">{concern.initial_context}</p>
+                    <p className="text-primary/50 text-xs">
+                      {formatRelativeDate(concern.reported_on)}
+                    </p>
+                  </div>
+
+                  <div className="flex lg:flex-col gap-2 lg:justify-center">
+                    <Button
+                      className={"lg:w-48"}
+                      onClick={() =>
+                        navigate(
+                          `${ROUTES.CONCERNSACTIVE}/${concern.assessment_id}`,
+                        )
+                      }
+                    >
+                      View Concern
+                    </Button>
+                    {!concern.plant_id ? (
+                      <Button
+                        className={"lg:w-48"}
+                        variant={"secondary"}
+                        onClick={() => {
+                          setShowForm(true);
+                          setPlantIdentity({
+                            species: concern.identified_species,
+                            photo_id: concern.photo_id,
+                            photo_url: concern.photo_url,
+                          } as PlantIdentificationResponse);
+                        }}
+                      >
+                        Add plant
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             ))}
           </div>

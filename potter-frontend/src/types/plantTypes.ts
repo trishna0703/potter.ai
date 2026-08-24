@@ -34,9 +34,12 @@ export interface PlantUpdate {
 }
 
 export type PlantPhotoUploadResponse = {
-  id: number;
+  photo_id: number;
+  evidence_id: number;
+};
+
+export type UploadPlantPhotoRequest = {
   photo_url: string;
   captured_on: string;
-  uploaded_on: string;
-  expires_on: string;
+  plant_id: number;
 };

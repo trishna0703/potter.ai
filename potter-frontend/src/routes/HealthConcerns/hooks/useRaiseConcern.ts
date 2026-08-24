@@ -1,6 +1,5 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
-import type { PlantIdentificationResponse } from "@/store/PlantIdentificationStore";
 
 interface RaiseConcernPayload {
   submission_id: string;
@@ -19,7 +18,7 @@ const useRaiseConcern = () => {
   const raiseConcern = async (
     payload: RaiseConcernPayload,
   ): Promise<NewConcernResponse> => {
-    return await apiClient(API_ENDPOINTS.CONCERN, {
+    return await apiClient(API_ENDPOINTS.CONCERN_ASSESSMENT, {
       method: "POST",
       body: JSON.stringify(payload),
     });

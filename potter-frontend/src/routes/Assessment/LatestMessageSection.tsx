@@ -26,9 +26,7 @@ const QuestionAnswerView = ({
 
   return interactionState == "waiting_for_user" ? (
     <FormRenderer onSubmit={onSubmit} latestMessage={latestMessage} />
-  ) : (
-    <div>Thinking...</div>
-  );
+  ) : null;
 };
 
 // -----------------------------Latest message View -------------------------------
@@ -38,10 +36,6 @@ const LatestMessageSection = ({
   sendMessage: (id: number, value: AnswerValue) => void;
 }) => {
   const { latestMessage, interactionState } = useActiveMessages();
-
-  if (interactionState == "connecting") {
-    return <Overlay />;
-  }
 
   if (!latestMessage) return null;
 

@@ -3,15 +3,20 @@ import { useParams } from "react-router-dom";
 
 import { AssessmentWebSocket } from "../utils/assessment_websocket";
 import useActiveMessages from "@/store/ActiveConnectionStore";
-import type { AnswerValue } from "@/types/assessment";
+import type { AnswerValue, AssessmentServerMessage } from "@/types/assessment";
 
 export default function useAssessmentConnection() {
-  const { concern_id } = useParams<{ concern_id: string }>();
+  const { assessment_id } = useParams<{ assessment_id: string }>();
 
-  const concernId = Number(concern_id);
+  const concernId = Number(assessment_id);
 
-  const { setLatestMessage, setInteractionState, appendUserAnswer } =
-    useActiveMessages();
+  const {
+    latestMessage,
+    setLatestMessage,
+    setInteractionState,
+    appendUserAnswer,
+    appendQuestion,
+  } = useActiveMessages();
 
   const assessmentSocketRef = useRef<AssessmentWebSocket | null>(null);
 
@@ -78,9 +83,20 @@ export default function useAssessmentConnection() {
     if (!socket) {
       throw new Error("Assessment WebSocket is not initialized.");
     }
-    socket.sendAnswer(interactionId, value);
-    setInteractionState("waiting_for_ai");
+
+    if (!latestMessage || latestMessage.type !== "question") {
+      return;
+    }
+
+    appendQuestion(latestMessage);
+
     appendUserAnswer(interactionId, value);
+
+    setLatestMessage(null);
+
+    setInteractionState("waiting_for_ai");
+
+    socket.sendAnswer(interactionId, value);
   };
 
   return {

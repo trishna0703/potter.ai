@@ -14,6 +14,7 @@ class AssessmentContextService(BaseModel):
         db: Session,
         concern_id: int,
         assessment: Assessment,
+        user_id: int,
         previous_assessment: Assessment | None = None,
     ) -> dict:
 
@@ -30,7 +31,7 @@ class AssessmentContextService(BaseModel):
             ),
             "plant": self._build_plant_context(db, concern_id),
             "identification": self._build_identification_context(db, concern_id),
-            "evidence": self._build_evidence_context(assessment),
+            "evidence": self._build_evidence_context(db, user_id, assessment),
             "previous_interactions": [
                 {
                     "role": message.role,
@@ -148,6 +149,8 @@ class AssessmentContextService(BaseModel):
 
     @staticmethod
     def _build_evidence_context(
+        db: Session,
+        user_id: int,
         assessment: Assessment,
     ) -> list[dict]:
         evidence_context = []
@@ -157,8 +160,10 @@ class AssessmentContextService(BaseModel):
                 evidence_context.append(
                     {
                         "evidence_id": evidence.id,
-                        "photo_id": evidence_photo.photo_id,
-                        "photo_url": generate_download_url(evidence_photo.photo_id),
+                        "photo_id": evidence_photo.id,
+                        "photo_url": generate_download_url(
+                            photo_id=evidence_photo.id, user_id=user_id, db=db
+                        ),
                     }
                 )
 

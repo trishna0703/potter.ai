@@ -21,6 +21,7 @@ import IdentifiedPlantModal from "#components/utils/IdentifiedPlantModal";
 import CreatePlantForm from "@/routes/Plants/components/CreatePlantForm";
 import Overlay from "./Overlay";
 import { useLogout } from "@/routes/Login/useAuth";
+import usePlantStore from "@/store/PlantStore";
 
 type MenuType = {
   label: string;
@@ -105,13 +106,12 @@ const Menu = () => {
 };
 const Navbar = () => {
   const { handleFileChange } = usePhotoUpload();
-  const [showPlantForm, setShowPlantForm] = useState(false);
   const { mutateAsync: runAIIdentification } = useIdentify();
   const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
   const [isLoadingIdentification, setIsLoadingIdentification] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { showForm, setShowForm } = usePlantStore();
 
-  
   const onPhotoSelected = async (
     event: React.ChangeEvent<HTMLInputElement, Element>,
   ) => {
@@ -142,7 +142,7 @@ const Navbar = () => {
       {isLoadingIdentification ? <Overlay /> : null}
 
       <IdentifiedPlantModal
-        createPlant={() => setShowPlantForm(true)}
+        createPlant={() => setShowForm(true)}
         {...{ isOpen, setIsOpen }}
       />
 
@@ -153,8 +153,8 @@ const Navbar = () => {
           species: plantIdentity?.species,
           avatar: plantIdentity?.photo_url,
         }}
-        open={showPlantForm}
-        onClose={() => setShowPlantForm(false)}
+        open={showForm}
+        onClose={() => setShowForm(false)}
       />
     </>
   );

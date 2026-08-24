@@ -15,3 +15,4 @@ class RequestModel(BaseModel):
 
 class ResponseModel(BaseModel):
     concern_id: int
+    assessment_id: int

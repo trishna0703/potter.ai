@@ -13,7 +13,7 @@ const AppShell = () => {
       <div className="flex h-[calc(100vh-64px)] overflow-hidden">
         <Sidebar />
 
-        <main className="min-w-0 flex-1 overflow-y-auto p-6">
+        <main className="min-w-0 flex-1 overflow-y-auto p-6 relative">
           <Outlet />
         </main>
       </div>

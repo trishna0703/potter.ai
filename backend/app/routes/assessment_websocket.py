@@ -85,6 +85,7 @@ async def health_concern_websocket(
                 db,
                 concern_id=assessment.concern_id,
                 assessment=assessment,
+                user_id=user.id,
             )
 
             await send_interaction(websocket, interaction)
@@ -127,6 +128,7 @@ async def health_concern_websocket(
                     assessment=assessment,
                     interaction_id=message.interaction_id,
                     value=message.payload.get("value"),
+                    user_id=user.id,
                 )
 
                 await send_interaction(websocket, interaction)
