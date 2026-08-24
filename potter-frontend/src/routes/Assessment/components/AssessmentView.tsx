@@ -1,7 +1,9 @@
 import { Badge } from "#components/ui/badge";
+import { formatLabel } from "#lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import type { AssessmentResultServerMessage } from "@/types/assessment";
+import { InfoIcon } from "lucide-react";
 
 type AssessmentViewProps = {
   latestMessage: AssessmentResultServerMessage;
@@ -37,7 +39,9 @@ const AssessmentView = ({ latestMessage }: AssessmentViewProps) => {
           <div>
             <p className="text-sm text-muted-foreground">Assessment complete</p>
 
-            <CardTitle className="mt-1 text-2xl">{problem}</CardTitle>
+            <CardTitle className="mt-1 text-2xl">
+              {formatLabel(problem)}
+            </CardTitle>
           </div>
 
           <Badge
@@ -53,7 +57,7 @@ const AssessmentView = ({ latestMessage }: AssessmentViewProps) => {
         <section className="space-y-2">
           <h3 className="font-medium">Likely cause</h3>
 
-          <p className="text-muted-foreground">{problem_cause}</p>
+          <p className="text-muted-foreground">{formatLabel(problem_cause)}</p>
         </section>
 
         <section className="space-y-2">
@@ -62,10 +66,12 @@ const AssessmentView = ({ latestMessage }: AssessmentViewProps) => {
           <p className="leading-7 text-muted-foreground">{explanation}</p>
         </section>
 
-        <div className="rounded-lg bg-muted/50 p-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="rounded-lg bg-muted/50 p-4 flex gap-2">
+        <InfoIcon className="size-5 text-muted-foreground"/>
+          <p className="text-xs text-muted-foreground">
             This assessment is based on the information and evidence provided
-            during this investigation.
+            during this investigation. If you are not satisfied, you can request
+            a reassessment.
           </p>
         </div>
       </CardContent>
