@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     openai_api_key: str
     openrouter_api_key: str
     ai_model: str
+    frontend_url:str
 
     class Config:
         env_file = ".env"
