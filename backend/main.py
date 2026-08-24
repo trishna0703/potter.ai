@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter
 
-from app.config import Settings
+from app.config import settings
 from app.routes import (
     assessment_websocket,
     auth,
@@ -17,7 +17,7 @@ router = APIRouter()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[Settings.frontend_url],
+    allow_origins=[settings.frontend_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
