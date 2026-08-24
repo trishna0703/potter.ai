@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import useUserStore from "../../store/UserStore";
 import { API_ENDPOINTS } from "#lib/endpoints";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import apiClient from "#lib/client";
 
 export default function useAuth() {

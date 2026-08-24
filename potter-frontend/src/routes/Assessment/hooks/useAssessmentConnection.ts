@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 import { AssessmentWebSocket } from "../utils/assessment_websocket";
 import useActiveMessages from "@/store/ActiveConnectionStore";
-import type { AnswerValue, AssessmentServerMessage } from "@/types/assessment";
+import type { AnswerValue } from "@/types/assessment";
 
 export default function useAssessmentConnection() {
   const { assessment_id } = useParams<{ assessment_id: string }>();
