@@ -74,7 +74,7 @@ def login_with_google(
         value=session_token,
         httponly=True,
         secure=False,
-        samesite="lax",
+        samesite="none",
         max_age=60 * 60 * 24 * 30,
     )
 
