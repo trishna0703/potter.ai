@@ -41,8 +41,12 @@ const Login = () => {
         <p className="text-muted-foreground">
           Continue caring for your plants.
         </p>
-        <span className="w-2/3">
-          <GoogleLogin onSuccess={responseMessage} onError={errorMessage} />
+        <span className="w-2/3 flex justify-center">
+          <GoogleLogin
+            onSuccess={responseMessage}
+            onError={errorMessage}
+            width={200}
+          />
         </span>
       </Card>
     </main>
