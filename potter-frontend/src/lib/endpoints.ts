@@ -1,4 +1,4 @@
-import { API_BASE_URL, API_URL } from "./routes";
+import { API_URL } from "./routes";
 
 /** Add application endpoints here as they are defined. */
 export const API_ENDPOINTS = {
@@ -14,7 +14,7 @@ export const API_ENDPOINTS = {
   CONCERNS: `${API_URL}/concerns/`,
   CONCERN_ASSESSMENT: `${API_URL}/concerns/assessment`,
   MESSAGES: (id: number) => `${API_URL}/concerns/${id}/messages`,
-  ASSESSMENT_WS: `${API_BASE_URL}/api/concern/ws`,
+  ASSESSMENT_WS: `${API_URL}/concern/ws`,
   IDENTIFY: `${API_URL}/identify/`,
   LOGOUT: `${API_URL}/auth/logout`,
 };
