@@ -1,4 +1,3 @@
-
 import useActiveMessages from "@/store/ActiveConnectionStore";
 
 import type {
@@ -33,6 +32,7 @@ const LatestMessageSection = ({
   sendMessage,
 }: {
   sendMessage: (id: number, value: AnswerValue) => void;
+ 
 }) => {
   const { latestMessage, interactionState } = useActiveMessages();
 
@@ -46,7 +46,9 @@ const LatestMessageSection = ({
         />
       );
     case "assessment":
-      return <AssessmentView {...{ latestMessage }} />;
+      return (
+        <AssessmentView latestMessage={latestMessage}  />
+      );
     case "error":
       return <AssessmentError error={latestMessage.payload} />;
     default:

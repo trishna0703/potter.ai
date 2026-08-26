@@ -72,8 +72,7 @@ class AssessmentContextService(BaseModel):
         }
 
         if previous_assessment is not None:
-            recommendation = previous_assessment.recommendation
-            outcome = recommendation.outcome if recommendation else None
+            recommendations = previous_assessment.recommendations
 
             context["previous_assessment"] = {
                 "previous_assessment_id": previous_assessment.id,
@@ -82,24 +81,26 @@ class AssessmentContextService(BaseModel):
                 "problem_cause": previous_assessment.problem_cause,
                 "confidence": previous_assessment.confidence,
                 "explanation": previous_assessment.explanation,
-                "recommendation": (
+                "recommendations": [
                     {
-                        "type": recommendation.recommendation_type,
-                        "description": recommendation.description,
+                        "id": recommendation.id,
+                        "option_id": recommendation.option_id,
+                        "title": recommendation.title,
+                        "summary": recommendation.summary,
+                        "recommendation_score": recommendation.recommendation_score,
                         "performed_on": recommendation.performed_on,
+                        "outcome": (
+                            {
+                                "type": recommendation.outcome.outcome_type,
+                                "description": recommendation.outcome.description,
+                                "recorded_on": recommendation.outcome.recorded_on,
+                            }
+                            if recommendation.outcome
+                            else None
+                        ),
                     }
-                    if recommendation
-                    else None
-                ),
-                "outcome": (
-                    {
-                        "type": outcome.outcome_type,
-                        "description": outcome.description,
-                        "recorded_on": outcome.recorded_on,
-                    }
-                    if outcome
-                    else None
-                ),
+                    for recommendation in recommendations
+                ],
             }
 
         return context

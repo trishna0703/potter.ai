@@ -24,12 +24,12 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.get("/api")
 def root():
     return {"message": "Potter.ai backend is running."}
 
 
-@app.get("/health")
+@app.get("/api/health")
 def health_check():
     return {"status": "Running ok."}
 

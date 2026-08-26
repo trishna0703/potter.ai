@@ -4,6 +4,7 @@ from app.services.assessment_service import AssessmentService
 from app.services.interaction_service import InteractionService
 from app.services.assessment_ai import AssessmentAIService
 from app.services.assessment_context_service import AssessmentContextService
+from app.services.recommendation_service import RecommendationService
 
 
 class AssessmentFlowService:
@@ -113,6 +114,10 @@ class AssessmentFlowService:
             assessment_id=assessment.id,
             status="COMPLETED",
         )
+
+        recommendation_service = RecommendationService()
+
+        
 
         message = self.message_service.create_assessment_message(
             db,

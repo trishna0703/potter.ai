@@ -37,8 +37,6 @@ const AssessmentView = ({ latestMessage }: AssessmentViewProps) => {
       <CardHeader className="space-y-3">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">Assessment complete</p>
-
             <CardTitle className="mt-1 text-2xl">
               {formatLabel(problem)}
             </CardTitle>
@@ -67,7 +65,7 @@ const AssessmentView = ({ latestMessage }: AssessmentViewProps) => {
         </section>
 
         <div className="rounded-lg bg-muted/50 p-4 flex gap-2">
-        <InfoIcon className="size-5 text-muted-foreground"/>
+          <InfoIcon className="size-5 text-muted-foreground" />
           <p className="text-xs text-muted-foreground">
             This assessment is based on the information and evidence provided
             during this investigation. If you are not satisfied, you can request

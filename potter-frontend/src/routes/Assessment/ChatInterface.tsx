@@ -8,15 +8,36 @@ import LatestMessageSection from "./LatestMessageSection";
 import useAssessmentConnection from "./hooks/useAssessmentConnection";
 import AssessmentSkeleton from "./components/AssessmentSkeleton";
 import useAssessmentMessages from "./hooks/useAssessmentMessages";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import useRaiseConcern from "../HealthConcerns/hooks/useRaiseConcern";
+import { ROUTES } from "#lib/routes";
+import { showErrorToast } from "#lib/utils";
+import { Button } from "#components/ui/button";
+import Recommendations from "./components/Recommendations";
 
 const ChatInterface = () => {
   const params = useParams();
+  const navigate = useNavigate();
+
   const assessmentId = params.assessment_id;
+
   const { messages, latestMessage, interactionState } = useActiveMessages();
+
   const { isLoading, isError } = useAssessmentMessages(Number(assessmentId));
 
   const { sendMessage } = useAssessmentConnection();
+
+  const { reassess } = useRaiseConcern();
+
+  const handleReassessment = async () => {
+    try {
+      const result = await reassess({ concern_id: Number(assessmentId) });
+      navigate(`${ROUTES.CONCERNSACTIVE}/${result.assessment_id}`);
+    } catch (error) {
+      console.error("Reassessment failed:", error);
+      showErrorToast(error);
+    }
+  };
 
   const historyMessages: AssessmentMessage[] =
     latestMessage?.type === "question"
@@ -33,7 +54,6 @@ const ChatInterface = () => {
     return <div>Something went wrong. Refresh the page.</div>;
   }
 
-  console.log({ messages });
   return (
     <div className="flex flex-col relative h-[calc(100vh-7rem)]">
       {/* Conversation history */}
@@ -56,6 +76,17 @@ const ChatInterface = () => {
         <div className="mx-auto w-full max-w-3xl px-4 py-6">
           <LatestMessageSection sendMessage={sendMessage} />
         </div>
+      </div>
+
+      {/* Recommendations */}
+      <Recommendations />
+      <div className="flex justify-end gap-4 items-center">
+        <span className="font-semibold text-muted-foreground text-sm">
+          Not satisfied with the result?
+        </span>
+        <Button onClick={handleReassessment} variant={"outline"}>
+          Request Reassessment
+        </Button>
       </div>
     </div>
   );

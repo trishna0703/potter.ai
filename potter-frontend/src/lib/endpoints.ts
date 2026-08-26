@@ -13,8 +13,10 @@ export const API_ENDPOINTS = {
   UPLOAD: `${API_URL}/uploads/`,
   CONCERNS: `${API_URL}/concerns/`,
   CONCERN_ASSESSMENT: `${API_URL}/concerns/assessment`,
+  CONCERN_REASSESS: `${API_URL}/concerns/reassess`,
   MESSAGES: (id: number) => `${API_URL}/concerns/${id}/messages`,
   ASSESSMENT_WS: `${API_BASE_URL}/api/concern/ws`,
   IDENTIFY: `${API_URL}/identify/`,
   LOGOUT: `${API_URL}/auth/logout`,
+  RECOMMENDATIONS: `${API_URL}/concerns/recommendations`,
 };
