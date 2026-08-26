@@ -17,7 +17,9 @@ export class AssessmentWebSocket {
   ) {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 
-    const url = `${protocol}//` + `${API_ENDPOINTS.ASSESSMENT_WS}/${concernId}`;
+    const url =
+      `${protocol}//` +
+      `${window.location.host}${API_ENDPOINTS.ASSESSMENT_WS}/${concernId}`;
 
     this.socket = new WebSocket(url);
 
