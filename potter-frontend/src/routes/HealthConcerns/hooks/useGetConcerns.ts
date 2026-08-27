@@ -31,6 +31,17 @@ export default function useGetConcerns() {
     retry: false,
   });
 
+  const allClosedConcerns = useQuery({
+    queryKey: ["all-closed-concerns"],
+    queryFn: async (): Promise<Concern[]> => {
+      const response = await apiClient(API_ENDPOINTS.CONCERNS_INACTIVE, {
+        method: "GET",
+      });
+
+      return response;
+    },
+    retry: false,
+  });
   //   const getPlantDetail = (plantId: number) => {
   //     return useQuery({
   //       queryKey: ["plant", plantId],
@@ -55,6 +66,7 @@ export default function useGetConcerns() {
 
   return {
     allActiveConcerns,
+    allClosedConcerns,
     invalidate: {
       concerns: invalidateConcerns,
     },

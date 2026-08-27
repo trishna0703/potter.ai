@@ -9,12 +9,18 @@ import usePlantIdentityStore, {
   type PlantIdentificationResponse,
 } from "@/store/PlantIdentificationStore";
 import Overlay from "#components/layout/Overlay";
+import { useState } from "react";
+import { Recommendations } from "../Assessment/components/Recommendations";
+import AssessmentDialog from "../Assessment/components/AssessmentDialog";
 
 const HealthConcerns = ({}) => {
   const { allActiveConcerns } = useGetConcerns();
   const { setShowForm } = usePlantStore();
   const { setPlantIdentity } = usePlantIdentityStore();
   const navigate = useNavigate();
+
+  const [recommendationsOpen, setRecommendationsOpen] = useState(false);
+  const [assessmentOpen, setAssessmentOpen] = useState(false);
 
   return (
     <div className="sm:p-6">
@@ -57,16 +63,31 @@ const HealthConcerns = ({}) => {
                   </div>
 
                   <div className="flex lg:flex-col gap-2 lg:justify-center">
-                    <Button
-                      className={"lg:w-48"}
-                      onClick={() =>
-                        navigate(
-                          `${ROUTES.CONCERNSACTIVE}/${concern.assessment_id}`,
-                        )
-                      }
-                    >
-                      View Concern
-                    </Button>
+                    {concern.status === "COMPLETED" ? (
+                      <div className="flex gap-2 lg:flex-col">
+                        <Recommendations
+                          open={recommendationsOpen}
+                          onOpenChange={setRecommendationsOpen}
+                          assessment_id={concern.assessment_id}
+                        />
+                        <AssessmentDialog
+                          open={assessmentOpen}
+                          onOpenChange={setAssessmentOpen}
+                          id={concern.id}
+                        />
+                      </div>
+                    ) : (
+                      <Button
+                        className={"lg:w-48"}
+                        onClick={() =>
+                          navigate(
+                            `${ROUTES.CONCERNSACTIVE}/${concern.assessment_id}`,
+                          )
+                        }
+                      >
+                        View Concern
+                      </Button>
+                    )}
                     {!concern.plant_id ? (
                       <Button
                         className={"lg:w-48"}

@@ -7,7 +7,7 @@ const FormRenderer = ({
   onSubmit,
 }: {
   latestMessage: QuestionServerMessage;
-  onSubmit: (value: AnswerValue) => void;
+  onSubmit: (value: AnswerValue, label: string | null) => void;
 }) => {
   const type = latestMessage?.payload.input_type;
 

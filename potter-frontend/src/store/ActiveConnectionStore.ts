@@ -15,7 +15,11 @@ interface ActiveMessageState {
   setInteractionState: (status: AssessmentUIStatus | null) => void;
   setMessages: (messages: AssessmentMessage[]) => void;
   appendQuestion: (message: QuestionServerMessage) => void;
-  appendUserAnswer: (interactionId: number, value: AnswerValue) => void;
+  appendUserAnswer: (
+    interactionId: number,
+    value: AnswerValue,
+    label: string | null,
+  ) => void;
 }
 
 const useActiveMessages = create<ActiveMessageState>()((set) => ({
@@ -25,7 +29,7 @@ const useActiveMessages = create<ActiveMessageState>()((set) => ({
   setLatestMessage: (message) => set({ latestMessage: message }),
   setInteractionState: (status) => set({ interactionState: status }),
   setMessages: (messages) => set({ messages }),
-  appendUserAnswer: (interactionId, value) =>
+  appendUserAnswer: (interactionId, value, label) =>
     set((state) => ({
       messages: [
         ...state.messages,
@@ -40,6 +44,7 @@ const useActiveMessages = create<ActiveMessageState>()((set) => ({
           payload: {
             interaction_id: interactionId,
             value,
+            label,
           },
           created_at: new Date().toISOString(),
         },

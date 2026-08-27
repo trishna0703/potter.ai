@@ -69,6 +69,10 @@ class AssessmentContextService(BaseModel):
         context = {
             "id": assessment.id,
             "status": assessment.status,
+            "problem": assessment.problem,
+            "problem_cause": assessment.problem_cause,
+            "confidence": assessment.confidence,
+            "explanation": assessment.explanation,
         }
 
         if previous_assessment is not None:

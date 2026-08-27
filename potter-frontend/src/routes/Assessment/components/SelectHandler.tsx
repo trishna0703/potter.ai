@@ -18,15 +18,26 @@ const SelectHandler = ({
   SingleChoiceQuestion | MultipleChoiceQuestion | BooleanQuestion
 >) => {
   const { id, required, options, input_type, prompt } = payload;
-
+  const [label, setLabel] = useState<string | null>(null);
   const [singleValue, setSingleValue] = useState<string>("");
   const [multipleValues, setMultipleValues] = useState<string[]>([]);
   const [booleanValue, setBooleanValue] = useState<string>("");
 
   const handleMultipleChange = (value: string, checked: boolean) => {
-    setMultipleValues((current) =>
-      checked ? [...current, value] : current.filter((item) => item !== value),
-    );
+    setMultipleValues((current) => {
+      const next = checked
+        ? [...current, value]
+        : current.filter((item) => item !== value);
+
+      const labels = next
+        .map((item) => options.find((option) => option.value === item)?.label)
+        .filter(Boolean)
+        .join(", ");
+
+      setLabel(labels || null);
+
+      return next;
+    });
   };
 
   const handleSubmit = () => {
@@ -46,15 +57,15 @@ const SelectHandler = ({
 
     switch (input_type) {
       case "single_choice":
-        onSubmit(singleValue);
+        onSubmit(singleValue, label);
         break;
 
       case "multiple_choice":
-        onSubmit(multipleValues);
+        onSubmit(multipleValues, label);
         break;
 
       case "boolean":
-        onSubmit(booleanValue === "true");
+        onSubmit(booleanValue === "true", label);
         break;
     }
   };
@@ -66,7 +77,12 @@ const SelectHandler = ({
       {input_type === "single_choice" && (
         <RadioGroup
           value={singleValue}
-          onValueChange={setSingleValue}
+          onValueChange={(value) => {
+            setSingleValue(value);
+            setLabel(
+              options.find((option) => option.value === value)?.label ?? null,
+            );
+          }}
           aria-labelledby={id}
         >
           {options.map((option) => (
@@ -115,7 +131,10 @@ const SelectHandler = ({
       {input_type === "boolean" && (
         <RadioGroup
           value={booleanValue}
-          onValueChange={setBooleanValue}
+          onValueChange={(value) => {
+            setBooleanValue(value);
+            setLabel(value === "true" ? "Yes" : "No");
+          }}
           aria-labelledby={id}
         >
           <Label

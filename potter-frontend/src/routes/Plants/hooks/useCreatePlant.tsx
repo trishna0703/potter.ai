@@ -79,7 +79,6 @@ export const useCreatePlantOperations = ({
     }
   }, [plant]);
 
-  console.log({formData})
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {

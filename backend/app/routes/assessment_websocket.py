@@ -10,8 +10,6 @@ from app.services.assessment_context_service import AssessmentContextService
 from app.services.assessment_flow_service import AssessmentFlowService
 from app.services.assessment_service import AssessmentService
 from app.services.auth import get_user_by_session
-from app.services.health_concern_service import HealthConcernService
-from app.services.helper_services import link_evidence_to_Assessment
 from app.services.interaction_service import InteractionService
 from app.services.recommendation_service import RecommendationService
 
@@ -88,12 +86,12 @@ async def health_concern_websocket(
                 if found_recommendations is not None:
                     await send_recommendations(websocket, found_recommendations)
 
-                ai_recommendation = recommendation_service.initialize(
-                    assessment_id=assessment_id,
-                    db=db,
-                )
+                else:
+                    ai_recommendation = recommendation_service.initialize(
+                        assessment_id=assessment_id, db=db, user_id=user.id
+                    )
 
-                await send_recommendations(websocket, ai_recommendation)
+                    await send_recommendations(websocket, ai_recommendation)
 
             await websocket.close(code=1000)
             return
@@ -146,6 +144,7 @@ async def health_concern_websocket(
                     assessment=assessment,
                     interaction_id=message.interaction_id,
                     value=message.payload.get("value"),
+                    label=message.payload.get("label"),
                     user_id=user.id,
                 )
 
@@ -155,18 +154,10 @@ async def health_concern_websocket(
 
                     recommendation_service = RecommendationService()
 
-                    found_recommendations = (
-                        recommendation_service.get_recommendations_for_assessment(
-                            db=db, assessment_id=assessment_id
-                        )
-                    )
-
-                    if found_recommendations is not None:
-                        await send_recommendations(websocket, found_recommendations)
-
                     ai_recommendation = recommendation_service.initialize(
-                        assessment_id=assessment_id,
                         db=db,
+                        user_id=user.id,
+                        assessment_id=assessment_id,
                     )
 
                     await send_recommendations(websocket, ai_recommendation)
@@ -210,8 +201,5 @@ async def send_recommendations(
     recommendation,
 ):
     await websocket.send_json(
-        {
-            "type": recommendation.type,
-            "payload": recommendation.model_dump(mode="json"),
-        }
+        recommendation.model_dump(mode="json"),
     )

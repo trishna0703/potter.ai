@@ -8,16 +8,10 @@ import LatestMessageSection from "./LatestMessageSection";
 import useAssessmentConnection from "./hooks/useAssessmentConnection";
 import AssessmentSkeleton from "./components/AssessmentSkeleton";
 import useAssessmentMessages from "./hooks/useAssessmentMessages";
-import { useParams, useNavigate } from "react-router-dom";
-import useRaiseConcern from "../HealthConcerns/hooks/useRaiseConcern";
-import { ROUTES } from "#lib/routes";
-import { showErrorToast } from "#lib/utils";
-import { Button } from "#components/ui/button";
-import Recommendations from "./components/Recommendations";
+import { useParams } from "react-router-dom";
 
 const ChatInterface = () => {
   const params = useParams();
-  const navigate = useNavigate();
 
   const assessmentId = params.assessment_id;
 
@@ -27,17 +21,7 @@ const ChatInterface = () => {
 
   const { sendMessage } = useAssessmentConnection();
 
-  const { reassess } = useRaiseConcern();
-
-  const handleReassessment = async () => {
-    try {
-      const result = await reassess({ concern_id: Number(assessmentId) });
-      navigate(`${ROUTES.CONCERNSACTIVE}/${result.assessment_id}`);
-    } catch (error) {
-      console.error("Reassessment failed:", error);
-      showErrorToast(error);
-    }
-  };
+  if (!assessmentId) return null;
 
   const historyMessages: AssessmentMessage[] =
     latestMessage?.type === "question"
@@ -74,19 +58,11 @@ const ChatInterface = () => {
       {/* Current interaction */}
       <div className="shrink-0 bg-background">
         <div className="mx-auto w-full max-w-3xl px-4 py-6">
-          <LatestMessageSection sendMessage={sendMessage} />
+          <LatestMessageSection
+            sendMessage={sendMessage}
+            assessment_id={Number(assessmentId)}
+          />
         </div>
-      </div>
-
-      {/* Recommendations */}
-      <Recommendations />
-      <div className="flex justify-end gap-4 items-center">
-        <span className="font-semibold text-muted-foreground text-sm">
-          Not satisfied with the result?
-        </span>
-        <Button onClick={handleReassessment} variant={"outline"}>
-          Request Reassessment
-        </Button>
       </div>
     </div>
   );

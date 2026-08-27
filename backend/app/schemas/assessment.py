@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class AssessmentRequest(BaseModel):
@@ -29,12 +29,8 @@ class QuestionOption(BaseModel):
             "user selects this option."
         ),
     )
-    label: str | None = Field(
-        default=None,
-        description=(
-            "The human-readable text shown to the user for this option. "
-            "If omitted, the system falls back to `value`."
-        ),
+    label: str = Field(
+        description="The human-readable text shown to the user for this option.",
     )
 
 
@@ -43,9 +39,25 @@ class Question(BaseModel):
 
     id: str
     prompt: str
-    input_type: Literal["single_choice"]
-    options: list[QuestionOption]
+    input_type: Literal["single_choice", "multi_choice", "text", "number", "boolean"]
+    options: list[QuestionOption] = Field(
+        default_factory=list,
+        description=(
+            "Required (non-empty) for single_choice and multi_choice. "
+            "Must be empty for text, number, and boolean."
+        ),
+    )
     required: bool
+    ...
+
+    @model_validator(mode="after")
+    def _validate_options(self):
+        is_choice = self.input_type in ("single_choice", "multi_choice")
+        if is_choice and not self.options:
+            raise ValueError("options required for choice-type questions")
+        if not is_choice and self.options:
+            raise ValueError("options must be empty for non-choice input types")
+        return self
 
 
 class QuestionAIResponse(BaseModel):
@@ -60,7 +72,7 @@ class AssessmentResult(BaseModel):
 
     problem: str
     problem_cause: str
-    confidence: str
+    confidence: Literal["high", "medium", "low"]
     explanation: str
 
 

@@ -1,3 +1,5 @@
+import type { AIRecommendationResponse } from "./recommendation";
+
 export type AssessmentConnectionStatus =
   | "disconnected"
   | "connecting"
@@ -88,12 +90,14 @@ export interface ErrorServerMessage {
 export type AssessmentServerMessage =
   | QuestionServerMessage
   | AssessmentResultServerMessage
+  | AIRecommendationResponse
   | ErrorServerMessage;
 
 export type AnswerValue = string | string[] | number | boolean;
 
 export interface AnswerPayload {
   value: AnswerValue;
+  label: string | null;
 }
 
 export interface AnswerClientMessage {
@@ -134,5 +138,5 @@ type AnswerForQuestion<T extends QuestionPayload> =
 
 export type QuestionHandlerProps<T extends QuestionPayload> = {
   payload: T;
-  onSubmit: (value: AnswerForQuestion<T>) => void;
+  onSubmit: (value: AnswerForQuestion<T>, label: string | null) => void;
 };

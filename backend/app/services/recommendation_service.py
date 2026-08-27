@@ -12,6 +12,8 @@ from app.schemas.recommendation import (
 )
 from app.services.assessment_service import AssessmentService
 from app.services.recommendation_ai import RecommendationAIService
+from app.services.assessment_context_service import AssessmentContextService
+
 
 
 class RecommendationService(BaseModel):
@@ -19,11 +21,13 @@ class RecommendationService(BaseModel):
     def initialize(
         self,
         assessment_id: int,
+        user_id: int,
         db: Session,
     ) -> AIRecommendationResponse:
 
         assessment_service = AssessmentService()
-
+        recommendation_ai_service = RecommendationAIService()
+        context_service = AssessmentContextService()
         assessment = assessment_service.get_assessment(
             db=db, assessment_id=assessment_id
         )
@@ -31,11 +35,16 @@ class RecommendationService(BaseModel):
         if assessment is None:
             raise ValueError("Assessment not found.")
 
-        # trigger recommendation ai service
-        recommendation_ai_service = RecommendationAIService()
+        context = context_service.build_context(
+            db,
+            concern_id=assessment.concern_id,
+            assessment=assessment,
+            previous_assessment=None,
+            user_id=user_id,
+        )
 
         ai_recommendation = recommendation_ai_service.generate_recommendation(
-            assessment=assessment
+            context=context
         )
 
         if ai_recommendation.type != "recommendation_options":

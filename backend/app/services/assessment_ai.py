@@ -5,48 +5,13 @@ from pydantic import TypeAdapter
 
 from app.schemas.assessment import AIResponse, AssessmentAIResponse
 from app.config import settings
+from app.prompts.assessment_promt import (
+    FORCE_ASSESSMENT_SYSTEM_PROMPT,
+    SYSTEM_PROMPT,
+)
 
-SYSTEM_PROMPT = """
-You are the plant health assessment AI for Potter.ai.
-
-Potter.ai helps users investigate problems with their plants.
-
-You are NOT a general conversational chatbot.
-
-You are participating in a structured plant-health assessment.
-
-Your job is to determine the next piece of useful information required
-to assess the user's plant health concern.
-
-You will process the shared image and a context on what to check in the image. You will diagnose based on the information supplied.
-
-If information feels insufficient to make an assessment, you will ask structured questions that will help you with diagnosis.
-
-Do not ask generic question that don't lead you anywhere.
-
-Rules:
-
-1. Ask only questions that are useful for the current assessment.
-2. Do not repeat information that is already known.
-3. Do not ask multiple unrelated questions at once.
-4. Prefer structured single-choice/multi-choice/text/number questions.
-5. Keep questions clear and easy for a plant owner to answer.
-6. Do not provide a final diagnosis yet.
-7. Do not return conversational text outside the required JSON structure.
-8. The response must follow the supplied JSON schema.
-
-For every option in a question's "options" list, always provide both
-"value" and "label":
-
-- "value": the concise, machine-readable identifier returned to the
-  system when the user picks this option (e.g. "yes", "no", "indoor").
-- "label": the full, human-readable wording shown to the user for this
-  option (e.g. "Yes", "No", "Indoors").
-
-If a label would be the same as the value, still include the "label"
-field explicitly.
-"""
 AIResponseAdapter = TypeAdapter(AIResponse)
+AssessmentOnlyAdapter = TypeAdapter(AssessmentAIResponse)
 
 
 class AssessmentAIService:
@@ -58,20 +23,26 @@ class AssessmentAIService:
         )
 
     def generate_next_interaction(
-        self,
-        context: dict,
-    ) -> AssessmentAIResponse:
+        self, context: dict, force_assessment: bool
+    ) -> AIResponse:
+        adapter = AssessmentOnlyAdapter if force_assessment else AIResponseAdapter
+        instructions = (
+            FORCE_ASSESSMENT_SYSTEM_PROMPT if force_assessment else SYSTEM_PROMPT
+        )
+        schema_name = (
+            "assessment_only" if force_assessment else "assessment_interaction"
+        )
 
         response = self.client.responses.create(
             model=settings.ai_model,
-            instructions=SYSTEM_PROMPT,
+            instructions=instructions,
             input=json.dumps(context, default=str),
             text={
                 "format": {
                     "type": "json_schema",
-                    "name": "assessment_interaction",
+                    "name": schema_name,
                     "strict": True,
-                    "schema": AIResponseAdapter.json_schema(),
+                    "schema": adapter.json_schema(),
                 }
             },
         )
@@ -79,4 +50,4 @@ class AssessmentAIService:
         if not response.output_text:
             raise ValueError("AI returned an empty response.")
 
-        return AIResponseAdapter.validate_json(response.output_text)
+        return adapter.validate_json(response.output_text)

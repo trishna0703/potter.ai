@@ -5,6 +5,9 @@ from app.services.interaction_service import InteractionService
 from app.services.assessment_ai import AssessmentAIService
 from app.services.assessment_context_service import AssessmentContextService
 from app.services.recommendation_service import RecommendationService
+from app.services.health_concern_service import HealthConcernService
+
+MAX_QUESTIONS_PER_ASSESSMENT = 3
 
 
 class AssessmentFlowService:
@@ -36,9 +39,22 @@ class AssessmentFlowService:
             user_id=user_id,
         )
 
-        ai_response = self.ai_service.generate_next_interaction(context)
+        questions_asked = self.assessment_service.count_questions_asked(
+            db, assessment_id=assessment.id
+        )
+
+        force_assessment = questions_asked >= MAX_QUESTIONS_PER_ASSESSMENT
+
+        ai_response = self.ai_service.generate_next_interaction(
+            context, force_assessment=force_assessment
+        )
 
         if ai_response.type == "question":
+            if force_assessment:
+                raise ValueError(
+                    "AI returned a question after the question limit was reached "
+                    f"(assessment_id={assessment.id})"
+                )
             return self._handle_question_response(
                 db,
                 assessment=assessment,
@@ -50,6 +66,7 @@ class AssessmentFlowService:
                 db,
                 assessment=assessment,
                 ai_response=ai_response,
+                concern_id=concern_id,
             )
 
         raise ValueError(f"Unsupported AI response type: {ai_response.type}")
@@ -101,11 +118,7 @@ class AssessmentFlowService:
         return message
 
     def _handle_assessment_response(
-        self,
-        db: Session,
-        *,
-        assessment,
-        ai_response,
+        self, db: Session, *, assessment, ai_response, concern_id
     ):
         result = ai_response.assessment
 
@@ -130,9 +143,13 @@ class AssessmentFlowService:
             status="COMPLETED",
         )
 
-        recommendation_service = RecommendationService()
+        concern_service = HealthConcernService()
 
-        
+        concern_service.update_health_concern_status(
+            db=db, concern_id=concern_id, status="COMPLETED"
+        )
+
+        recommendation_service = RecommendationService()
 
         message = self.message_service.create_assessment_message(
             db,
@@ -154,6 +171,7 @@ class AssessmentFlowService:
         assessment,
         interaction_id: int,
         value,
+        label: str | None,
         user_id: int,
     ):
         assessment = self.assessment_service.get_assessment(
@@ -184,10 +202,7 @@ class AssessmentFlowService:
             assessment_id=assessment.id,
             role="user",
             message_type="answer",
-            payload={
-                "interaction_id": interaction_id,
-                "value": value,
-            },
+            payload={"interaction_id": interaction_id, "value": value, "label": label},
         )
 
         self.assessment_service.set_current_interaction(
