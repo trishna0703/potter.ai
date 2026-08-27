@@ -54,6 +54,18 @@ class AssessmentFlowService:
 
         raise ValueError(f"Unsupported AI response type: {ai_response.type}")
 
+    @staticmethod
+    def _normalize_question_options(question: dict) -> None:
+        """Ensure every option carries both ``value`` and ``label``.
+
+        The AI is instructed to prioritize ``value`` (the machine-readable
+        identifier). We normalize locally so the stored payload always
+        contains a human-readable ``label`` for display, defaulting to
+        ``value`` when the AI omits it.
+        """
+        for option in question.get("options", []):
+            option["label"] = option.get("label") or option.get("value", "")
+
     def _handle_question_response(
         self,
         db: Session,
@@ -61,12 +73,15 @@ class AssessmentFlowService:
         assessment,
         ai_response,
     ):
+        question = ai_response.question.model_dump()
+        self._normalize_question_options(question)
+
         message = self.message_service.create_assessment_message(
             db,
             assessment_id=assessment.id,
             role="assistant",
             message_type=ai_response.type,
-            payload=ai_response.question.model_dump(),
+            payload=question,
         )
 
         self.assessment_service.set_current_interaction(

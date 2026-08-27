@@ -27,6 +27,12 @@ const getAnswerText = (message: AssessmentMessage) => {
     "value" in message.payload
   ) {
     const value = message.payload.value;
+    const label = message.payload?.label;
+
+    console.log({ label });
+    if (label && typeof label === "string") {
+      return label;
+    }
 
     if (Array.isArray(value)) {
       return value.join(", ");

@@ -23,8 +23,19 @@ class AssessmentResponse(BaseModel):
 class QuestionOption(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    value: str
-    label: str
+    value: str = Field(
+        description=(
+            "The machine-readable value returned back to the system when the "
+            "user selects this option."
+        ),
+    )
+    label: str | None = Field(
+        default=None,
+        description=(
+            "The human-readable text shown to the user for this option. "
+            "If omitted, the system falls back to `value`."
+        ),
+    )
 
 
 class Question(BaseModel):

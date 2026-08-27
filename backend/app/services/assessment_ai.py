@@ -31,9 +31,20 @@ Rules:
 3. Do not ask multiple unrelated questions at once.
 4. Prefer structured single-choice/multi-choice/text/number questions.
 5. Keep questions clear and easy for a plant owner to answer.
-6. Do not return conversational text outside the required JSON structure.
-7. The response must follow the supplied JSON schema.
-8. Do not over-question. Make a assessment based on a maximum of 3 questions.
+6. Do not provide a final diagnosis yet.
+7. Do not return conversational text outside the required JSON structure.
+8. The response must follow the supplied JSON schema.
+
+For every option in a question's "options" list, always provide both
+"value" and "label":
+
+- "value": the concise, machine-readable identifier returned to the
+  system when the user picks this option (e.g. "yes", "no", "indoor").
+- "label": the full, human-readable wording shown to the user for this
+  option (e.g. "Yes", "No", "Indoors").
+
+If a label would be the same as the value, still include the "label"
+field explicitly.
 """
 AIResponseAdapter = TypeAdapter(AIResponse)
 
