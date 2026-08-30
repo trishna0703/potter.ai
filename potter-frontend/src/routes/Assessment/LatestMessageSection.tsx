@@ -1,4 +1,3 @@
-
 import useActiveMessages from "@/store/ActiveConnectionStore";
 
 import type {
@@ -17,10 +16,10 @@ const QuestionAnswerView = ({
 }: {
   latestMessage: QuestionServerMessage;
   interactionState: AssessmentUIStatus | null;
-  sendMessage: (id: number, value: AnswerValue) => void;
+  sendMessage: (id: number, value: AnswerValue, label: string | null) => void;
 }) => {
-  const onSubmit = (value: AnswerValue) => {
-    sendMessage(latestMessage.interaction_id, value);
+  const onSubmit = (value: AnswerValue, label: string | null) => {
+    sendMessage(latestMessage.interaction_id, value, label);
   };
 
   return interactionState == "waiting_for_user" ? (
@@ -31,8 +30,10 @@ const QuestionAnswerView = ({
 // -----------------------------Latest message View -------------------------------
 const LatestMessageSection = ({
   sendMessage,
+  assessment_id,
 }: {
-  sendMessage: (id: number, value: AnswerValue) => void;
+  sendMessage: (id: number, value: AnswerValue, label: string | null) => void;
+  assessment_id: number;
 }) => {
   const { latestMessage, interactionState } = useActiveMessages();
 
@@ -46,7 +47,12 @@ const LatestMessageSection = ({
         />
       );
     case "assessment":
-      return <AssessmentView {...{ latestMessage }} />;
+      return (
+        <AssessmentView
+          latestMessage={latestMessage.payload}
+          id={assessment_id}
+        />
+      );
     case "error":
       return <AssessmentError error={latestMessage.payload} />;
     default:

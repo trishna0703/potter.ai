@@ -27,6 +27,11 @@ const getAnswerText = (message: AssessmentMessage) => {
     "value" in message.payload
   ) {
     const value = message.payload.value;
+    const label = message.payload.label;
+
+    if (label && typeof label === "string") {
+      return label;
+    }
 
     if (Array.isArray(value)) {
       return value.join(", ");
@@ -57,7 +62,7 @@ const AssessmentMessageList = ({ messages }: AssessmentMessageListProps) => {
       <div className="flex flex-col gap-5">
         {sortedMessages.map((message) => {
           const isAssistant = message.role === "assistant";
-
+    
           const content =
             message.message_type === "question"
               ? getQuestionText(message)

@@ -1,8 +1,9 @@
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.assessment import Assessment
+from app.models.assessment_message import AssessmentMessage
 
 
 class AssessmentService(BaseModel):
@@ -163,7 +164,6 @@ class AssessmentService(BaseModel):
 
         return list(previous_assessment.evidences)
 
-    
     def get_previous_assessment(
         self,
         db: Session,
@@ -182,3 +182,28 @@ class AssessmentService(BaseModel):
         )
 
         return db.scalar(stmt)
+
+    def get_latest_completed_assessment(
+        self,
+        db: Session,
+        *,
+        concern_id: int,
+    ) -> Assessment | None:
+        stmt = (
+            select(Assessment)
+            .where(
+                Assessment.concern_id == concern_id,
+                Assessment.status == "COMPLETED",
+            )
+            .order_by(Assessment.id.desc())
+            .limit(1)
+        )
+
+        return db.scalar(stmt)
+
+    def count_questions_asked(self, db: Session, *, assessment_id: int) -> int:
+        stmt = select(func.count(AssessmentMessage.id)).where(
+            AssessmentMessage.assessment_id == assessment_id,
+            AssessmentMessage.message_type == "question",
+        )
+        return db.execute(stmt).scalar_one()

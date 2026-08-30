@@ -43,7 +43,7 @@ export class AssessmentWebSocket {
     };
   }
 
-  sendAnswer(interactionId: number, value: AnswerValue) {
+  sendAnswer(interactionId: number, value: AnswerValue, label: string | null) {
     if (!this.socket) {
       throw new Error("WebSocket is not connected.");
     }
@@ -57,6 +57,7 @@ export class AssessmentWebSocket {
       interaction_id: interactionId,
       payload: {
         value,
+        label,
       },
     };
 

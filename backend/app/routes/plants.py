@@ -42,12 +42,14 @@ def create_plant(
     return plant_to_response(new_plant)
 
 
-@router.get("/", response_model=list[PlantResponse])
+@router.get("/{status}", response_model=list[PlantResponse])
 def get_all_plants(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    status: str | None = "ACTIVE",
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
 
-    stmt = select(Plant).where(Plant.user_id == current_user.id)
+    stmt = select(Plant).where(Plant.user_id == current_user.id, Plant.status == status)
 
     plant_list = db.scalars(stmt).all()
 
@@ -99,6 +101,3 @@ def update_plant(
         raise
 
     return plant_to_response(plant)
-
-
-

@@ -24,7 +24,10 @@ import { useNavigate } from "react-router-dom";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 import PhotoPicker from "#components/utils/PhotoPicker";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
-import { getToday } from "#lib/utils";
+import { getToday, showErrorToast } from "#lib/utils";
+import { useCreateOrUpdatePlant } from "../hooks/useCreatePlant";
+import usePlant from "../hooks/usePlant";
+import NoPlantsFound from "./NoPlantsFound";
 
 const Bullet = () => <span className="w-1 h-1 bg-ochre rounded-full"></span>;
 
@@ -32,10 +35,12 @@ const PlantMenu = ({
   plant,
   editPlant,
   raiseConcern,
+  markPlantDead,
 }: {
   plant: Plant;
   editPlant: (plant: Plant) => void;
   raiseConcern: (event: ChangeEvent<HTMLInputElement, Element>) => void;
+  markPlantDead: (id: number) => Promise<void>;
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -60,7 +65,10 @@ const PlantMenu = ({
           >
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem className={"hover:bg-terracotta/20 cursor-pointer"}>
+          <DropdownMenuItem
+            className={"hover:bg-terracotta/20 cursor-pointer"}
+            onClick={() => markPlantDead(plant.id)}
+          >
             Mark dead
           </DropdownMenuItem>
 
@@ -86,9 +94,11 @@ const PlantMenu = ({
 const PlantCard = ({
   plant,
   editPlant,
+  markPlantDead,
 }: {
   plant: Plant;
   editPlant: (plant: Plant) => void;
+  markPlantDead: (id: number) => Promise<void>;
 }) => {
   const navigate = useNavigate();
   const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
@@ -129,7 +139,9 @@ const PlantCard = ({
           className="size-full h-58 object-cover shadow-md bg-card rounded-2xl"
         />
         <CardAction className="ml-auto absolute right-0 -top-3 z-2">
-          <PlantMenu {...{ plant, editPlant, raiseConcern }} />
+          {plant.status === "ACTIVE" ? (
+            <PlantMenu {...{ plant, editPlant, raiseConcern, markPlantDead }} />
+          ) : null}
         </CardAction>
       </CardHeader>
       <CardContent className="bg-card w-3/4 rounded-b-2xl mx-auto p-4 pt-6 -translate-y-6 shadow-md">
@@ -158,14 +170,35 @@ const PlantCard = ({
 const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
   const [editPlant, setEditPlant] = useState<Plant | undefined>(undefined);
 
+  const { mutateAsync: markPlantdead } = useCreateOrUpdatePlant();
+  const { invalidate } = usePlant();
+
+  const handleMarkPlantDead = async (id: number) => {
+    try {
+      await markPlantdead({
+        plant_data: { status: "INACTIVE", id },
+        method: "PATCH",
+      });
+
+      invalidate.plants();
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  if (!plantList.length) {
+    return <NoPlantsFound />;
+  }
+
   return (
     <div className="w-full">
-      <ul className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 grid-cols-1">
+      <ul className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-cols-1 gap-10">
         {plantList?.map((plant: Plant) => (
           <li key={plant.id} className="w-full">
             <PlantCard
               plant={plant}
               editPlant={(plant: Plant) => setEditPlant(plant)}
+              markPlantDead={handleMarkPlantDead}
             />
           </li>
         ))}

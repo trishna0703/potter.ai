@@ -4,11 +4,14 @@ import { useParams } from "react-router-dom";
 import { AssessmentWebSocket } from "../utils/assessment_websocket";
 import useActiveMessages from "@/store/ActiveConnectionStore";
 import type { AnswerValue } from "@/types/assessment";
+import { useRecommendationStore } from "@/store/RecommendationStore";
 
 export default function useAssessmentConnection() {
   const { assessment_id } = useParams<{ assessment_id: string }>();
 
   const concernId = Number(assessment_id);
+
+  const { setRecommendationOptions } = useRecommendationStore();
 
   const {
     latestMessage,
@@ -42,11 +45,16 @@ export default function useAssessmentConnection() {
           return;
         }
 
-        setLatestMessage(message);
         if (message.type === "assessment") {
+          setLatestMessage(message);
+          return;
+        }
+        if (message.type === "recommendation_options") {
+          setRecommendationOptions(Number(assessment_id), message);
           setInteractionState("disconnected");
           return;
         }
+        setLatestMessage(message);
         setInteractionState("waiting_for_user");
       },
 
@@ -77,7 +85,11 @@ export default function useAssessmentConnection() {
     };
   }, [concernId, setLatestMessage]);
 
-  const sendMessage = (interactionId: number, value: AnswerValue) => {
+  const sendMessage = (
+    interactionId: number,
+    value: AnswerValue,
+    label: string | null,
+  ) => {
     const socket = assessmentSocketRef.current;
 
     if (!socket) {
@@ -90,13 +102,13 @@ export default function useAssessmentConnection() {
 
     appendQuestion(latestMessage);
 
-    appendUserAnswer(interactionId, value);
+    appendUserAnswer(interactionId, value, label);
 
     setLatestMessage(null);
 
     setInteractionState("waiting_for_ai");
 
-    socket.sendAnswer(interactionId, value);
+    socket.sendAnswer(interactionId, value, label);
   };
 
   return {

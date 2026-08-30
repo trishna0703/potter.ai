@@ -12,11 +12,16 @@ import { useParams } from "react-router-dom";
 
 const ChatInterface = () => {
   const params = useParams();
+
   const assessmentId = params.assessment_id;
+
   const { messages, latestMessage, interactionState } = useActiveMessages();
+
   const { isLoading, isError } = useAssessmentMessages(Number(assessmentId));
 
   const { sendMessage } = useAssessmentConnection();
+
+  if (!assessmentId) return null;
 
   const historyMessages: AssessmentMessage[] =
     latestMessage?.type === "question"
@@ -33,7 +38,6 @@ const ChatInterface = () => {
     return <div>Something went wrong. Refresh the page.</div>;
   }
 
-  console.log({ messages });
   return (
     <div className="flex flex-col relative h-[calc(100vh-7rem)]">
       {/* Conversation history */}
@@ -54,7 +58,10 @@ const ChatInterface = () => {
       {/* Current interaction */}
       <div className="shrink-0 bg-background">
         <div className="mx-auto w-full max-w-3xl px-4 py-6">
-          <LatestMessageSection sendMessage={sendMessage} />
+          <LatestMessageSection
+            sendMessage={sendMessage}
+            assessment_id={Number(assessmentId)}
+          />
         </div>
       </div>
     </div>

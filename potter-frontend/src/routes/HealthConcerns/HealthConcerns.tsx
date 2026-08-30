@@ -8,13 +8,24 @@ import usePlantStore from "@/store/PlantStore";
 import usePlantIdentityStore, {
   type PlantIdentificationResponse,
 } from "@/store/PlantIdentificationStore";
-import Overlay from "#components/layout/Overlay";
+import { useState } from "react";
+import { Recommendations } from "../Assessment/components/Recommendations";
+import AssessmentDialog from "../Assessment/components/AssessmentDialog";
+import HealthConcernSkeleton from "./Skeleton";
+import NoConcernFound from "./NoConcernFound";
 
 const HealthConcerns = ({}) => {
-  const { allActiveConcerns } = useGetConcerns();
+  const [filterByStatus, setFilterByStatus] = useState<"OPEN" | "COMPLETED">(
+    "OPEN",
+  );
+
+  const { allActiveConcerns } = useGetConcerns(filterByStatus);
   const { setShowForm } = usePlantStore();
   const { setPlantIdentity } = usePlantIdentityStore();
   const navigate = useNavigate();
+
+  const [recommendationsOpen, setRecommendationsOpen] = useState(false);
+  const [assessmentOpen, setAssessmentOpen] = useState(false);
 
   return (
     <div className="sm:p-6">
@@ -27,10 +38,30 @@ const HealthConcerns = ({}) => {
         </div>
       </header>
 
-      {allActiveConcerns.isLoading ? <Overlay /> : null}
-      {allActiveConcerns && allActiveConcerns.data ? (
+      <div className="flex gap-4 mt-6">
+        <Button
+          variant={filterByStatus === "OPEN" ? "default" : "ghost"}
+          onClick={() => setFilterByStatus("OPEN")}
+        >
+          Active
+        </Button>
+        <Button
+          variant={filterByStatus === "COMPLETED" ? "default" : "ghost"}
+          onClick={() => setFilterByStatus("COMPLETED")}
+        >
+          Completed
+        </Button>
+      </div>
+      {allActiveConcerns.isLoading ? <HealthConcernSkeleton /> : null}
+      {!allActiveConcerns.isLoading &&
+      allActiveConcerns.data &&
+      allActiveConcerns.data.length === 0 ? (
+        <NoConcernFound />
+      ) : null}
+      {allActiveConcerns &&
+      allActiveConcerns.data &&
+      allActiveConcerns.data.length > 0 ? (
         <section className="h-auto flex flex-col gap-4 pt-8 w-full">
-          <h2 className="text-muted-foreground text-sm font-bold">Active</h2>
           <div className="flex gap-4 flex-col">
             {allActiveConcerns.data.map((concern) => (
               <div
@@ -57,16 +88,31 @@ const HealthConcerns = ({}) => {
                   </div>
 
                   <div className="flex lg:flex-col gap-2 lg:justify-center">
-                    <Button
-                      className={"lg:w-48"}
-                      onClick={() =>
-                        navigate(
-                          `${ROUTES.CONCERNSACTIVE}/${concern.assessment_id}`,
-                        )
-                      }
-                    >
-                      View Concern
-                    </Button>
+                    {concern.status === "COMPLETED" ? (
+                      <div className="flex gap-2 lg:flex-col">
+                        <Recommendations
+                          open={recommendationsOpen}
+                          onOpenChange={setRecommendationsOpen}
+                          assessment_id={concern.assessment_id}
+                        />
+                        <AssessmentDialog
+                          open={assessmentOpen}
+                          onOpenChange={setAssessmentOpen}
+                          id={concern.id}
+                        />
+                      </div>
+                    ) : (
+                      <Button
+                        className={"lg:w-48"}
+                        onClick={() =>
+                          navigate(
+                            `${ROUTES.CONCERNSACTIVE}/${concern.assessment_id}`,
+                          )
+                        }
+                      >
+                        View Concern
+                      </Button>
+                    )}
                     {!concern.plant_id ? (
                       <Button
                         className={"lg:w-48"}

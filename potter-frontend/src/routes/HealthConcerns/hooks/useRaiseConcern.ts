@@ -14,6 +14,15 @@ interface NewConcernResponse {
   concern_id: number;
   assessment_id: number;
 }
+
+interface ReassessPayload {
+  concern_id: number;
+}
+
+interface ReassessResponse {
+  assessment_id: number;
+}
+
 const useRaiseConcern = () => {
   const raiseConcern = async (
     payload: RaiseConcernPayload,
@@ -24,8 +33,18 @@ const useRaiseConcern = () => {
     });
   };
 
+  const reassess = async (
+    payload: ReassessPayload,
+  ): Promise<ReassessResponse> => {
+    return await apiClient(API_ENDPOINTS.CONCERN_REASSESS, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  };
+
   return {
     raiseConcern,
+    reassess,
   };
 };
 

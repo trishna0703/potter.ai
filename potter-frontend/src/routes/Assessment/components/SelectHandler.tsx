@@ -1,27 +1,29 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "#components/ui/checkbox";
-
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import type {
   BooleanQuestion,
   MultipleChoiceQuestion,
   QuestionHandlerProps,
   SingleChoiceQuestion,
 } from "@/types/assessment";
-import { Button } from "#components/ui/button";
+
+type SelectQuestion =
+  | SingleChoiceQuestion
+  | MultipleChoiceQuestion
+  | BooleanQuestion;
 
 const SelectHandler = ({
   payload,
   onSubmit,
-}: QuestionHandlerProps<
-  SingleChoiceQuestion | MultipleChoiceQuestion | BooleanQuestion
->) => {
+}: QuestionHandlerProps<SelectQuestion>) => {
   const { id, required, options, input_type, prompt } = payload;
 
-  const [singleValue, setSingleValue] = useState<string>("");
+  const [singleValue, setSingleValue] = useState("");
   const [multipleValues, setMultipleValues] = useState<string[]>([]);
-  const [booleanValue, setBooleanValue] = useState<string>("");
+  const [booleanValue, setBooleanValue] = useState("");
 
   const handleMultipleChange = (value: string, checked: boolean) => {
     setMultipleValues((current) =>
@@ -45,17 +47,36 @@ const SelectHandler = ({
     }
 
     switch (input_type) {
-      case "single_choice":
-        onSubmit(singleValue);
-        break;
+      case "single_choice": {
+        const selectedOption = options.find(
+          (option) => option.value === singleValue,
+        );
 
-      case "multiple_choice":
-        onSubmit(multipleValues);
-        break;
+        onSubmit(singleValue, selectedOption?.label ?? "");
 
-      case "boolean":
-        onSubmit(booleanValue === "true");
         break;
+      }
+
+      case "multiple_choice": {
+        const selectedOptions = options.filter((option) =>
+          multipleValues.includes(option.value),
+        );
+
+        onSubmit(
+          multipleValues,
+          selectedOptions.map((option) => option.label).join(", "),
+        );
+
+        break;
+      }
+
+      case "boolean": {
+        const value = booleanValue === "true";
+
+        onSubmit(value, value ? "Yes" : "No");
+
+        break;
+      }
     }
   };
 
@@ -100,8 +121,8 @@ const SelectHandler = ({
                 <Checkbox
                   id={`${id}-${option.value}`}
                   checked={checked}
-                  onCheckedChange={(value) =>
-                    handleMultipleChange(option.value, value === true)
+                  onCheckedChange={(checked) =>
+                    handleMultipleChange(option.value, checked === true)
                   }
                 />
 
@@ -123,6 +144,7 @@ const SelectHandler = ({
             className="flex items-center gap-2 border-[0.5px] p-4 rounded-lg cursor-pointer hover:bg-secondary/30"
           >
             <RadioGroupItem value="true" id={`${id}-yes`} />
+
             <span>Yes</span>
           </Label>
 
@@ -131,6 +153,7 @@ const SelectHandler = ({
             className="flex items-center gap-2 border-[0.5px] p-4 rounded-lg cursor-pointer hover:bg-secondary/30"
           >
             <RadioGroupItem value="false" id={`${id}-no`} />
+
             <span>No</span>
           </Label>
         </RadioGroup>

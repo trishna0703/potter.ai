@@ -16,7 +16,7 @@ type Concern = {
   assessment_id: number;
 };
 
-export default function useGetConcerns() {
+export default function useGetConcerns(status: "OPEN" | "COMPLETED") {
   const client = useQueryClient();
 
   const allActiveConcerns = useQuery({
@@ -29,34 +29,36 @@ export default function useGetConcerns() {
       return response;
     },
     retry: false,
+    enabled: status === "OPEN",
   });
 
-  //   const getPlantDetail = (plantId: number) => {
-  //     return useQuery({
-  //       queryKey: ["plant", plantId],
-  //       queryFn: async (): Promise<Plant> => {
-  //         const response = await apiClient(`${API_ENDPOINTS.PLANT(plantId)}`, {
-  //           method: "GET",
-  //         });
+  const allClosedConcerns = useQuery({
+    queryKey: ["all-closed-concerns"],
+    queryFn: async (): Promise<Concern[]> => {
+      const response = await apiClient(API_ENDPOINTS.CONCERNS_INACTIVE, {
+        method: "GET",
+      });
 
-  //         return response.json();
-  //       },
-  //       enabled: !!plantId,
-  //     });
-  //   };
+      return response;
+    },
+    retry: false,
+    enabled: status === "COMPLETED",
+  });
 
-  const invalidateConcerns = () => {
+  const invalidateActiveConcerns = () => {
     client.invalidateQueries({ queryKey: ["all-active-concerns"] });
   };
 
-  //   const invalidatePlantDetail = (plantId: number) => {
-  //     client.invalidateQueries({ queryKey: ["plant", plantId] });
-  //   };
+  const invalidateInactiveConcerns = () => {
+    client.invalidateQueries({ queryKey: ["all-closed-concerns"] });
+  };
 
   return {
     allActiveConcerns,
+    allClosedConcerns,
     invalidate: {
-      concerns: invalidateConcerns,
+      active: invalidateActiveConcerns,
+      inactive: invalidateInactiveConcerns,
     },
   };
 }

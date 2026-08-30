@@ -26,7 +26,6 @@ export default function PhotoPicker({
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("photo upload");
     onPhotoSelected(e);
     onOpenChange?.(false);
 

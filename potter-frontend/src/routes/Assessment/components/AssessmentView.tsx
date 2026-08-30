@@ -1,12 +1,20 @@
 import { Badge } from "#components/ui/badge";
-import { formatLabel } from "#lib/utils";
+import { formatLabel, showErrorToast } from "#lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import type { AssessmentResultServerMessage } from "@/types/assessment";
+import type { AIAssessment } from "@/types/assessment";
 import { InfoIcon } from "lucide-react";
+import { Recommendations } from "./Recommendations";
+import { useState } from "react";
+import { Button } from "#components/ui/button";
+import useRaiseConcern from "@/routes/HealthConcerns/hooks/useRaiseConcern";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "#lib/routes";
 
 type AssessmentViewProps = {
-  latestMessage: AssessmentResultServerMessage;
+  id: number;
+  latestMessage: AIAssessment;
+  isNested?: boolean;
 };
 
 const getConfidenceVariant = (
@@ -28,28 +36,53 @@ const getConfidenceVariant = (
   }
 };
 
-const AssessmentView = ({ latestMessage }: AssessmentViewProps) => {
-  const { problem, problem_cause, confidence, explanation } =
-    latestMessage.payload;
+const AssessmentView = ({
+  latestMessage,
+  id,
+  isNested,
+}: AssessmentViewProps) => {
+  const { problem, problem_cause, confidence, explanation } = latestMessage;
+  const [openRecommendations, setOpenRecommendations] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { reassess } = useRaiseConcern();
+  const navigate = useNavigate();
+
+  const handleReassessment = async () => {
+    setIsLoading(true);
+    try {
+      const result = await reassess({ concern_id: Number(id) });
+      navigate(`${ROUTES.CONCERNSACTIVE}/${result.assessment_id}`);
+    } catch (error) {
+      console.error("Reassessment failed:", error);
+      showErrorToast(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Card className="w-full">
       <CardHeader className="space-y-3">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">Assessment complete</p>
-
+            <Badge
+              variant={getConfidenceVariant(confidence)}
+              className="capitalize"
+            >
+              {confidence} confidence
+            </Badge>
             <CardTitle className="mt-1 text-2xl">
               {formatLabel(problem)}
             </CardTitle>
           </div>
 
-          <Badge
-            variant={getConfidenceVariant(confidence)}
-            className="capitalize"
-          >
-            {confidence} confidence
-          </Badge>
+          {!isNested ? (
+            <Recommendations
+              assessment_id={Number(id)}
+              open={openRecommendations}
+              onOpenChange={setOpenRecommendations}
+            />
+          ) : null}
         </div>
       </CardHeader>
 
@@ -67,12 +100,19 @@ const AssessmentView = ({ latestMessage }: AssessmentViewProps) => {
         </section>
 
         <div className="rounded-lg bg-muted/50 p-4 flex gap-2">
-        <InfoIcon className="size-5 text-muted-foreground"/>
+          <InfoIcon className="size-5 text-muted-foreground" />
           <p className="text-xs text-muted-foreground">
             This assessment is based on the information and evidence provided
             during this investigation. If you are not satisfied, you can request
             a reassessment.
           </p>
+          <Button
+            disabled={isLoading}
+            onClick={handleReassessment}
+            variant={"outline"}
+          >
+            Request Reassessment
+          </Button>
         </div>
       </CardContent>
     </Card>

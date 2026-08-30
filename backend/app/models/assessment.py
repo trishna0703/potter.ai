@@ -27,7 +27,7 @@ class Assessment(Base):
 
     problem: Mapped[str | None] = mapped_column(String(2000), nullable=True)
 
-    problem_cause: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    problem_cause: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
     confidence: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
@@ -58,8 +58,7 @@ class Assessment(Base):
         post_update=True,
     )
 
-    recommendation: Mapped["Recommendation | None"] = relationship(
+    recommendations: Mapped[list["Recommendation"]] = relationship(
         back_populates="assessment",
-        uselist=False,
         cascade="all, delete-orphan",
     )

@@ -8,13 +8,13 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 
-export default function usePlant() {
+export default function usePlant(status: "active" | "inactive" = "active") {
   const client = useQueryClient();
 
   const allPlants: UseQueryResult<Plant[], Error> = useQuery({
-    queryKey: ["all-plants"],
+    queryKey: ["all-plants", status],
     queryFn: async (): Promise<Plant[]> => {
-      return await apiClient(API_ENDPOINTS.PLANTS, {
+      return await apiClient(`${API_ENDPOINTS.PLANTS}${status.toUpperCase()}`, {
         method: "GET",
         credentials: "include",
       });

@@ -73,8 +73,8 @@ def login_with_google(
         key="session",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=False,
+        samesite="lax",
         max_age=60 * 60 * 24 * 30,
     )
 
