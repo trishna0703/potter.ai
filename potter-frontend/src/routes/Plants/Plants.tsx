@@ -1,9 +1,21 @@
+import { Button } from "#components/ui/button";
+import { useState } from "react";
 import PlantsList from "./components/PlantsList";
+import PlantListSkeleton from "./components/PlantListSkeleton";
+import PlantListError from "./components/PlantListError";
 import usePlant from "./hooks/usePlant";
 
 const Plants = () => {
-  const { allPlants } = usePlant();
-  const { data: plantList, isLoading, isError } = allPlants;
+  const [plantStatus, setPlantStatus] = useState<"active" | "inactive">(
+    "active",
+  );
+  const { allPlants, invalidate } = usePlant(plantStatus);
+  const { data: plantList, isLoading, isError, refetch } = allPlants;
+
+  const handleRetry = async () => {
+    await invalidate.plants();
+    refetch();
+  };
 
   return (
     <div className="p-6">
@@ -17,9 +29,27 @@ const Plants = () => {
       </header>
 
       <section className="mt-6">
-        {isLoading ? "Growing..." : null}
-        {plantList ? <PlantsList plantList={plantList} /> : null}
-        {isError ? "Failed to load plants" : null}
+        {isLoading ? <PlantListSkeleton /> : null}
+        {plantList ? (
+          <div>
+            <div className="flex gap-4">
+              <Button
+                variant={plantStatus === "active" ? "default" : "ghost"}
+                onClick={() => setPlantStatus("active")}
+              >
+                Active
+              </Button>
+              <Button
+                variant={plantStatus === "inactive" ? "default" : "ghost"}
+                onClick={() => setPlantStatus("inactive")}
+              >
+                Inactive
+              </Button>
+            </div>
+            <PlantsList plantList={plantList} />
+          </div>
+        ) : null}
+        {isError ? <PlantListError onRetry={handleRetry} /> : null}
       </section>
     </div>
   );

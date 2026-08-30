@@ -6,7 +6,7 @@ export interface Plant {
   pot_size: number | null;
   added_on: string;
   location_type: string | null;
-  status: string | null;
+  status: "ACTIVE" | "INACTIVE";
   avatar: string | null;
   avatar_id: number | null;
 }

@@ -99,14 +99,11 @@ export const useCreatePlantOperations = ({
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     let photo_url = await handleFileChange(e);
-    console.info("Photo uploaded to S3.");
     if (photo_url) setFormData((prev) => ({ ...prev, avatar: photo_url }));
   };
 
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    console.info("Process Add plant - STARTED");
     const added_on = new Date().toISOString().split("T")[0];
     const payload: Partial<Plant> = {
       name: formData.name || null,
@@ -115,12 +112,10 @@ export const useCreatePlantOperations = ({
       height_cm: formData.height_cm ? Number(formData.height_cm) : null,
       pot_size: formData.pot_size ? Number(formData.pot_size) : null,
       avatar_id: formData.avatar_id,
-      added_on,
+      added_on: formData.added_on ?? added_on,
     };
 
     if (plant && plant.id) {
-      console.info("Detected plant update.");
-
       payload["id"] = plant.id;
     }
 
@@ -135,9 +130,7 @@ export const useCreatePlantOperations = ({
       invalidate.plants();
       invalidate.plantDetails(newPlant.id);
       onClose();
-      console.info("Plant upload SUCCESSFUL");
     } catch (e) {
-      console.info("Plant upload FAILED");
       toast(
         `Ohh no, we couldn't add ${formData.name ?? "your plant"}. Please try again.`,
       );

@@ -138,5 +138,5 @@ type AnswerForQuestion<T extends QuestionPayload> =
 
 export type QuestionHandlerProps<T extends QuestionPayload> = {
   payload: T;
-  onSubmit: (value: AnswerForQuestion<T>, label: string | null) => void;
+  onSubmit: (value: AnswerForQuestion<T>, label: string) => void;
 };

@@ -27,11 +27,11 @@ const InputHandler = ({
         return;
       }
 
-      onSubmit(numberValue);
+      onSubmit(numberValue, String(numberValue));
       return;
     }
 
-    onSubmit(value.trim());
+    onSubmit(value.trim(), value.trim());
   };
 
   const isInvalid = required && value.trim().length === 0;

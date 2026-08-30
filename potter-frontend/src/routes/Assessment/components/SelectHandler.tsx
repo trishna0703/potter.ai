@@ -1,43 +1,34 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "#components/ui/checkbox";
-
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import type {
   BooleanQuestion,
   MultipleChoiceQuestion,
   QuestionHandlerProps,
   SingleChoiceQuestion,
 } from "@/types/assessment";
-import { Button } from "#components/ui/button";
+
+type SelectQuestion =
+  | SingleChoiceQuestion
+  | MultipleChoiceQuestion
+  | BooleanQuestion;
 
 const SelectHandler = ({
   payload,
   onSubmit,
-}: QuestionHandlerProps<
-  SingleChoiceQuestion | MultipleChoiceQuestion | BooleanQuestion
->) => {
+}: QuestionHandlerProps<SelectQuestion>) => {
   const { id, required, options, input_type, prompt } = payload;
-  const [label, setLabel] = useState<string | null>(null);
-  const [singleValue, setSingleValue] = useState<string>("");
+
+  const [singleValue, setSingleValue] = useState("");
   const [multipleValues, setMultipleValues] = useState<string[]>([]);
-  const [booleanValue, setBooleanValue] = useState<string>("");
+  const [booleanValue, setBooleanValue] = useState("");
 
   const handleMultipleChange = (value: string, checked: boolean) => {
-    setMultipleValues((current) => {
-      const next = checked
-        ? [...current, value]
-        : current.filter((item) => item !== value);
-
-      const labels = next
-        .map((item) => options.find((option) => option.value === item)?.label)
-        .filter(Boolean)
-        .join(", ");
-
-      setLabel(labels || null);
-
-      return next;
-    });
+    setMultipleValues((current) =>
+      checked ? [...current, value] : current.filter((item) => item !== value),
+    );
   };
 
   const handleSubmit = () => {
@@ -56,17 +47,36 @@ const SelectHandler = ({
     }
 
     switch (input_type) {
-      case "single_choice":
-        onSubmit(singleValue, label);
-        break;
+      case "single_choice": {
+        const selectedOption = options.find(
+          (option) => option.value === singleValue,
+        );
 
-      case "multiple_choice":
-        onSubmit(multipleValues, label);
-        break;
+        onSubmit(singleValue, selectedOption?.label ?? "");
 
-      case "boolean":
-        onSubmit(booleanValue === "true", label);
         break;
+      }
+
+      case "multiple_choice": {
+        const selectedOptions = options.filter((option) =>
+          multipleValues.includes(option.value),
+        );
+
+        onSubmit(
+          multipleValues,
+          selectedOptions.map((option) => option.label).join(", "),
+        );
+
+        break;
+      }
+
+      case "boolean": {
+        const value = booleanValue === "true";
+
+        onSubmit(value, value ? "Yes" : "No");
+
+        break;
+      }
     }
   };
 
@@ -77,12 +87,7 @@ const SelectHandler = ({
       {input_type === "single_choice" && (
         <RadioGroup
           value={singleValue}
-          onValueChange={(value) => {
-            setSingleValue(value);
-            setLabel(
-              options.find((option) => option.value === value)?.label ?? null,
-            );
-          }}
+          onValueChange={setSingleValue}
           aria-labelledby={id}
         >
           {options.map((option) => (
@@ -116,8 +121,8 @@ const SelectHandler = ({
                 <Checkbox
                   id={`${id}-${option.value}`}
                   checked={checked}
-                  onCheckedChange={(value) =>
-                    handleMultipleChange(option.value, value === true)
+                  onCheckedChange={(checked) =>
+                    handleMultipleChange(option.value, checked === true)
                   }
                 />
 
@@ -131,10 +136,7 @@ const SelectHandler = ({
       {input_type === "boolean" && (
         <RadioGroup
           value={booleanValue}
-          onValueChange={(value) => {
-            setBooleanValue(value);
-            setLabel(value === "true" ? "Yes" : "No");
-          }}
+          onValueChange={setBooleanValue}
           aria-labelledby={id}
         >
           <Label
@@ -142,6 +144,7 @@ const SelectHandler = ({
             className="flex items-center gap-2 border-[0.5px] p-4 rounded-lg cursor-pointer hover:bg-secondary/30"
           >
             <RadioGroupItem value="true" id={`${id}-yes`} />
+
             <span>Yes</span>
           </Label>
 
@@ -150,6 +153,7 @@ const SelectHandler = ({
             className="flex items-center gap-2 border-[0.5px] p-4 rounded-lg cursor-pointer hover:bg-secondary/30"
           >
             <RadioGroupItem value="false" id={`${id}-no`} />
+
             <span>No</span>
           </Label>
         </RadioGroup>
