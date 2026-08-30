@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 
-@app.get("/api")
+@app.get("/api/")
 def root():
     return {"message": "Potter.ai backend is running."}
 
