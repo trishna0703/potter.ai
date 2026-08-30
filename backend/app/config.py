@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     aws_access_key_id: str
     aws_secret_access_key: str
     aws_s3_bucket_name: str
+    openrouter_api_key: str
     ai_model: str
     frontend_url:str
 
