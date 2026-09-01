@@ -27,6 +27,7 @@ import { Calendar } from "#components/ui/calendar";
 import { Switch } from "#components/ui/switch";
 import { format } from "date-fns";
 import usecareEventScheduler from "#hooks/useCareEventScheduler";
+import ConnectGoogleCalendarButton from "./ConnectGoogleCalendarButton";
 
 type FrequencyType = "DAYS" | "WEEKS";
 
@@ -297,6 +298,9 @@ export function CareScheduleDialog({
                     setFormData((prev) => ({ ...prev, autoSchedule: checked }))
                   }
                 />
+              </div>
+              <div className="flex justify-end">
+                <ConnectGoogleCalendarButton plantId={plantId} />
               </div>
             </div>
 

@@ -4,13 +4,16 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     database_url: str
     google_client_id: str
+    google_client_secret: str
+    google_calendar_redirect_uri: str
     aws_region: str
     aws_access_key_id: str
     aws_secret_access_key: str
     aws_s3_bucket_name: str
     openrouter_api_key: str
     ai_model: str
-    frontend_url:str
+    frontend_url: str
+    environment: str
 
     class Config:
         env_file = ".env"

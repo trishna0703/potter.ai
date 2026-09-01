@@ -18,7 +18,7 @@ import {
 import { Button } from "#components/ui/button";
 import { EllipsisVertical } from "lucide-react";
 import CreatePlantForm from "./CreatePlantForm";
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { ROUTES, S3_URL } from "#lib/routes";
 import { useNavigate } from "react-router-dom";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
@@ -187,6 +187,7 @@ const PlantCard = ({
   );
 };
 const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
+  const params = new URLSearchParams(window.location.search);
   const [editPlant, setEditPlant] = useState<Plant | undefined>(undefined);
   const [showcareEventDialog, setShowCareEventDialog] = useState<{
     plantId: number | null;
@@ -210,6 +211,21 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
       showErrorToast(error);
     }
   };
+
+  useEffect(() => {
+    if (
+      params.get("process") === "care-event-scheduler" &&
+      params.get("plantId")
+    ) {
+      setShowCareEventDialog({
+        plantId: Number(params.get("plantId")),
+        show: true,
+      });
+
+      params.delete("process");
+      params.delete("plantId");
+    }
+  }, [params.get("process")]);
 
   if (!plantList.length) {
     return <NoPlantsFound />;

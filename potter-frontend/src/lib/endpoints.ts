@@ -21,4 +21,5 @@ export const API_ENDPOINTS = {
   LOGOUT: `${API_URL}/auth/logout`,
   RECOMMENDATIONS: `${API_URL}/concerns/recommendations`,
   SCHEDULE_CARE_EVENT: (plantId: number) => `${API_URL}/schedules/${plantId}`,
+  CALENDAR_CONNECTION_STATUS: `${API_URL}/integrations/google-calendar/status`,
 };

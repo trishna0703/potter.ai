@@ -10,6 +10,7 @@ from app.routes import (
     concerns,
     upload,
     care_schedule,
+    integrations,
 )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -43,3 +44,4 @@ app.include_router(assessment_websocket.router, prefix="/api/concern/ws")
 app.include_router(upload.router, prefix="/api/uploads")
 app.include_router(identify.router, prefix="/api/identify")
 app.include_router(care_schedule.router, prefix="/api/schedules")
+app.include_router(integrations.router, prefix="/api")

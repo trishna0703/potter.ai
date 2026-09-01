@@ -28,3 +28,5 @@ jobs:
             docker compose up -d
 
             docker compose exec -T backend uv run alembic upgrade head
+
+            docker compose up -d --force-recreate nginx
