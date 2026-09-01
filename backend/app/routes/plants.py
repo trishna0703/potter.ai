@@ -53,7 +53,11 @@ def get_all_plants(
 
     plant_list = db.scalars(stmt).all()
 
-    return [plant_to_response(plant) for plant in plant_list]
+    return sorted(
+        [plant_to_response(plant) for plant in plant_list],
+        key=lambda x: x.id,
+        reverse=False,
+    )
 
 
 @router.get("/{plant_id}", response_model=PlantResponse)

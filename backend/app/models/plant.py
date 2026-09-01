@@ -49,4 +49,6 @@ class Plant(Base):
 
     concerns: Mapped[list["HealthConcern"]] = relationship(back_populates="plant")
 
+    care_schedules: Mapped[list["CareSchedule"]] = relationship(back_populates="plant")
+
     __table_args__ = (UniqueConstraint("user_id", "name", name="uq_user_plant_name"),)

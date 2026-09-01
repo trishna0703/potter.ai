@@ -8,14 +8,13 @@ import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
 import useIdentify from "#hooks/useIdentify";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 import usePlantStore from "@/store/PlantStore";
-import CreatePlantForm from "@/routes/Plants/components/CreatePlantForm";
 import { getToday } from "#lib/utils";
 
 const NoConcernFound = () => {
   const { handleFileChange } = usePhotoUpload();
   const { mutateAsync: runAIIdentification } = useIdentify();
-  const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
-  const { showForm, setShowForm } = usePlantStore();
+  const { setPlantIdentity } = usePlantIdentityStore();
+  const { setShowForm } = usePlantStore();
   const [isLoadingIdentification, setIsLoadingIdentification] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -62,17 +61,6 @@ const NoConcernFound = () => {
       <IdentifiedPlantModal
         createPlant={() => setShowForm(true)}
         {...{ isOpen, setIsOpen }}
-      />
-
-      <CreatePlantForm
-        plant={{
-          avatar_id: plantIdentity?.photo_id,
-          added_on: getToday(),
-          species: plantIdentity?.species,
-          avatar: plantIdentity?.photo_url,
-        }}
-        open={showForm}
-        onClose={() => setShowForm(false)}
       />
     </>
   );

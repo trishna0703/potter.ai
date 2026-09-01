@@ -20,4 +20,5 @@ export const API_ENDPOINTS = {
   IDENTIFY: `${API_URL}/identify/`,
   LOGOUT: `${API_URL}/auth/logout`,
   RECOMMENDATIONS: `${API_URL}/concerns/recommendations`,
+  SCHEDULE_CARE_EVENT: (plantId: number) => `${API_URL}/schedules/${plantId}`,
 };
