@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { cn, getToday } from "#lib/utils";
 import PhotoPicker from "#components/utils/PhotoPicker";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
@@ -129,6 +129,18 @@ const Navbar = () => {
     setIsOpen(true);
   };
 
+  const newPlant = useMemo(
+    () => ({
+      avatar_id: plantIdentity?.photo_id,
+      added_on: getToday(),
+      species: plantIdentity?.species,
+      avatar: plantIdentity?.photo_url,
+    }),
+    [plantIdentity?.photo_id, plantIdentity?.species, plantIdentity?.photo_url],
+  );
+
+  console.log({ plantIdentity });
+
   return (
     <>
       <nav className="h-16 border-b px-6 flex items-center justify-between">
@@ -147,12 +159,7 @@ const Navbar = () => {
       />
 
       <CreatePlantForm
-        plant={{
-          avatar_id: plantIdentity?.photo_id,
-          added_on: getToday(),
-          species: plantIdentity?.species,
-          avatar: plantIdentity?.photo_url,
-        }}
+        plant={newPlant}
         open={showForm}
         onClose={() => setShowForm(false)}
       />

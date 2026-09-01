@@ -2,11 +2,24 @@
 
 Quick reference for the FastAPI + SQLAlchemy + Alembic + uv backend.
 
+
 ## Start the development server
 
+with docker
 ```powershell
-uv run python -m uvicorn main:app --reload
+docker compose -f docker-compose.dev.yml build
+
+docker compose -f docker-compose.dev.yml up -d
+
+# for db migrations
+docker compose -f docker-compose.dev.yml exec backend uv run alembic revision --autogenerate -m "describe change"
+docker compose -f docker-compose.dev.yml exec backend uv run alembic upgrade head
+
 ```
+
+without docker
+
+uv run python -m uvicorn main:app --reload
 
 ## Dependencies
 

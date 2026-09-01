@@ -28,6 +28,7 @@ import { getToday, showErrorToast } from "#lib/utils";
 import { useCreateOrUpdatePlant } from "../hooks/useCreatePlant";
 import usePlant from "../hooks/usePlant";
 import NoPlantsFound from "./NoPlantsFound";
+import { CareScheduleDialog } from "#components/utils/CareEventScheduler";
 
 const Bullet = () => <span className="w-1 h-1 bg-ochre rounded-full"></span>;
 
@@ -36,11 +37,13 @@ const PlantMenu = ({
   editPlant,
   raiseConcern,
   markPlantDead,
+  triggerCareEvent,
 }: {
   plant: Plant;
   editPlant: (plant: Plant) => void;
   raiseConcern: (event: ChangeEvent<HTMLInputElement, Element>) => void;
   markPlantDead: (id: number) => Promise<void>;
+  triggerCareEvent: (id: number) => void;
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -57,21 +60,8 @@ const PlantMenu = ({
         }
       />
 
-      <DropdownMenuContent>
+      <DropdownMenuContent className="w-44">
         <DropdownMenuGroup>
-          <DropdownMenuItem
-            className={"hover:bg-terracotta/20 cursor-pointer"}
-            onClick={() => editPlant(plant)}
-          >
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className={"hover:bg-terracotta/20 cursor-pointer"}
-            onClick={() => markPlantDead(plant.id)}
-          >
-            Mark dead
-          </DropdownMenuItem>
-
           <PhotoPicker
             onPhotoSelected={raiseConcern}
             onOpenChange={(open) => {
@@ -79,9 +69,28 @@ const PlantMenu = ({
             }}
           >
             <span className="cursor-pointer text-sm py-1 px-1.5 hover:bg-terracotta/20 w-full text-left inline-block rounded-md">
-              Raise
+              Raise Concern
             </span>
           </PhotoPicker>
+          <DropdownMenuItem
+            className={"hover:bg-terracotta/20 cursor-pointer"}
+            onClick={() => triggerCareEvent(plant.id)}
+          >
+            Add Care Event
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className={"hover:bg-terracotta/20 cursor-pointer"}
+            onClick={() => editPlant(plant)}
+          >
+            Edit
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className={"hover:bg-terracotta/20 cursor-pointer"}
+            onClick={() => markPlantDead(plant.id)}
+          >
+            Mark dead
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className={"hover:bg-terracotta/20 cursor-pointer"}>
@@ -95,10 +104,12 @@ const PlantCard = ({
   plant,
   editPlant,
   markPlantDead,
+  triggerCareEvent,
 }: {
   plant: Plant;
   editPlant: (plant: Plant) => void;
   markPlantDead: (id: number) => Promise<void>;
+  triggerCareEvent: (id: number) => void;
 }) => {
   const navigate = useNavigate();
   const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
@@ -140,7 +151,15 @@ const PlantCard = ({
         />
         <CardAction className="ml-auto absolute right-0 -top-3 z-2">
           {plant.status === "ACTIVE" ? (
-            <PlantMenu {...{ plant, editPlant, raiseConcern, markPlantDead }} />
+            <PlantMenu
+              {...{
+                plant,
+                editPlant,
+                raiseConcern,
+                markPlantDead,
+                triggerCareEvent,
+              }}
+            />
           ) : null}
         </CardAction>
       </CardHeader>
@@ -169,7 +188,13 @@ const PlantCard = ({
 };
 const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
   const [editPlant, setEditPlant] = useState<Plant | undefined>(undefined);
-
+  const [showcareEventDialog, setShowCareEventDialog] = useState<{
+    plantId: number | null;
+    show: boolean;
+  }>({
+    plantId: null,
+    show: false,
+  });
   const { mutateAsync: markPlantdead } = useCreateOrUpdatePlant();
   const { invalidate } = usePlant();
 
@@ -199,6 +224,9 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
               plant={plant}
               editPlant={(plant: Plant) => setEditPlant(plant)}
               markPlantDead={handleMarkPlantDead}
+              triggerCareEvent={(id: number) =>
+                setShowCareEventDialog({ plantId: id, show: true })
+              }
             />
           </li>
         ))}
@@ -207,6 +235,13 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
         open={!!editPlant}
         onClose={() => setEditPlant(undefined)}
         plant={editPlant}
+      />
+      <CareScheduleDialog
+        open={showcareEventDialog.show}
+        onOpenChange={(val) =>
+          setShowCareEventDialog({ plantId: null, show: val })
+        }
+        plantId={showcareEventDialog.plantId || 0}
       />
     </div>
   );

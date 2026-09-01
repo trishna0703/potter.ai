@@ -38,7 +38,7 @@ const LOCATION_TYPE = [
 ];
 
 const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
-  const isEditing = !!plant;
+  const isEditing = !!plant?.id;
 
   const {
     handleChange,
@@ -89,11 +89,11 @@ const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
               />
 
               <AvatarFallback>
-                {plant?.name
+                {formData?.name
                   ?.split(" ")
                   .map((n) => n[0])
                   .join("") ||
-                  plant?.species
+                  formData?.species
                     ?.split(" ")
                     .map((n) => n[0])
                     .join("")}
@@ -151,7 +151,7 @@ const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
                 id="location_type"
                 name="location_type"
                 items={LOCATION_TYPE}
-                value={formData.location_type ?? plant?.location_type}
+                value={formData.location_type}
                 onValueChange={(value) =>
                   handleSelectChange("location_type", value)
                 }

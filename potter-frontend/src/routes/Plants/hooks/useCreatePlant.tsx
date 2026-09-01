@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import usePlant from "./usePlant";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
+import { getToday } from "#lib/utils";
 
 interface PlantFormData {
   name: string;
@@ -73,7 +74,7 @@ export const useCreatePlantOperations = ({
         height_cm: plant.height_cm?.toString() || "",
         pot_size: plant.pot_size?.toString() || "",
         avatar_id: plant.avatar_id,
-        added_on: plant.added_on ?? null,
+        added_on: plant.added_on ?? getToday(),
         avatar: plant.avatar,
       });
     }
@@ -104,7 +105,6 @@ export const useCreatePlantOperations = ({
 
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const added_on = new Date().toISOString().split("T")[0];
     const payload: Partial<Plant> = {
       name: formData.name || null,
       species: formData.species,
@@ -112,7 +112,8 @@ export const useCreatePlantOperations = ({
       height_cm: formData.height_cm ? Number(formData.height_cm) : null,
       pot_size: formData.pot_size ? Number(formData.pot_size) : null,
       avatar_id: formData.avatar_id,
-      added_on: formData.added_on ?? added_on,
+      added_on: formData.added_on ?? getToday(),
+      status: "ACTIVE",
     };
 
     if (plant && plant.id) {

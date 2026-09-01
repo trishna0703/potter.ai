@@ -3,7 +3,7 @@ import { Sprout } from "lucide-react";
 import { Button } from "#components/ui/button";
 import PhotoPicker from "#components/utils/PhotoPicker";
 import IdentifiedPlantModal from "#components/utils/IdentifiedPlantModal";
-import CreatePlantForm from "./CreatePlantForm";
+
 import Overlay from "#components/layout/Overlay";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
 import useIdentify from "#hooks/useIdentify";
@@ -14,8 +14,8 @@ import { getToday } from "#lib/utils";
 const NoPlantsFound = () => {
   const { handleFileChange } = usePhotoUpload();
   const { mutateAsync: runAIIdentification } = useIdentify();
-  const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
-  const { showForm, setShowForm } = usePlantStore();
+  const {  setPlantIdentity } = usePlantIdentityStore();
+  const { setShowForm } = usePlantStore();
   const [isLoadingIdentification, setIsLoadingIdentification] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -64,16 +64,6 @@ const NoPlantsFound = () => {
         {...{ isOpen, setIsOpen }}
       />
 
-      <CreatePlantForm
-        plant={{
-          avatar_id: plantIdentity?.photo_id,
-          added_on: getToday(),
-          species: plantIdentity?.species,
-          avatar: plantIdentity?.photo_url,
-        }}
-        open={showForm}
-        onClose={() => setShowForm(false)}
-      />
     </>
   );
 };

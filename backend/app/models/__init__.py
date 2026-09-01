@@ -15,3 +15,6 @@ from .outcome import Outcome
 from .session import UserSession
 from .assessment_message import AssessmentMessage
 from .plant_identification import PlantIdentification
+from .care_schedule import CareSchedule
+from .calendar_connection import GoogleCalendarConnection
+from .schedule_calendar_event import CareScheduleCalendarEvent
