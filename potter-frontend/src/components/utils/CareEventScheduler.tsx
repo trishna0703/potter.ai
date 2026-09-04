@@ -28,6 +28,7 @@ import { Switch } from "#components/ui/switch";
 import { format } from "date-fns";
 import usecareEventScheduler from "#hooks/useCareEventScheduler";
 import ConnectGoogleCalendarButton from "./ConnectGoogleCalendarButton";
+import useCalendarConnectionStatus from "#hooks/useCalendarConnectionStatus";
 
 type FrequencyType = "DAYS" | "WEEKS";
 
@@ -45,6 +46,7 @@ export function CareScheduleDialog({
   onCreated,
 }: CareScheduleDialogProps) {
   if (!open) return null;
+  const { data: calendarConnection } = useCalendarConnectionStatus();
 
   const {
     handleScheduleCareEvent,
@@ -297,10 +299,14 @@ export function CareScheduleDialog({
                   onCheckedChange={(checked) =>
                     setFormData((prev) => ({ ...prev, autoSchedule: checked }))
                   }
+                  disabled={calendarConnection?.connected !== "connected"}
                 />
               </div>
               <div className="flex justify-end">
-                <ConnectGoogleCalendarButton plantId={plantId} />
+                <ConnectGoogleCalendarButton
+                  plantId={plantId}
+                  status={calendarConnection?.connected}
+                />
               </div>
             </div>
 

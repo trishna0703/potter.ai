@@ -1,53 +1,54 @@
-import { useEffect } from "react";
-import useUserStore from "../../store/UserStore";
 import { API_ENDPOINTS } from "#lib/endpoints";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "#lib/client";
+import { useEffect } from "react";
+import useUserStore from "@/store/UserStore";
 
 export default function useAuth() {
+  const client = useQueryClient();
   const { setUser } = useUserStore();
 
   async function getCurrentUser() {
-    let res = await fetch(API_ENDPOINTS.USER, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
+    return await apiClient(API_ENDPOINTS.USER, {
+      method: "GET",
     });
-
-    if (!res.ok) {
-      throw new Error("Failed to auto sign in with Google");
-    }
-
-    return await res.json();
   }
+
+  const currentUser = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => await getCurrentUser(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
   useEffect(() => {
-    getCurrentUser().then((user) => {
-      setUser(user);
-    });
-  }, []);
+    if (currentUser.data) {
+      console.log("triggered and populated user");
+      setUser(currentUser.data);
+    }
+  }, [currentUser.data]);
 
   async function SignInWithGoogle(token: string) {
-    let res = await fetch(API_ENDPOINTS.LOGIN, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+    let userData = await apiClient(API_ENDPOINTS.LOGIN, {
       method: "POST",
       body: JSON.stringify({ token }),
-      credentials: "include",
     });
+    setUser(userData);
 
-    if (!res.ok) {
-      throw new Error("Failed to sign in with Google");
-    }
+    client.setQueryData(["currentUser"], userData);
 
-    let data = await res.json();
-
-    return data;
+    return userData;
   }
 
-  return { SignInWithGoogle };
+  const clearCurrentUser = () => {
+    client.removeQueries({
+      queryKey: ["currentUser"],
+    });
+
+    setUser(null);
+  };
+
+  return { SignInWithGoogle, currentUser, clearCurrentUser };
 }
 
 export function useLogout() {

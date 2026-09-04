@@ -1,31 +1,36 @@
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import useAuth from "./useAuth";
 import { useNavigate } from "react-router-dom";
-import useUserStore, { type UserType } from "../../store/UserStore";
+import useUserStore from "../../store/UserStore";
 import { useEffect } from "react";
 import { ROUTES } from "../../lib/routes";
 import { Card } from "#components/ui/card";
+import { showErrorToast } from "#lib/utils";
+import Overlay from "#components/layout/Overlay";
 
 const Login = () => {
-  const { SignInWithGoogle } = useAuth();
+  const { SignInWithGoogle, currentUser } = useAuth();
+  const { isLoading } = currentUser;
   const { user, setUser } = useUserStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      navigate(ROUTES.PLANTS);
+      navigate(ROUTES.PLANTS, { replace: true });
     }
-  }, [user]);
+  }, [user, setUser, navigate]);
+
+  if (isLoading) return <Overlay />;
 
   const responseMessage = async (response: CredentialResponse) => {
     if (response.credential) {
-      let user: UserType = await SignInWithGoogle(response.credential);
-
-      setUser(user);
+      await SignInWithGoogle(response.credential);
     }
   };
 
-  const errorMessage = () => {};
+  const errorMessage = () => {
+    showErrorToast("Login Failed. Please try again later.");
+  };
 
   return (
     <main className="min-h-screen bg-background text-foreground flex items-center justify-center">

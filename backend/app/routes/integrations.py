@@ -14,6 +14,7 @@ from app.services.google_calendar import (
     add_query_param,
     build_google_oauth_flow,
     check_google_calendar_callback_error,
+    check_google_calendar_connection,
     clear_oauth_state,
     generate_oauth_code_verifier,
     generate_oauth_state,
@@ -170,6 +171,18 @@ class GoogleCalendarStatusResponse(BaseModel):
     connected: bool
 
 
+def get_google_calendar_connection(
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+
+    stmt = select(GoogleCalendarConnection).where(
+        GoogleCalendarConnection.user_id == user_id
+    )
+
+    return db.scalar(stmt)
+
+
 @router.get(
     "/status",
     response_model=GoogleCalendarStatusResponse,
@@ -180,12 +193,22 @@ def get_google_calendar_status(
 ):
     current_session = get_current_user_from_session(request, db)
 
-    stmt = select(GoogleCalendarConnection).where(
-        GoogleCalendarConnection.user_id == current_session.user_id
+    connection = get_google_calendar_connection(
+        db=db,
+        user_id=current_session.user_id,
     )
 
-    connection = db.scalar(stmt)
+    print("USER ID:", current_session.user_id)
+    print("CALENDAR CONNECTION:", connection)
 
-    return GoogleCalendarStatusResponse(
-        connected=connection is not None,
+    if connection is None:
+        return GoogleCalendarStatusResponse(connected=False)
+
+    connected = check_google_calendar_connection(
+        connection=connection,
+        db=db,
     )
+
+    print("CALENDAR CHECK RESULT:", connected)
+
+    return GoogleCalendarStatusResponse(connected=connected)

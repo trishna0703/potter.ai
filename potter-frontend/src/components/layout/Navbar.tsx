@@ -20,7 +20,7 @@ import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 import IdentifiedPlantModal from "#components/utils/IdentifiedPlantModal";
 import CreatePlantForm from "@/routes/Plants/components/CreatePlantForm";
 import Overlay from "./Overlay";
-import { useLogout } from "@/routes/Login/useAuth";
+import useAuth, { useLogout } from "@/routes/Login/useAuth";
 import usePlantStore from "@/store/PlantStore";
 
 type MenuType = {
@@ -48,23 +48,24 @@ const menuItems: MenuType[] = [
 
 const Menu = () => {
   const open = useRef<boolean | null>(null);
-  const { user, setUser } = useUserStore();
+  const { user } = useUserStore();
   const navigate = useNavigate();
 
   const { mutate: logout } = useLogout();
+  const { clearCurrentUser } = useAuth();
 
   const handleMenuClick = async (item: MenuType) => {
     if (item.path === "/logout") {
       await logout();
-      setUser(null);
-
-      navigate("/login");
+      clearCurrentUser();
+      navigate("/login", { replace: true });
       return;
     }
 
     navigate(item.path);
     open.current = null;
   };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger

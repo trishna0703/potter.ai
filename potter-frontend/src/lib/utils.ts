@@ -12,8 +12,10 @@ export function getToday() {
 
 export function showErrorToast(error: any) {
   if (error instanceof Error) {
-    return toast(error.message);
+    return toast.error(error.message);
   }
+
+  return toast.error(String(error));
 }
 
 export const formatLabel = (value: string): string => {

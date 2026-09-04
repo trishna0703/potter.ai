@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ai_model: str
     frontend_url: str
     environment: str
+    oauthlib_relax_token_scope: bool = False
 
     class Config:
         env_file = ".env"

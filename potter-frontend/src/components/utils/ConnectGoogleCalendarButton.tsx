@@ -1,24 +1,23 @@
 import { Button } from "#components/ui/button";
-import useCalendarConnectionStatus from "#hooks/useCalendarConnectionStatus";
-import apiClient from "#lib/client";
+
 import { CheckIcon } from "lucide-react";
 
-const ConnectGoogleCalendarButton = ({ plantId }: { plantId: number }) => {
-  const { data: connection } = useCalendarConnectionStatus();
+const ConnectGoogleCalendarButton = ({
+  plantId,
+  status,
+}: {
+  plantId: number;
+  status: boolean;
+}) => {
   const handleConnectGoogleCalendar = async () => {
-    await apiClient(
-      "/api/integrations/google-calendar/connect?return_to=" +
-        encodeURIComponent(
-          window.location.pathname +
-            `?process=care-event-scheduler&plantId=${plantId}`,
-        ),
-      {
-        method: "GET",
-      },
-    );
+    const returnTo =
+      window.location.pathname +
+      `?process=care-event-scheduler&plantId=${plantId}`;
+
+    window.location.href = `/api/integrations/google-calendar/connect?return_to=${encodeURIComponent(returnTo)}`;
   };
 
-  return connection?.connected ? (
+  return status ? (
     <span className="flex items-center gap-2 justify-center border-[0.5px] border-success rounded-md p-1 text-xs w-max">
       <CheckIcon className="size-3 text-success" /> Calendar Connected
     </span>

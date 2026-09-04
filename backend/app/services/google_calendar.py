@@ -3,7 +3,7 @@ import secrets
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request as FastAPIRequest
 from google_auth_oauthlib.flow import Flow
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -14,6 +14,9 @@ from app.config import settings
 from app.models.calendar_connection import GoogleCalendarConnection
 from app.models.session import UserSession
 import os
+from google.auth.transport.requests import Request
+from googleapiclient.errors import HttpError
+from google.auth.exceptions import RefreshError
 
 if settings.environment == "development":
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -167,7 +170,7 @@ def clear_oauth_state(session: UserSession) -> None:
 
 
 def check_google_calendar_callback_error(
-    request: Request,
+    request: FastAPIRequest,
 ) -> None:
     error = request.query_params.get("error")
 
@@ -178,7 +181,7 @@ def check_google_calendar_callback_error(
         )
 
 
-def get_google_callback_state(request: Request) -> str:
+def get_google_callback_state(request: FastAPIRequest) -> str:
     state = request.query_params.get("state")
 
     if not state:
@@ -206,8 +209,6 @@ def validate_oauth_redirect_uri(redirect_uri: str) -> str:
     return redirect_uri
 
 
-
-
 def add_query_param(
     url: str,
     key: str,
@@ -227,3 +228,62 @@ def add_query_param(
             parts.fragment,
         )
     )
+
+
+def check_google_calendar_connection(
+    *,
+    connection: GoogleCalendarConnection,
+    db: Session,
+) -> bool:
+    credentials = Credentials(
+        token=connection.access_token,
+        refresh_token=connection.refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=settings.google_client_id,
+        client_secret=settings.google_client_secret,
+        scopes=GOOGLE_CALENDAR_SCOPES,
+    )
+
+    try:
+        # Refresh the access token if Google considers it expired.
+        if credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+
+        # Make a lightweight authenticated request.
+        service = build(
+            "calendar",
+            "v3",
+            credentials=credentials,
+            cache_discovery=False,
+        )
+
+        service.events().list(
+            calendarId="primary",
+            maxResults=1,
+            singleEvents=True,
+        ).execute()
+
+        # Google may have refreshed our access token.
+        if credentials.token != connection.access_token:
+            connection.access_token = credentials.token
+            connection.token_expires_at = credentials.expiry
+
+            db.commit()
+
+        return True
+
+    except RefreshError:
+        return False
+    
+    except HttpError as exc:
+        if exc.resp.status == 401:
+            return False
+
+        if exc.resp.status == 403:
+            print(
+                "Google Calendar permission error:",
+                exc,
+            )
+            return False
+
+        raise
