@@ -308,7 +308,7 @@ export function CareScheduleDialog({
               </div>
               <div className="flex justify-end pt-2">
                 <ConnectGoogleCalendarButton
-                  plantId={plantId}
+                  returnTo={window.location.pathname + `?process=care-event-scheduler&plantId=${plantId}`}
                   status={calendarConnection?.connected}
                 />
               </div>

@@ -3,16 +3,15 @@ import { Button } from "#components/ui/button";
 import { CheckIcon } from "lucide-react";
 
 const ConnectGoogleCalendarButton = ({
-  plantId,
+
   status,
+  returnTo
 }: {
-  plantId: number;
   status: boolean;
+  returnTo: string
 }) => {
   const handleConnectGoogleCalendar = async () => {
-    const returnTo =
-      window.location.pathname +
-      `?process=care-event-scheduler&plantId=${plantId}`;
+
 
     window.location.href = `/api/integrations/google-calendar/connect?return_to=${encodeURIComponent(returnTo)}`;
   };
@@ -26,8 +25,9 @@ const ConnectGoogleCalendarButton = ({
       variant="outline"
       onClick={handleConnectGoogleCalendar}
       className="w-max"
+      size={"xs"}
     >
-      Connect Google Calendar
+      Connect Calendar
     </Button>
   );
 };
