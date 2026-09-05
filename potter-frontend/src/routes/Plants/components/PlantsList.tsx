@@ -20,15 +20,15 @@ import { EllipsisVertical } from "lucide-react";
 import CreatePlantForm from "./CreatePlantForm";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { ROUTES, S3_URL } from "#lib/routes";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 import PhotoPicker from "#components/utils/PhotoPicker";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
-import { getToday, showErrorToast } from "#lib/utils";
+import { getToday } from "#lib/utils";
 import { useCreateOrUpdatePlant } from "../hooks/useCreatePlant";
 import usePlant from "../hooks/usePlant";
 import NoPlantsFound from "./NoPlantsFound";
-import { CareScheduleDialog } from "#components/utils/CareEventScheduler";
+import { CareScheduleDialog } from "#components/utils/CareScheduleDialog";
 
 const Bullet = () => <span className="w-1 h-1 bg-ochre rounded-full"></span>;
 
@@ -46,7 +46,7 @@ const PlantMenu = ({
   triggerCareEvent: (id: number) => void;
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const navigate = useNavigate();
   return (
     <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
       <DropdownMenuTrigger
@@ -76,7 +76,13 @@ const PlantMenu = ({
             className={"hover:bg-terracotta/20 cursor-pointer"}
             onClick={() => triggerCareEvent(plant.id)}
           >
-            Add Care Event
+            Add Schedule
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className={"hover:bg-terracotta/20 cursor-pointer"}
+            onClick={() => navigate(`schedules/${plant.id}`)}
+          >
+            Manage Schedules
           </DropdownMenuItem>
           <DropdownMenuItem
             className={"hover:bg-terracotta/20 cursor-pointer"}
@@ -187,7 +193,8 @@ const PlantCard = ({
   );
 };
 const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
-  const params = new URLSearchParams(window.location.search);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const params = new URLSearchParams(searchParams);
   const [editPlant, setEditPlant] = useState<Plant | undefined>(undefined);
   const [showcareEventDialog, setShowCareEventDialog] = useState<{
     plantId: number | null;
@@ -207,9 +214,7 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
       });
 
       invalidate.plants();
-    } catch (error) {
-      showErrorToast(error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -224,6 +229,9 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
 
       params.delete("process");
       params.delete("plantId");
+      params.delete("calendar");
+
+      setSearchParams(params, { replace: true });
     }
   }, [params.get("process")]);
 

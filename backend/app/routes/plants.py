@@ -60,7 +60,7 @@ def get_all_plants(
     )
 
 
-@router.get("/{plant_id}", response_model=PlantResponse)
+@router.get("/details/{plant_id}", response_model=PlantResponse)
 def get_plant_details(
     plant_id: int,
     current_user: User = Depends(get_current_user),

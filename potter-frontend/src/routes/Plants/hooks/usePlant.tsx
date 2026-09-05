@@ -26,7 +26,7 @@ export default function usePlant(status: "active" | "inactive" = "active") {
     return useQuery({
       queryKey: ["plant", plantId],
       queryFn: async (): Promise<Plant> => {
-        return await apiClient(`${API_ENDPOINTS.PLANT(plantId)}`, {
+        return await apiClient(API_ENDPOINTS.PLANT(plantId), {
           method: "GET",
         });
       },

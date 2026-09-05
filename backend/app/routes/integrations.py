@@ -10,22 +10,7 @@ from app.config import settings
 from app.database import get_db
 from app.models.calendar_connection import GoogleCalendarConnection
 from app.services.auth import get_session
-from app.services.google_calendar import (
-    add_query_param,
-    build_google_oauth_flow,
-    check_google_calendar_callback_error,
-    check_google_calendar_connection,
-    clear_oauth_state,
-    generate_oauth_code_verifier,
-    generate_oauth_state,
-    get_authorization_credentials,
-    get_google_account_identity,
-    save_google_calendar_connection,
-    save_oauth_state,
-    validate_google_calendar_integration_state,
-    get_google_callback_state,
-    validate_oauth_redirect_uri,
-)
+from app.services.google_calendar import GoogleCalendarService
 from fastapi import Query
 
 router = APIRouter(
@@ -69,14 +54,17 @@ def connect_google_calendar(
     return_to: str,
     db: Session = Depends(get_db),
 ):
-    redirect_uri = validate_oauth_redirect_uri(return_to)
+    google_calendar_service = GoogleCalendarService(db=db)
+    redirect_uri = google_calendar_service.validate_oauth_redirect_uri(
+        redirect_uri=return_to
+    )
     current_session = get_current_user_from_session(request, db)
 
-    code_verifier = generate_oauth_code_verifier()
+    code_verifier = google_calendar_service.generate_oauth_code_verifier()
 
-    state = generate_oauth_state()
+    state = google_calendar_service.generate_oauth_state()
 
-    save_oauth_state(
+    google_calendar_service.save_oauth_state(
         session=current_session,
         state=state,
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=10),
@@ -87,7 +75,7 @@ def connect_google_calendar(
 
     db.commit()
 
-    flow = build_google_oauth_flow(
+    flow = google_calendar_service.build_google_oauth_flow(
         code_verifier=code_verifier,
     )
 
@@ -109,7 +97,7 @@ def google_calendar_callback(
     request: Request,
     db: Session = Depends(get_db),
 ):
-
+    google_calendar_service = GoogleCalendarService(db=db)
     current_session = get_current_user_from_session(request, db)
 
     redirect_uri = current_session.oauth_return_to
@@ -128,37 +116,36 @@ def google_calendar_callback(
             detail="Missing OAuth code verifier",
         )
 
-    check_google_calendar_callback_error(request)
+    google_calendar_service.check_google_calendar_callback_error(request)
 
-    state = get_google_callback_state(request)
+    state = google_calendar_service.get_google_callback_state(request)
 
-    validate_google_calendar_integration_state(
+    google_calendar_service.validate_google_calendar_integration_state(
         session=current_session,
         state=state,
     )
 
-    credentials = get_authorization_credentials(
+    credentials = google_calendar_service.get_authorization_credentials(
         authorization_response=str(request.url),
         state=state,
         code_verifier=code_verifier,
     )
-    google_account = get_google_account_identity(credentials)
+    google_account = google_calendar_service.get_google_account_identity(credentials)
 
-    save_google_calendar_connection(
-        db=db,
+    google_calendar_service.save_google_calendar_connection(
         user_id=current_session.user_id,
         credentials=credentials,
         google_account_id=google_account["google_account_id"],
     )
 
-    clear_oauth_state(current_session)
+    google_calendar_service.clear_oauth_state(session=current_session)
 
     db.commit()
 
-    redirect_uri = add_query_param(
-        redirect_uri,
-        "calendar",
-        "connected",
+    redirect_uri = google_calendar_service.add_query_param(
+        url=redirect_uri,
+        key="calendar",
+        value="connected",
     )
 
     return RedirectResponse(
@@ -191,6 +178,7 @@ def get_google_calendar_status(
     request: Request,
     db: Session = Depends(get_db),
 ):
+    google_calendar_service = GoogleCalendarService(db=db)
     current_session = get_current_user_from_session(request, db)
 
     connection = get_google_calendar_connection(
@@ -204,9 +192,8 @@ def get_google_calendar_status(
     if connection is None:
         return GoogleCalendarStatusResponse(connected=False)
 
-    connected = check_google_calendar_connection(
+    connected = google_calendar_service.check_google_calendar_connection(
         connection=connection,
-        db=db,
     )
 
     print("CALENDAR CHECK RESULT:", connected)

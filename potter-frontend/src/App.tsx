@@ -10,6 +10,7 @@ import AppShell from "#components/layout/AppShell";
 import HealthConcerns from "./routes/HealthConcerns/HealthConcerns";
 import RaiseConcern from "./routes/HealthConcerns/RaiseConcern";
 import ChatInterface from "./routes/Assessment/ChatInterface";
+import Schedules from "./routes/Plants/ManageSchedules/Schedules";
 
 const queryClient = new QueryClient();
 function App() {
@@ -23,6 +24,11 @@ function App() {
             <Route element={<AppShell />}>
               <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
               <Route path={ROUTES.PLANTS} element={<Plants />} />
+
+              <Route
+                path={ROUTES.SCHEDULES+"/:plant_id"}
+                element={<Schedules />}
+              />
               <Route path={ROUTES.SHELVES} element={<Shelves />} />
               <Route path={ROUTES.CONCERNS} element={<HealthConcerns />} />
               <Route path={ROUTES.RAISE} element={<RaiseConcern />} />

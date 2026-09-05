@@ -1,6 +1,5 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
-import { showErrorToast } from "#lib/utils";
 import type { CareScheduleFormData } from "@/types/care_events";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -86,18 +85,14 @@ const usecareEventScheduler = () => {
         auto_schedule: formData.autoSchedule,
       };
 
-      await apiClient(
-        API_ENDPOINTS.SCHEDULE_CARE_EVENT(plantId),
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-        },
-      );
+      await apiClient(API_ENDPOINTS.SCHEDULE_CARE_EVENT(plantId), {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
       resetForm();
       toast.success(`Care event scheduled successfully!`);
     } catch (err) {
-      showErrorToast(error);
     } finally {
       setIsSubmitting(false);
     }

@@ -75,14 +75,14 @@ export function CareScheduleDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="border-t-[0.5px] py-4">
-          <div className="max-h-[60dvh] overflow-y-auto no-scrollbar space-y-5">
+        <form onSubmit={handleSubmit} className="border-t-[0.5px] py-4 w-full">
+          <div className="max-h-[60dvh] overflow-y-auto no-scrollbar space-y-5 w-full">
             {/* Care type */}
             <div className="px-1 space-y-2">
               <Label htmlFor="care-type">Care type</Label>
 
               <Select
-                value={formData.careType}
+                value={formData.careType?.toLocaleLowerCase()}
                 name="careType"
                 onValueChange={(value) =>
                   handleChange({
@@ -93,7 +93,7 @@ export function CareScheduleDialog({
                   } as any)
                 }
               >
-                <SelectTrigger id="care-type" className="w-full">
+                <SelectTrigger id="care-type" className="w-full text-sm capitalize">
                   <SelectValue placeholder="Select care type" />
                 </SelectTrigger>
 
@@ -109,10 +109,10 @@ export function CareScheduleDialog({
               </Select>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 sm:flex-row flex-col">
               {" "}
               {/* Frequency */}
-              <div className="px-1 space-y-2 w-1/2">
+              <div className="px-1 space-y-2 sm:w-1/2">
                 <Label>Repeat every</Label>
 
                 <div className="grid grid-cols-[100px_1fr] gap-3">
@@ -127,7 +127,7 @@ export function CareScheduleDialog({
                   />
 
                   <Select
-                    value={formData.frequencyType}
+                    value={(formData.frequencyType)?.toLocaleLowerCase() as FrequencyType}
                     name="frequencyType"
                     onValueChange={(value: FrequencyType | null) =>
                       handleChange({
@@ -138,19 +138,20 @@ export function CareScheduleDialog({
                       } as any)
                     }
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full capitalize">
                       <SelectValue />
                     </SelectTrigger>
 
                     <SelectContent className="p-1">
-                      <SelectItem value="DAYS">Days</SelectItem>
-                      <SelectItem value="WEEKS">Weeks</SelectItem>
+                      <SelectItem value="DAYS">Day(s)</SelectItem>
+                      <SelectItem value="WEEKS">Week(s)</SelectItem>
+                      <SelectItem value="MONTHS">Month(s)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               {/* Time */}
-              <div className="px-1 space-y-2 w-1/2">
+              <div className="px-1 space-y-2 sm:w-1/2">
                 <Label
                   htmlFor="scheduled-time"
                   className="flex items-center justify-between"
@@ -165,13 +166,14 @@ export function CareScheduleDialog({
                   id="scheduled-time"
                   name="scheduledTime"
                   type="time"
+                  className="text-sm"
                   value={formData.scheduledTime}
                   onChange={handleChange}
                 />
               </div>
             </div>
-            <div className="flex gap-4">
-              <div className="px-1 space-y-2 w-1/2">
+            <div className="flex gap-4 sm:flex-row flex-col">
+              <div className="px-1 space-y-2 sm:w-1/2">
                 <Label>Start date</Label>
 
                 <Popover>
@@ -205,7 +207,7 @@ export function CareScheduleDialog({
                 </Popover>
               </div>
               {/* End date */}
-              <div className="px-1 space-y-2 w-1/2">
+              <div className="px-1 space-y-2 sm:w-1/2">
                 <Label>
                   End date
                   <span className="ml-1 text-muted-foreground">(optional)</span>
@@ -272,6 +274,7 @@ export function CareScheduleDialog({
                 onChange={handleChange}
                 placeholder="Add any instructions or important notes..."
                 maxLength={2000}
+                className="text-sm"
                 rows={3}
               />
             </div>
@@ -287,7 +290,7 @@ export function CareScheduleDialog({
                     Let Potter handle reminders
                   </Label>
 
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Potter will schedule this care in Google Calendar and remind
                     you when it's time.
                   </p>
@@ -299,10 +302,11 @@ export function CareScheduleDialog({
                   onCheckedChange={(checked) =>
                     setFormData((prev) => ({ ...prev, autoSchedule: checked }))
                   }
-                  disabled={calendarConnection?.connected !== "connected"}
+                  className={"cursor-pointer"}
+                  disabled={!calendarConnection?.connected}
                 />
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-2">
                 <ConnectGoogleCalendarButton
                   plantId={plantId}
                   status={calendarConnection?.connected}
@@ -312,7 +316,7 @@ export function CareScheduleDialog({
 
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
-          <DialogFooter className="mt-4">
+          <DialogFooter className="mt-4 flex-row justify-end">
             <Button
               type="button"
               variant="outline"

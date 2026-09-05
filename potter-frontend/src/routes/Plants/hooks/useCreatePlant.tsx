@@ -126,16 +126,12 @@ export const useCreatePlantOperations = ({
         method: plant?.id ? "PATCH" : "POST",
       });
 
-      toast(`${newPlant.name} has been added to your shelf.`);
+      toast.success(`${newPlant.name} has been added to your shelf.`);
 
       invalidate.plants();
       invalidate.plantDetails(newPlant.id);
       onClose();
-    } catch (e) {
-      toast(
-        `Ohh no, we couldn't add ${formData.name ?? "your plant"}. Please try again.`,
-      );
-    }
+    } catch (e) {}
   };
 
   const handleClose = () => {

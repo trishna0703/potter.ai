@@ -6,7 +6,7 @@ export const API_ENDPOINTS = {
   USER: `${API_URL}/users/me`,
   LOGIN: `${API_URL}/auth/google`,
   PLANTS: `${API_URL}/plants/`,
-  PLANT: (id: number) => `${API_URL}/plants/${id}`,
+  PLANT: (id: number) => `${API_URL}/plants/details/${id}`,
   SHELVES: `${API_URL}/shelves/`,
   GET_SHELF: (id: number) => `${API_URL}/shelves/${id}`,
   PRESIGN_UPLOAD: `${API_URL}/uploads/presign`,
@@ -20,6 +20,10 @@ export const API_ENDPOINTS = {
   IDENTIFY: `${API_URL}/identify/`,
   LOGOUT: `${API_URL}/auth/logout`,
   RECOMMENDATIONS: `${API_URL}/concerns/recommendations`,
-  SCHEDULE_CARE_EVENT: (plantId: number) => `${API_URL}/schedules/${plantId}`,
   CALENDAR_CONNECTION_STATUS: `${API_URL}/integrations/google-calendar/status`,
+  SCHEDULE_CARE_EVENT: (id: number) => `${API_URL}/schedules/${id}`,
+  GET_ALL_SCHEDULES_FOR_PLANT: (plantId: number) =>
+    `${API_URL}/schedules/plant/${plantId}`,
+  GET_SCHEDULE_BY_ID: (scheduleId: number) =>
+    `${API_URL}/schedules/${scheduleId}`,
 };
