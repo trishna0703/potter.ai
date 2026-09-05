@@ -36,9 +36,7 @@ services:
       - potter-net
 
   frontend:
-    build:
-      context: ./potter-frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/trishna0703/potter-frontend:latest
     container_name: potter-frontend
     restart: unless-stopped
     expose:

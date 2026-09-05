@@ -130,7 +130,7 @@ def google_calendar_callback(
         state=state,
         code_verifier=code_verifier,
     )
-    google_account = google_calendar_service.get_google_account_identity(credentials)
+    google_account = google_calendar_service.get_google_account_identity(credentials=credentials)
 
     google_calendar_service.save_google_calendar_connection(
         user_id=current_session.user_id,

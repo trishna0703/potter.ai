@@ -244,7 +244,7 @@ class CareScheduleService:
                 CareSchedule.plant_id == plant_id,
                 CareSchedule.deleted_by_user == False,
             )
-            .order_by(CareSchedule.starts_on.asc())
+            .order_by(CareSchedule.id.asc())
         )
 
         return list(self.db.scalars(stmt).all())
@@ -303,5 +303,3 @@ class CareScheduleService:
         self.db.flush()
 
         return schedule
-
-    
