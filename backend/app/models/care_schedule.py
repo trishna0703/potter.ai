@@ -68,10 +68,10 @@ class CareSchedule(Base):
         nullable=False,
     )
 
-    auto_schedule: Mapped[bool | None] = mapped_column(
+    auto_schedule: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
-        nullable=True,
+        nullable=False,
     )
 
     deleted_by_user: Mapped[bool] = mapped_column(
