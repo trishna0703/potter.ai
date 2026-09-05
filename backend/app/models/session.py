@@ -33,4 +33,24 @@ class UserSession(Base):
         nullable=False,
     )
 
+    oauth_state: Mapped[str | None] = mapped_column(
+        String(128),
+        nullable=True,
+    )
+
+    oauth_state_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    oauth_code_verifier: Mapped[str | None] = mapped_column(
+        String(128),
+        nullable=True,
+    )
+
+    oauth_return_to: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
     user: Mapped["User"] = relationship(back_populates="sessions")

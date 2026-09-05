@@ -1,11 +1,18 @@
 import { Navigate, Outlet } from "react-router-dom";
-import useUserStore from "../store/UserStore";
+
 import { ROUTES } from "../lib/routes";
+import useAuth from "./Login/useAuth";
+import Overlay from "#components/layout/Overlay";
 
 function ProtectedRoute() {
-  const isAuthenticatedUser = useUserStore((state) => state.user);
+  const { currentUser } = useAuth();
+  const { isLoading, data } = currentUser;
 
-  if (!isAuthenticatedUser) {
+  if (isLoading) {
+    return <Overlay />;
+  }
+
+  if (!data) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 

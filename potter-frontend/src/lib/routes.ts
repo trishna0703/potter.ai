@@ -6,6 +6,7 @@ export const ROUTES = {
   CONCERNS: "/concerns",
   CONCERNSACTIVE: `/concerns/active`,
   RAISE: "/concerns/raise",
+  SCHEDULES: "/plants/schedules",
 } as const;
 
 export const API_URL = "/api";

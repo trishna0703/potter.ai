@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 
-import { getToday, showErrorToast } from "#lib/utils";
+import { getToday } from "#lib/utils";
 import { ROUTES } from "#lib/routes";
 import { generateInitialContext } from "./utils/context-utils";
 import useRaiseConcern from "./hooks/useRaiseConcern";
@@ -55,7 +55,7 @@ const RaiseConcern = () => {
         setPlantIdentity({ ...plantIdentity, concern_id: data.concern_id });
         navigate(`${ROUTES.CONCERNSACTIVE}/${data.assessment_id}`);
       } catch (e) {
-        showErrorToast(e);
+        
       }
     } catch (error) {
       console.error("Failed to raise concern:", error);

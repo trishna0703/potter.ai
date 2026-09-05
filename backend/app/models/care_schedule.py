@@ -4,6 +4,7 @@ from sqlalchemy import (
     Boolean,
     Date,
     DateTime,
+    Index,
     Integer,
     String,
     ForeignKey,
@@ -67,6 +68,18 @@ class CareSchedule(Base):
         nullable=False,
     )
 
+    auto_schedule: Mapped[bool | None] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=True,
+    )
+
+    deleted_by_user: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+
     plant: Mapped["Plant"] = relationship(
         back_populates="care_schedules",
     )
@@ -78,4 +91,14 @@ class CareSchedule(Base):
     calendar_event: Mapped["CareScheduleCalendarEvent | None"] = relationship(
         back_populates="care_schedule",
         uselist=False,
+    )
+
+    __table_args__ = (
+        Index(
+            "uq_care_schedule_plant_care_type_active",
+            "plant_id",
+            "care_type",
+            unique=True,
+            postgresql_where=(deleted_by_user.is_(False)),
+        ),
     )

@@ -33,6 +33,17 @@ class CareScheduleResponse(BaseModel):
     starts_on: date
     ends_on: date | None
     is_active: bool
+    auto_schedule: bool
 
     created_at: datetime
     updated_at: datetime
+
+
+class CareScheduleUpdate(BaseModel):
+    description: str | None = None
+    frequency_type: str | None = None
+    interval: int | None = None
+    scheduled_time: time | None = None
+    timezone: str | None = None
+    is_active: bool | None = None
+    auto_schedule: bool | None = None

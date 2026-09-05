@@ -1,5 +1,5 @@
 import { Badge } from "#components/ui/badge";
-import { formatLabel, showErrorToast } from "#lib/utils";
+import { formatLabel } from "#lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import type { AIAssessment } from "@/types/assessment";
@@ -54,7 +54,7 @@ const AssessmentView = ({
       navigate(`${ROUTES.CONCERNSACTIVE}/${result.assessment_id}`);
     } catch (error) {
       console.error("Reassessment failed:", error);
-      showErrorToast(error);
+      
     } finally {
       setIsLoading(false);
     }
