@@ -65,7 +65,7 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
   ];
 
   return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       {/* Search */}
       <Search
         value={search}
@@ -75,7 +75,7 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
       />
 
       {/* Controls */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-3 flex-wrap">
         {/* Status */}
 
         {/* Location */}
@@ -84,8 +84,9 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
           onValueChange={(value) =>
             updateFilter("location_type", value as Filters["location_type"])
           }
+          className={"sm:w-max w-full"}
         >
-          <TabsList className={"bg-secondary/30 rounded-full p-0 h-10!"}>
+          <TabsList className={"bg-secondary/30 rounded-full p-0 h-10! w-full"}>
             {FilteringOptions.map(({ label, value }) => (
               <TabsTrigger
                 value={value}
@@ -141,15 +142,6 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
           )}
         </Button>
 
-        {/* Mobile filter button */}
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="md:hidden"
-        >
-          <FunnelSimpleIcon size={20} />
-        </Button>
         <AddNewPlantButton>
           <span className="button-custom">
             <PlusIcon size={16} /> Add Plant

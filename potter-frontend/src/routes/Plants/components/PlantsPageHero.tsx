@@ -21,7 +21,7 @@ const PlantsPageHero = ({
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}
-        className="relative w-full rounded-2xl overflow-hidden flex flex-col justify-center p-10 gap-6 h-64"
+        className="relative w-full rounded-2xl overflow-hidden flex flex-col justify-center p-6 sm:p-10 gap-6 sm:h-64"
       >
         <div className="absolute inset-0 bg-linear-to-r from-black/40 via-black/20 to-black/10" />
 
