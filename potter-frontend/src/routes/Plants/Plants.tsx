@@ -38,26 +38,25 @@ const Plants = () => {
     .join("&");
 
   const { allPlants, invalidate } = usePlant();
-  const { allActiveConcerns } = useGetConcerns("OPEN");
+  const { getConcerns } = useGetConcerns();
   const { data: plantList, isLoading, isError, refetch } = allPlants(query);
+  const { data: concerns } = getConcerns();
 
   const handleRetry = async () => {
     await invalidate.plants();
     refetch();
   };
 
-  const unhealthyPlantIds = allActiveConcerns.data
-    ?.map((p) => p.plant_id)
-    .map(Number);
+  const unhealthyPlantIds = concerns?.map((p) => p.plant_id).map(Number);
 
   return (
     <div className="flex flex-col gap-5">
       <PlantsPageHero
         totalPlants={plantList?.length}
-        needAttention={allActiveConcerns.data?.length}
+        needAttention={concerns?.length}
       />
 
-      <Navigator {...{ filters, setFilters }} />
+      {plantList?.length ? <Navigator {...{ filters, setFilters }} /> : null}
 
       {isLoading ? <PlantListSkeleton /> : null}
 

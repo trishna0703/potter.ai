@@ -70,7 +70,6 @@ export const useCreatePlantOperations = ({
   useEffect(() => {
     if (!open) return;
     if (plant) {
-      console.log("running");
       setFormData({
         name: plant.name || "",
         species: plant.species || "",
@@ -82,7 +81,7 @@ export const useCreatePlantOperations = ({
         avatar: plant.avatar,
       });
     }
-  }, [plant]);
+  }, [plant?.species, open]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -136,13 +135,19 @@ export const useCreatePlantOperations = ({
       invalidate.plantDetails(newPlant.id);
       onClose();
     } catch (e) {
-      showErrorToast("Something went wrong.")
+      showErrorToast("Something went wrong.");
     }
+  };
+
+  const handleClose = () => {
+    setFormData(initialFormData);
+    onClose();
   };
 
   return {
     handleChange,
     handleSubmit,
+    handleClose,
     formData,
     handleSelectChange,
     handleFileUpload,

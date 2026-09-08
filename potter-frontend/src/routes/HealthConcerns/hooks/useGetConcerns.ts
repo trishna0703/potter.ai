@@ -19,11 +19,11 @@ type Concern = {
 export default function useGetConcerns() {
   const client = useQueryClient();
 
-  const allActiveConcerns = () => {
+  const getConcerns = (query?: string) => {
     return useQuery({
-      queryKey: ["all-active-concerns"],
+      queryKey: ["all-concerns", query],
       queryFn: async (): Promise<Concern[]> => {
-        const response = await apiClient(API_ENDPOINTS.CONCERNS, {
+        const response = await apiClient(API_ENDPOINTS.CONCERNS + "?" + query, {
           method: "GET",
         });
 
@@ -33,34 +33,12 @@ export default function useGetConcerns() {
     });
   };
 
-  const allClosedConcerns = () => {
-    return useQuery({
-      queryKey: ["all-closed-concerns"],
-      queryFn: async (): Promise<Concern[]> => {
-        const response = await apiClient(API_ENDPOINTS.CONCERNS_INACTIVE, {
-          method: "GET",
-        });
-
-        return response;
-      },
-      retry: false,
-    });
-  };
-
-  const invalidateActiveConcerns = () => {
-    client.invalidateQueries({ queryKey: ["all-active-concerns"] });
-  };
-
-  const invalidateInactiveConcerns = () => {
-    client.invalidateQueries({ queryKey: ["all-closed-concerns"] });
+  const invalidateConcerns = (query?: string) => {
+    client.invalidateQueries({ queryKey: ["all-concerns", query] });
   };
 
   return {
-    allActiveConcerns,
-    allClosedConcerns,
-    invalidate: {
-      active: invalidateActiveConcerns,
-      inactive: invalidateInactiveConcerns,
-    },
+    getConcerns,
+    invalidateConcerns,
   };
 }
