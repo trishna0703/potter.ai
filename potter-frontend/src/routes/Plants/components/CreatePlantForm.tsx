@@ -43,18 +43,17 @@ const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
   const {
     handleChange,
     handleSubmit,
-    handleClose,
     formData,
     handleSelectChange,
     handleFileUpload,
-  } = useCreatePlantOperations({ plant, onClose });
+  } = useCreatePlantOperations({ plant, open, onClose });
 
   return (
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          handleClose();
+          onClose();
         }
       }}
     >
@@ -72,7 +71,10 @@ const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
           <form
             id="create-plant-form"
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              console.log(formData);
+              handleSubmit(e);
+            }}
             className="space-y-4"
           >
             <Avatar className="mx-auto size-24 rounded-full">
@@ -224,7 +226,7 @@ const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
         {/* Fixed Footer */}
         <div className="shrink-0 border-t bg-background px-6 py-4">
           <div className="flex justify-end gap-3">
-            <Button type="button" onClick={handleClose} variant="destructive">
+            <Button type="button" onClick={onClose} variant="destructive">
               Drop
             </Button>
 

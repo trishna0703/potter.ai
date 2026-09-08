@@ -1,4 +1,4 @@
-import { useRef} from "react";
+import { useRef } from "react";
 import { Camera } from "lucide-react";
 import { Input } from "#components/ui/input";
 

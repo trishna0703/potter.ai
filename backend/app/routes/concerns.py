@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from app.models import (
     User,
     HealthConcern,
@@ -12,7 +12,7 @@ from app.models.plant_photo import PlantPhoto
 from app.routes.users import get_current_user
 from app.database import get_db
 from sqlalchemy.orm import Session
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from app.schemas.assessment import AssessmentMessageResponse
 from app.services.assessment_service import AssessmentService
 from app.services.health_concern_service import HealthConcernService
@@ -22,18 +22,33 @@ from app.services.helper_services import (
     link_evidence_to_concern,
 )
 from app.schemas.route import ReassessmentRequestModel, RequestModel, ResponseModel
-from app.services.s3_service import generate_download_url
+
 from app.schemas.recommendation import AIRecommendationResponse
 from app.services.recommendation_service import RecommendationService
+from typing import Literal
 
 router = APIRouter()
 
+ConcernStatus = Literal["OPEN", "RESOLVED", "ALL"]
+
+ConcernSortBy = Literal[
+    "reported_on",
+    "occurred_on",
+    "species",
+]
+
 
 @router.get("/")
-def get_active_concerns(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+def get_concerns(
+    query: str | None = None,
+    status: ConcernStatus = "OPEN",
+    sort_by: ConcernSortBy = "reported_on",
+    sort_order: Literal["asc", "desc"] = "desc",
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-
     latest_assessment_id = (
         select(Assessment.id)
         .where(
@@ -98,13 +113,63 @@ def get_active_concerns(
         )
         .where(
             HealthConcern.user_id == current_user.id,
-            HealthConcern.status == "OPEN",
         )
     )
 
-    concerns = db.execute(stmt).all()
+    # -------------------------
+    # Filtering
+    # -------------------------
 
-    active_statuses = {"WAITING_FOR_AI", "WAITING_FOR_USER"}
+    if status != "ALL":
+        stmt = stmt.where(HealthConcern.status == status)
+
+    # -------------------------
+    # Searching
+    # -------------------------
+
+    if query:
+        search = f"%{query.strip()}%"
+
+        stmt = stmt.where(
+            or_(
+                Plant.name.ilike(search),
+                Plant.species.ilike(search),
+                PlantIdentification.species.ilike(search),
+                HealthConcern.initial_context.ilike(search),
+            )
+        )
+
+    # -------------------------
+    # Sorting
+    # -------------------------
+
+    sort_columns = {
+        "reported_on": HealthConcern.reported_on,
+        "occurred_on": HealthConcern.occurred_on,
+        "species": Plant.species,
+    }
+
+    sort_column = sort_columns[sort_by]
+
+    if sort_order == "desc":
+        stmt = stmt.order_by(sort_column.desc())
+    else:
+        stmt = stmt.order_by(sort_column.asc())
+
+    # -------------------------
+    # Pagination
+    # -------------------------
+
+    offset = (page - 1) * page_size
+
+    stmt = stmt.offset(offset).limit(page_size)
+
+    rows = db.execute(stmt).all()
+
+    active_statuses = {
+        "WAITING_FOR_AI",
+        "WAITING_FOR_USER",
+    }
 
     return [
         {
@@ -133,93 +198,9 @@ def get_active_concerns(
             assessment_id,
             assessment_status,
             assessment_count,
-        ) in concerns
+        ) in rows
     ]
 
-@router.get("/inactive")
-def get_inactive_concerns(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
-):
-    stmt = (
-        select(
-            HealthConcern,
-            Plant.species.label("species"),
-            PlantIdentification.species.label("identified_species"),
-            PlantPhoto.id.label("photo_id"),
-            PlantPhoto.photo_url,
-            Assessment.id.label("assessment_id"),
-            Assessment.problem,
-            Assessment.problem_cause,
-            Assessment.confidence,
-            Assessment.explanation,
-            Assessment.created_on,
-        )
-        .join(
-            Assessment,
-            (Assessment.concern_id == HealthConcern.id)
-            & (Assessment.status == "COMPLETED"),
-        )
-        .outerjoin(Plant, Plant.id == HealthConcern.plant_id)
-        .outerjoin(
-            PlantIdentification,
-            PlantIdentification.concern_id == HealthConcern.id,
-        )
-        .outerjoin(Evidence, Evidence.id == HealthConcern.initial_evidence_id)
-        .outerjoin(EvidencePhoto, EvidencePhoto.evidence_id == Evidence.id)
-        .outerjoin(PlantPhoto, PlantPhoto.id == EvidencePhoto.photo_id)
-        .where(
-            HealthConcern.user_id == current_user.id,
-        )
-        .order_by(HealthConcern.id, Assessment.id.desc())
-    )
-
-    rows = db.execute(stmt).all()
-
-    concerns_by_id: dict[int, dict] = {}
-
-    for (
-        concern,
-        plant_species,
-        identified_species,
-        photo_id,
-        photo_url,
-        assessment_id,
-        problem,
-        problem_cause,
-        confidence,
-        explanation,
-        created_on,
-    ) in rows:
-        entry = concerns_by_id.setdefault(
-            concern.id,
-            {
-                "id": concern.id,
-                "plant_id": concern.plant_id,
-                "identified_species": (
-                    plant_species if plant_species is not None else identified_species
-                ),
-                "photo_url": photo_url,
-                "photo_id": photo_id,
-                "occurred_on": concern.occurred_on,
-                "reported_on": concern.reported_on,
-                "status": concern.status,
-                "initial_context": concern.initial_context,
-                "assessments": [],
-            },
-        )
-
-        entry["assessments"].append(
-            {
-                "id": assessment_id,
-                "problem": problem,
-                "problem_cause": problem_cause,
-                "confidence": confidence,
-                "explanation": explanation,
-                "created_on": created_on,
-            }
-        )
-
-    return list(concerns_by_id.values())
 
 @router.post("/assessment", response_model=ResponseModel)
 def raise_concern(

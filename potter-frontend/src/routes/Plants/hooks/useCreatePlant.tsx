@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import usePlant from "./usePlant";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
-import { getToday } from "#lib/utils";
+import { getToday, showErrorToast } from "#lib/utils";
 
 interface PlantFormData {
   name: string;
@@ -22,7 +22,7 @@ interface PlantFormData {
 const initialFormData: PlantFormData = {
   name: "",
   species: "",
-  location_type: undefined,
+  location_type: "INDOOR",
   height_cm: "",
   pot_size: "",
   avatar_id: null,
@@ -55,9 +55,11 @@ export const useCreateOrUpdatePlant = () => {
 
 export const useCreatePlantOperations = ({
   plant,
+  open,
   onClose,
 }: {
   plant?: Partial<Plant>;
+  open: boolean;
   onClose: () => void;
 }) => {
   const { mutateAsync: createNewPlant } = useCreateOrUpdatePlant();
@@ -66,7 +68,9 @@ export const useCreatePlantOperations = ({
   const { handleFileChange } = usePhotoUpload();
 
   useEffect(() => {
+    if (!open) return;
     if (plant) {
+      console.log("running");
       setFormData({
         name: plant.name || "",
         species: plant.species || "",
@@ -131,18 +135,14 @@ export const useCreatePlantOperations = ({
       invalidate.plants();
       invalidate.plantDetails(newPlant.id);
       onClose();
-    } catch (e) {}
-  };
-
-  const handleClose = () => {
-    setFormData(initialFormData);
-    onClose();
+    } catch (e) {
+      showErrorToast("Something went wrong.")
+    }
   };
 
   return {
     handleChange,
     handleSubmit,
-    handleClose,
     formData,
     handleSelectChange,
     handleFileUpload,

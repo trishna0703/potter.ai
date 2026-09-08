@@ -16,34 +16,36 @@ type Concern = {
   assessment_id: number;
 };
 
-export default function useGetConcerns(status: "OPEN" | "COMPLETED") {
+export default function useGetConcerns() {
   const client = useQueryClient();
 
-  const allActiveConcerns = useQuery({
-    queryKey: ["all-active-concerns"],
-    queryFn: async (): Promise<Concern[]> => {
-      const response = await apiClient(API_ENDPOINTS.CONCERNS, {
-        method: "GET",
-      });
+  const allActiveConcerns = () => {
+    return useQuery({
+      queryKey: ["all-active-concerns"],
+      queryFn: async (): Promise<Concern[]> => {
+        const response = await apiClient(API_ENDPOINTS.CONCERNS, {
+          method: "GET",
+        });
 
-      return response;
-    },
-    retry: false,
-    enabled: status === "OPEN",
-  });
+        return response;
+      },
+      retry: false,
+    });
+  };
 
-  const allClosedConcerns = useQuery({
-    queryKey: ["all-closed-concerns"],
-    queryFn: async (): Promise<Concern[]> => {
-      const response = await apiClient(API_ENDPOINTS.CONCERNS_INACTIVE, {
-        method: "GET",
-      });
+  const allClosedConcerns = () => {
+    return useQuery({
+      queryKey: ["all-closed-concerns"],
+      queryFn: async (): Promise<Concern[]> => {
+        const response = await apiClient(API_ENDPOINTS.CONCERNS_INACTIVE, {
+          method: "GET",
+        });
 
-      return response;
-    },
-    retry: false,
-    enabled: status === "COMPLETED",
-  });
+        return response;
+      },
+      retry: false,
+    });
+  };
 
   const invalidateActiveConcerns = () => {
     client.invalidateQueries({ queryKey: ["all-active-concerns"] });

@@ -387,3 +387,27 @@
     transform: rotate(360deg);
   }
 }
+
+.text-playfair {
+  font-family: "Playfair Display", serif;
+  font-optical-sizing: auto;
+}
+
+.text-title{
+   font-family: "Cormorant Garamond", serif;
+   font-optical-sizing: auto;
+}
+
+.button-custom{
+   border-radius: 0.75rem;
+   background: var(--primary);
+   color: var(--color-primary-foreground);
+   padding:8px 12px;
+   cursor: pointer;
+   height: 2.5rem ;
+   font-size: 0.8rem;
+   display:flex;
+   align-items : center;
+   justify-content:center;
+   gap: 4px;
+}

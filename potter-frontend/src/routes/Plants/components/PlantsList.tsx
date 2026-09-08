@@ -1,198 +1,26 @@
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "#components/ui/card";
 import type { Plant } from "@/types/plantTypes";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "#components/ui/dropdown-menu";
-
-import { Button } from "#components/ui/button";
-import { EllipsisVertical } from "lucide-react";
 import CreatePlantForm from "./CreatePlantForm";
 import { useEffect, useState, type ChangeEvent } from "react";
-import { ROUTES, S3_URL } from "#lib/routes";
+import { ROUTES } from "#lib/routes";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
-import PhotoPicker from "#components/utils/PhotoPicker";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
 import { getToday } from "#lib/utils";
 import { useCreateOrUpdatePlant } from "../hooks/useCreatePlant";
 import usePlant from "../hooks/usePlant";
 import NoPlantsFound from "./NoPlantsFound";
 import { CareScheduleDialog } from "#components/utils/CareScheduleDialog";
+import PlantCard from "./PlantCard";
+import AddNewPlantButton from "#components/utils/AddNewPlantButton";
+import { PlantIcon, PlusIcon } from "@phosphor-icons/react";
 
-const Bullet = () => <span className="w-1 h-1 bg-ochre rounded-full"></span>;
-
-const PlantMenu = ({
-  plant,
-  editPlant,
-  raiseConcern,
-  markPlantDead,
-  triggerCareEvent,
+const PlantsList = ({
+  plantList,
+  unhealthyPlants,
 }: {
-  plant: Plant;
-  editPlant: (plant: Plant) => void;
-  raiseConcern: (event: ChangeEvent<HTMLInputElement, Element>) => void;
-  markPlantDead: (id: number) => Promise<void>;
-  triggerCareEvent: (id: number) => void;
+  plantList: Plant[];
+  unhealthyPlants: number[] | undefined;
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  return (
-    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="outline"
-            className="relative h-8 w-8 rounded-full cursor-pointer text-muted-foreground/80 bg-card"
-          >
-            <EllipsisVertical className="h-4 w-4" />
-          </Button>
-        }
-      />
-
-      <DropdownMenuContent className="w-44">
-        <DropdownMenuGroup>
-          <PhotoPicker
-            onPhotoSelected={raiseConcern}
-            onOpenChange={(open) => {
-              if (!open) setMenuOpen(false);
-            }}
-          >
-            <span className="cursor-pointer text-sm py-1 px-1.5 hover:bg-terracotta/20 w-full text-left inline-block rounded-md">
-              Raise Concern
-            </span>
-          </PhotoPicker>
-          <DropdownMenuItem
-            className={"hover:bg-terracotta/20 cursor-pointer"}
-            onClick={() => triggerCareEvent(plant.id)}
-          >
-            Add Schedule
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className={"hover:bg-terracotta/20 cursor-pointer"}
-            onClick={() => navigate(`schedules/${plant.id}`)}
-          >
-            Manage Schedules
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className={"hover:bg-terracotta/20 cursor-pointer"}
-            onClick={() => editPlant(plant)}
-          >
-            Edit
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            className={"hover:bg-terracotta/20 cursor-pointer"}
-            onClick={() => markPlantDead(plant.id)}
-          >
-            Mark dead
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className={"hover:bg-terracotta/20 cursor-pointer"}>
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-const PlantCard = ({
-  plant,
-  editPlant,
-  markPlantDead,
-  triggerCareEvent,
-}: {
-  plant: Plant;
-  editPlant: (plant: Plant) => void;
-  markPlantDead: (id: number) => Promise<void>;
-  triggerCareEvent: (id: number) => void;
-}) => {
-  const navigate = useNavigate();
-  const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
-  const { handleFileChange, handleUploadPlantPhoto } = usePhotoUpload();
-
-  const raiseConcern = async (
-    event: ChangeEvent<HTMLInputElement, Element>,
-  ) => {
-    let new_evidence = await handleFileChange(event);
-
-    if (new_evidence) {
-      let { photo_id, evidence_id } = await handleUploadPlantPhoto({
-        photo_url: new_evidence,
-        captured_on: getToday(),
-        plant_id: plant.id,
-      });
-      setPlantIdentity({
-        ...plantIdentity,
-        photo_id,
-        evidence_id,
-        plant_id: plant.id,
-        photo_url: new_evidence,
-        is_new_plant: false,
-        species: plant.species,
-        confidence: 10,
-        found_plants: [],
-      });
-
-      navigate(ROUTES.RAISE);
-    }
-  };
-  return (
-    <Card className="bg-transparent! border-none! shadow-none! ring-0 w-full relative z-0">
-      <CardHeader className="flex items-center gap-4 relative z-1">
-        <img
-          src={S3_URL + "/" + plant.avatar}
-          alt={plant.name ?? plant.species}
-          className="size-full h-58 object-cover shadow-md bg-card rounded-2xl"
-        />
-        <CardAction className="ml-auto absolute right-0 -top-3 z-2">
-          {plant.status === "ACTIVE" ? (
-            <PlantMenu
-              {...{
-                plant,
-                editPlant,
-                raiseConcern,
-                markPlantDead,
-                triggerCareEvent,
-              }}
-            />
-          ) : null}
-        </CardAction>
-      </CardHeader>
-      <CardContent className="bg-card w-3/4 rounded-b-2xl mx-auto p-4 pt-6 -translate-y-6 shadow-md">
-        <CardTitle>{plant.name}</CardTitle>
-        <div className="flex gap-2 items-start flex-col pt-2">
-          <div className="flex gap-2 items-center text-xs">
-            <Bullet />
-            <p className="text-ochre">Species:</p>
-            <p className="text-ink">{plant.species}</p>
-          </div>
-          <div className="flex gap-2 items-center text-xs">
-            <Bullet />
-            <p className="text-ochre">Height:</p>
-            <p className="text-ink">~{plant.height_cm} cm</p>
-          </div>
-          <div className="flex gap-2 items-center text-xs">
-            <Bullet />
-            <p className="text-ochre">Pot Size:</p>
-            <p className="text-ink">~{plant.pot_size} in</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const params = new URLSearchParams(searchParams);
   const [editPlant, setEditPlant] = useState<Plant | undefined>(undefined);
@@ -205,6 +33,39 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
   });
   const { mutateAsync: markPlantdead } = useCreateOrUpdatePlant();
   const { invalidate } = usePlant();
+
+  const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
+  const { handleFileChange, handleUploadPlantPhoto } = usePhotoUpload();
+  const navigate = useNavigate();
+
+  const raiseConcern = async (
+    event: ChangeEvent<HTMLInputElement, Element>,
+    id: number,
+    species: string,
+  ) => {
+    let new_evidence = await handleFileChange(event);
+
+    if (new_evidence) {
+      let { photo_id, evidence_id } = await handleUploadPlantPhoto({
+        photo_url: new_evidence,
+        captured_on: getToday(),
+        plant_id: id,
+      });
+      setPlantIdentity({
+        ...plantIdentity,
+        photo_id,
+        evidence_id,
+        plant_id: id,
+        photo_url: new_evidence,
+        is_new_plant: false,
+        species: species,
+        confidence: 10,
+        found_plants: [],
+      });
+
+      navigate(ROUTES.RAISE);
+    }
+  };
 
   const handleMarkPlantDead = async (id: number) => {
     try {
@@ -241,7 +102,7 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
 
   return (
     <div className="w-full">
-      <ul className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-cols-1 gap-10">
+      <ul className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-cols-1 gap-4">
         {plantList?.map((plant: Plant) => (
           <li key={plant.id} className="w-full">
             <PlantCard
@@ -251,9 +112,24 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
               triggerCareEvent={(id: number) =>
                 setShowCareEventDialog({ plantId: id, show: true })
               }
+              raiseConcern={raiseConcern}
+              isHealthy={
+                plant.status === "ACTIVE" &&
+                !unhealthyPlants?.includes(plant.id)
+              }
             />
           </li>
         ))}
+        {plantList.length % 4 != 0 ? (
+          <>
+            <AddPlantCard />
+          </>
+        ) : null}
+        {(plantList.length + 2) % 4 == 0 ? (
+          <>
+            <FillerCard />
+          </>
+        ) : null}
       </ul>
       <CreatePlantForm
         open={!!editPlant}
@@ -272,3 +148,36 @@ const PlantsList = ({ plantList }: { plantList: Plant[] }) => {
 };
 
 export default PlantsList;
+
+const AddPlantCard = () => {
+  return (
+    <article className="h-full w-full border-dashed border flex items-center justify-center rounded-2xl flex-col p-4 gap-6">
+      <div className="flex flex-col gap-2 items-center">
+        <span className="bg-secondary flex justify-center items-center rounded-full size-16">
+          <PlantIcon className="text-primary" size={32} weight="light" />
+        </span>
+        <h3 className="text-md font-medium">Add a new plant</h3>
+        <p className="text-xs text-muted-foreground">
+          Start tracking care, growth and memories.
+        </p>
+      </div>
+      <AddNewPlantButton>
+        <span className="button-custom bg-secondary! text-primary! font-medium">
+          <PlusIcon size={16} /> Add Plant
+        </span>
+      </AddNewPlantButton>
+    </article>
+  );
+};
+
+const FillerCard = () => {
+  return (
+    <article className="h-full w-full rounded-2xl">
+      <img
+        src="/filler-card.png"
+        className="size-full object-cover rounded-2xl"
+        alt="filler-card-image"
+      />
+    </article>
+  );
+};

@@ -11,17 +11,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useMemo, useRef, useState } from "react";
-import { cn, getToday } from "#lib/utils";
-import PhotoPicker from "#components/utils/PhotoPicker";
-import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
-import useIdentify from "#hooks/useIdentify";
-import usePlantIdentityStore from "@/store/PlantIdentificationStore";
-import IdentifiedPlantModal from "#components/utils/IdentifiedPlantModal";
-import CreatePlantForm from "@/routes/Plants/components/CreatePlantForm";
-import Overlay from "./Overlay";
+import { useRef } from "react";
+import { cn } from "#lib/utils";
 import useAuth, { useLogout } from "@/routes/Login/useAuth";
-import usePlantStore from "@/store/PlantStore";
+import AddNewPlantButton from "#components/utils/AddNewPlantButton";
 
 type MenuType = {
   label: string;
@@ -106,64 +99,14 @@ const Menu = () => {
   );
 };
 const Navbar = () => {
-  const { handleFileChange } = usePhotoUpload();
-  const { mutateAsync: runAIIdentification } = useIdentify();
-  const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
-  const [isLoadingIdentification, setIsLoadingIdentification] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const { showForm, setShowForm } = usePlantStore();
-
-  const onPhotoSelected = async (
-    event: React.ChangeEvent<HTMLInputElement, Element>,
-  ) => {
-    setIsLoadingIdentification(true);
-    let photo_url = await handleFileChange(event);
-
-    if (photo_url) {
-      let identified_data = await runAIIdentification({
-        photo_url: photo_url,
-        captured_on: getToday(),
-      });
-      setPlantIdentity({ ...identified_data, photo_url });
-    }
-    setIsLoadingIdentification(false);
-    setIsOpen(true);
-  };
-
-  const newPlant = useMemo(
-    () => ({
-      avatar_id: plantIdentity?.photo_id,
-      added_on: getToday(),
-      species: plantIdentity?.species,
-      avatar: plantIdentity?.photo_url,
-    }),
-    [plantIdentity?.photo_id, plantIdentity?.species, plantIdentity?.photo_url],
-  );
-
-  console.log({ plantIdentity });
-
   return (
     <>
-      <nav className="h-16 border-b px-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-primary">Potter.ai</h1>
+      <nav className="px-4 py-2.5 flex items-center justify-end">
         <div className="flex gap-4">
-          <PhotoPicker {...{ onPhotoSelected }} />
+          <AddNewPlantButton />
           <Menu />
         </div>
       </nav>
-
-      {isLoadingIdentification ? <Overlay /> : null}
-
-      <IdentifiedPlantModal
-        createPlant={() => setShowForm(true)}
-        {...{ isOpen, setIsOpen }}
-      />
-
-      <CreatePlantForm
-        plant={newPlant}
-        open={showForm}
-        onClose={() => setShowForm(false)}
-      />
     </>
   );
 };
