@@ -1,6 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.exceptions import (
+    IdentificationError,
+    IdentificationInvalidResponseError,
+    IdentificationProviderError,
+)
 from app.models.user import User
 from app.routes.upload import (
     UploadRequestModel,
@@ -51,18 +57,60 @@ def plant_idenfication_entry_point(
     db: Session = Depends(get_db),
 ) -> IdentificationResponse:
 
-    photo_evidence = handle_photo_upload_and_links(photo, current_user, db)
-    # call identify_and_save
-    identified_plant = identify_and_save(
-        concern_id=None,
-        evidence_id=photo_evidence["evidence_id"],
-        photo_id=photo_evidence["photo_id"],
-        initial_context="",
-        current_user=current_user,
-        db=db,
-    )
+    try:
+        photo_evidence = handle_photo_upload_and_links(photo, current_user, db)
 
-    return identified_plant
+        # call identify_and_save
+        return identify_and_save(
+            concern_id=None,
+            evidence_id=photo_evidence["evidence_id"],
+            photo_id=photo_evidence["photo_id"],
+            initial_context="",
+            current_user=current_user,
+            db=db,
+        )
+    except IdentificationProviderError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "code": "IDENTIFICATION_SERVICE_UNAVAILABLE",
+                "message": (
+                    "Plant identification is temporarily unavailable. "
+                    "Please try again shortly."
+                ),
+            },
+        )
+
+    except IdentificationInvalidResponseError:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail={
+                "code": "IDENTIFICATION_INVALID_RESPONSE",
+                "message": (
+                    "The plant identification service returned " "an invalid response."
+                ),
+            },
+        )
+
+    except IdentificationError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "IDENTIFICATION_FAILED",
+                "message": "We couldn't identify this plant.",
+            },
+        )
+
+    except SQLAlchemyError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": "DATABASE_ERROR",
+                "message": "Something went wrong while saving the identification.",
+            },
+        )
 
 
 def identify_and_save(
@@ -93,18 +141,17 @@ def identify_and_save(
         db.commit()
         db.refresh(saved_identity)
 
+        return {
+            "confidence": result["confidence"],
+            "species": result["species"],
+            "found_plants": result["found_plants"],
+            "photo_id": result["photo_id"],
+            "evidence_id": evidence_id,
+            "is_new_plant": not result["found_plants"],
+        }
     except Exception:
         db.rollback()
         raise
-
-    return {
-        "confidence": result["confidence"],
-        "species": result["species"],
-        "found_plants": result["found_plants"],
-        "photo_id": result["photo_id"],
-        "evidence_id": evidence_id,
-        "is_new_plant": not result["found_plants"],
-    }
 
 
 def identify_plant_from_photo(
@@ -117,9 +164,14 @@ def identify_plant_from_photo(
 
     # AI identifies
     client = IdentificationAI()
+
     result = client.identify_plant(photo=download_url, initial_context=initial_context)
 
+    if not result:
+        raise IdentificationInvalidResponseError("Empty identification response")
+
     plant_service = PlantService()
+
     found_plants = plant_service.get_plant_list_for_species(
         species=result.species, user_id=current_user.id, db=db
     )

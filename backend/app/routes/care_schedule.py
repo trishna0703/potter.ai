@@ -52,8 +52,8 @@ def create_care_schedule(
         if schedule.auto_schedule:
             background_tasks.add_task(
                 GoogleCalendarService.schedule_first_calendar_event,
-                schedule.id,
-                current_user.id,
+                schedule_id=schedule.id,
+                user_id=current_user.id,
             )
 
         return schedule

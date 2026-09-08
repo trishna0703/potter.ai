@@ -11,15 +11,17 @@ import usePlantIdentityStore, {
 import { useState } from "react";
 import { Recommendations } from "../Assessment/components/Recommendations";
 import AssessmentDialog from "../Assessment/components/AssessmentDialog";
-import HealthConcernSkeleton from "./Skeleton";
-import NoConcernFound from "./NoConcernFound";
+import HealthConcernSkeleton from "./components/Skeleton";
+import NoConcernFound from "./components/NoConcernFound";
+import ConcernBanner from "./components/ConcernBanner";
 
 const HealthConcerns = ({}) => {
   const [filterByStatus, setFilterByStatus] = useState<"OPEN" | "COMPLETED">(
     "OPEN",
   );
 
-  const { allActiveConcerns } = useGetConcerns(filterByStatus);
+  const { allActiveConcerns } = useGetConcerns();
+  const { data: concerns, isLoading } = allActiveConcerns();
   const { setShowForm } = usePlantStore();
   const { setPlantIdentity } = usePlantIdentityStore();
   const navigate = useNavigate();
@@ -29,14 +31,7 @@ const HealthConcerns = ({}) => {
 
   return (
     <div className="sm:p-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Health Concerns</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            This page shows all health concerns raised for your plants.
-          </p>
-        </div>
-      </header>
+      <ConcernBanner />
 
       <div className="flex gap-4 mt-6">
         <Button
@@ -52,18 +47,14 @@ const HealthConcerns = ({}) => {
           Completed
         </Button>
       </div>
-      {allActiveConcerns.isLoading ? <HealthConcernSkeleton /> : null}
-      {!allActiveConcerns.isLoading &&
-      allActiveConcerns.data &&
-      allActiveConcerns.data.length === 0 ? (
+      {isLoading ? <HealthConcernSkeleton /> : null}
+      {!isLoading && concerns && concerns.length === 0 ? (
         <NoConcernFound />
       ) : null}
-      {allActiveConcerns &&
-      allActiveConcerns.data &&
-      allActiveConcerns.data.length > 0 ? (
+      {concerns && concerns.length > 0 ? (
         <section className="h-auto flex flex-col gap-4 pt-8 w-full">
           <div className="flex gap-4 flex-col">
-            {allActiveConcerns.data.map((concern) => (
+            {concerns.map((concern) => (
               <div
                 key={concern.id}
                 className="flex gap-4 border-[0.5px] rounded-xl flex-col sm:flex-row"

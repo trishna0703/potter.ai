@@ -23,7 +23,6 @@ export default function useAuth() {
 
   useEffect(() => {
     if (currentUser.data) {
-      console.log("triggered and populated user");
       setUser(currentUser.data);
     }
   }, [currentUser.data]);

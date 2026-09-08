@@ -99,9 +99,7 @@ const NewPlantForm = () => {
         <DialogTitle>New Plant Detected</DialogTitle>
         <DialogDescription>
           Hey, this looks like a{" "}
-          {!plantIdentity?.species
-            ? "new plant."
-            : `new ${plantIdentity?.species}`}
+          {!plantIdentity?.species ? "new plant." : `${plantIdentity?.species}`}
           .
         </DialogDescription>
       </DialogHeader>
