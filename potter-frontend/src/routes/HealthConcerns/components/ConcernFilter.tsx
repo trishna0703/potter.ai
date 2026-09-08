@@ -1,13 +1,7 @@
 import Search from "#components/utils/Search";
 import useDebounce from "#hooks/useDebounce";
-import {
-  PlusIcon,
-  SortAscendingIcon,
-  SortDescendingIcon,
-} from "@phosphor-icons/react";
+import { SortAscendingIcon, SortDescendingIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
-import type { Filters } from "../Plants";
-
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -17,14 +11,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "#components/ui/tabs";
-import AddNewPlantButton from "#components/utils/AddNewPlantButton";
+import type { ConcernFilters } from "../HealthConcerns";
 
-interface NavigatorProps {
-  filters: Filters;
-  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+interface ConcernFilterProps {
+  filters: ConcernFilters;
+  setFilters: React.Dispatch<React.SetStateAction<ConcernFilters>>;
 }
 
-const Navigator = ({ filters, setFilters }: NavigatorProps) => {
+const ConcernFilter = ({ filters, setFilters }: ConcernFilterProps) => {
   const [search, setSearch] = useState(filters.query);
 
   const debouncedSearch = useDebounce(search, 500);
@@ -33,13 +27,18 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
     setFilters((prev) => ({
       ...prev,
       query: debouncedSearch,
+      page: 1,
     }));
   }, [debouncedSearch, setFilters]);
 
-  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
+  const updateFilter = <K extends keyof ConcernFilters>(
+    key: K,
+    value: ConcernFilters[K],
+  ) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
+      page: 1,
     }));
   };
 
@@ -47,20 +46,34 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
     setFilters((prev) => ({
       ...prev,
       sort_order: prev.sort_order === "asc" ? "desc" : "asc",
+      page: 1,
     }));
   };
 
   const sortingOptions = [
-    { label: "Added On", value: "added_on" },
-    { label: "Name", value: "name" },
-    { label: "Species", value: "species" },
-    { label: "Height", value: "height_cm" },
-    { label: "Pot Size", value: "pot_size" },
+    {
+      label: "Reported On",
+      value: "reported_on",
+    },
+    {
+      label: "Occurred On",
+      value: "occurred_on",
+    },
+    {
+      label: "Species",
+      value: "species",
+    },
   ];
-  const FilteringOptions = [
-    { label: "All", value: "ALL" },
-    { label: "Indoor", value: "INDOOR" },
-    { label: "Outdoor", value: "OUTDOOR" },
+
+  const filteringOptions = [
+    {
+      label: "Open",
+      value: "OPEN",
+    },
+    {
+      label: "Closed",
+      value: "CLOSED",
+    },
   ];
 
   return (
@@ -69,29 +82,25 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
       <Search
         value={search}
         onChange={setSearch}
-        placeholder="Search plants..."
+        placeholder="Search concerns..."
         className="w-full md:max-w-72"
       />
 
       {/* Controls */}
-      <div className="flex items-center justify-end gap-3 flex-wrap">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         {/* Status */}
-
-        {/* Location */}
         <Tabs
-          value={filters.location_type}
+          value={filters.status}
           onValueChange={(value) =>
-            updateFilter("location_type", value as Filters["location_type"])
+            updateFilter("status", value as ConcernFilters["status"])
           }
-          className={"sm:w-max w-full"}
+          className="w-full sm:w-max"
         >
-          <TabsList className={"bg-secondary/30 rounded-full p-0 h-10! w-full"}>
-            {FilteringOptions.map(({ label, value }) => (
+          <TabsList className="h-10! w-full rounded-full bg-secondary/30 p-0">
+            {filteringOptions.map(({ label, value }) => (
               <TabsTrigger
                 value={value}
-                className={
-                  "data-active:bg-secondary rounded-full min-w-20 data-active:text-primary"
-                }
+                className="min-w-20 rounded-full data-active:bg-secondary data-active:text-primary"
                 key={value}
               >
                 {label}
@@ -103,14 +112,15 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
         {/* Sort */}
         <Select
           value={
-            sortingOptions.find((opt) => opt.value === filters.sort_by)?.label
+            sortingOptions.find((opt) => opt.value === filters.sort_by)?.value
           }
           onValueChange={(value) =>
-            updateFilter("sort_by", value as Filters["sort_by"])
+            updateFilter("sort_by", value as ConcernFilters["sort_by"])
           }
         >
-          <SelectTrigger className="w-42 h-10! border[0.5px] border-muted bg-card">
-            <p className="text-muted-foreground">Sort By: </p>
+          <SelectTrigger className="h-10! w-42 border-[0.5px] border-muted bg-card">
+            <p className="text-muted-foreground">Sort By:</p>
+
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
 
@@ -132,7 +142,7 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
           title={
             filters.sort_order === "asc" ? "Sort ascending" : "Sort descending"
           }
-          className={"size-10 bg-card border-muted border-[0.5px]"}
+          className="size-10 border-[0.5px] border-muted bg-card"
         >
           {filters.sort_order === "asc" ? (
             <SortAscendingIcon size={20} />
@@ -140,15 +150,9 @@ const Navigator = ({ filters, setFilters }: NavigatorProps) => {
             <SortDescendingIcon size={20} />
           )}
         </Button>
-
-        <AddNewPlantButton>
-          <span className="button-custom">
-            <PlusIcon size={16} /> Add Plant
-          </span>
-        </AddNewPlantButton>
       </div>
     </div>
   );
 };
 
-export default Navigator;
+export default ConcernFilter;

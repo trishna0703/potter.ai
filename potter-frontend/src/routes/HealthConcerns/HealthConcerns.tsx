@@ -14,14 +14,40 @@ import AssessmentDialog from "../Assessment/components/AssessmentDialog";
 import HealthConcernSkeleton from "./components/Skeleton";
 import NoConcernFound from "./components/NoConcernFound";
 import ConcernBanner from "./components/ConcernBanner";
+import ConcernFilter from "./components/ConcernFilter";
+
+type SortBy = "reported_on" | "occurred_on" | "species";
+type SortOrder = "asc" | "desc";
+export interface ConcernFilters {
+  query: string;
+  status: "OPEN" | "CLOSED";
+  sort_by: SortBy;
+  sort_order: SortOrder;
+  page: number;
+  page_size: number;
+}
 
 const HealthConcerns = ({}) => {
-  const [filterByStatus, setFilterByStatus] = useState<"OPEN" | "COMPLETED">(
-    "OPEN",
-  );
+  const [filters, setFilters] = useState<ConcernFilters>({
+    query: "",
+    status: "OPEN",
+    sort_by: "reported_on" as SortBy,
+    sort_order: "asc" as SortOrder,
+    page: 1,
+    page_size: 10,
+  });
 
-  const { allActiveConcerns } = useGetConcerns();
-  const { data: concerns, isLoading } = allActiveConcerns();
+  const query = Object.entries(filters)
+    .filter(([key, value]) => {
+      if (key === "query" && !value) return false;
+
+      return true;
+    })
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join("&");
+
+  const { getConcerns } = useGetConcerns();
+  const { data: concerns, isLoading } = getConcerns(query);
   const { setShowForm } = usePlantStore();
   const { setPlantIdentity } = usePlantIdentityStore();
   const navigate = useNavigate();
@@ -30,23 +56,11 @@ const HealthConcerns = ({}) => {
   const [assessmentOpen, setAssessmentOpen] = useState(false);
 
   return (
-    <div className="sm:p-6">
+    <div className="flex flex-col gap-5">
       <ConcernBanner />
 
-      <div className="flex gap-4 mt-6">
-        <Button
-          variant={filterByStatus === "OPEN" ? "default" : "ghost"}
-          onClick={() => setFilterByStatus("OPEN")}
-        >
-          Active
-        </Button>
-        <Button
-          variant={filterByStatus === "COMPLETED" ? "default" : "ghost"}
-          onClick={() => setFilterByStatus("COMPLETED")}
-        >
-          Completed
-        </Button>
-      </div>
+      {concerns?.length ? <ConcernFilter {...{ filters, setFilters }} /> : null}
+
       {isLoading ? <HealthConcernSkeleton /> : null}
       {!isLoading && concerns && concerns.length === 0 ? (
         <NoConcernFound />

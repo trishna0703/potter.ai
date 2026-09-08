@@ -1,5 +1,4 @@
 import { HeartPulse } from "lucide-react";
-import { Button } from "#components/ui/button";
 import AddNewPlantButton from "#components/utils/AddNewPlantButton";
 
 const NoConcernFound = () => {
@@ -19,7 +18,7 @@ const NoConcernFound = () => {
         </div>
 
         <AddNewPlantButton>
-          <Button className="button-custom">Raise a concern</Button>
+          <span className="button-custom">Raise a concern</span>
         </AddNewPlantButton>
       </div>
     </>

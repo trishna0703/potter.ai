@@ -44,6 +44,7 @@ const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
     handleChange,
     handleSubmit,
     formData,
+    handleClose,
     handleSelectChange,
     handleFileUpload,
   } = useCreatePlantOperations({ plant, open, onClose });
@@ -53,7 +54,7 @@ const CreatePlantForm = ({ plant, open, onClose }: AddPlantProps) => {
       open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          onClose();
+          handleClose()
         }
       }}
     >
