@@ -1,26 +1,20 @@
-import { Button } from "#components/ui/button";
-import { useNavigate } from "react-router-dom";
-
-import { formatRelativeDate } from "./utils/draft-concern-utils";
 import useGetConcerns from "./hooks/useGetConcerns";
-import { ROUTES, S3_URL } from "#lib/routes";
-import usePlantStore from "@/store/PlantStore";
-import usePlantIdentityStore, {
-  type PlantIdentificationResponse,
-} from "@/store/PlantIdentificationStore";
-import { useState } from "react";
-import { Recommendations } from "../Assessment/components/Recommendations";
-import AssessmentDialog from "../Assessment/components/AssessmentDialog";
+import { useMemo, useState } from "react";
 import HealthConcernSkeleton from "./components/Skeleton";
 import NoConcernFound from "./components/NoConcernFound";
 import ConcernBanner from "./components/ConcernBanner";
 import ConcernFilter from "./components/ConcernFilter";
+import ConcernCard from "./components/ConcernCard";
+import useRaiseConcern from "./hooks/useRaiseConcern";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "#lib/routes";
+import { showErrorToast } from "#lib/utils";
 
 type SortBy = "reported_on" | "occurred_on" | "species";
 type SortOrder = "asc" | "desc";
 export interface ConcernFilters {
   query: string;
-  status: "OPEN" | "CLOSED";
+  status: "OPEN" | "COMPLETED" | "ALL";
   sort_by: SortBy;
   sort_order: SortOrder;
   page: number;
@@ -30,7 +24,7 @@ export interface ConcernFilters {
 const HealthConcerns = ({}) => {
   const [filters, setFilters] = useState<ConcernFilters>({
     query: "",
-    status: "OPEN",
+    status: "ALL",
     sort_by: "reported_on" as SortBy,
     sort_order: "asc" as SortOrder,
     page: 1,
@@ -46,97 +40,65 @@ const HealthConcerns = ({}) => {
     .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
     .join("&");
 
-  const { getConcerns } = useGetConcerns();
+  const { getConcerns, invalidateConcerns } = useGetConcerns();
   const { data: concerns, isLoading } = getConcerns(query);
-  const { setShowForm } = usePlantStore();
-  const { setPlantIdentity } = usePlantIdentityStore();
+  const { data: allConcerns } = getConcerns("status=ALL");
+  const { reassess, markConcernResolved } = useRaiseConcern();
   const navigate = useNavigate();
 
-  const [recommendationsOpen, setRecommendationsOpen] = useState(false);
-  const [assessmentOpen, setAssessmentOpen] = useState(false);
+  const active = useMemo(
+    () => allConcerns?.filter((c) => c.status === "OPEN").length ?? 0,
+    [allConcerns],
+  );
+  const monitoring = useMemo(
+    () => allConcerns?.filter((c) => c.status === "MONITORING").length ?? 0,
+    [allConcerns],
+  );
+  const resolved = useMemo(
+    () => allConcerns?.filter((c) => c.status === "COMPLETED").length ?? 0,
+    [allConcerns],
+  );
+
+  const handleReassessment = async (id: number) => {
+    try {
+      const result = await reassess({ concern_id: Number(id) });
+      navigate(`${ROUTES.CONCERNSACTIVE}/${result.assessment_id}`);
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  const markResolved = async (id: number) => {
+    try {
+      await markConcernResolved(id);
+      invalidateConcerns(query);
+    } catch (err) {
+      showErrorToast(err);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5">
-      <ConcernBanner />
+      <ConcernBanner
+        monitoring={monitoring}
+        needAttention={active}
+        resolved={resolved}
+      />
 
-      {concerns?.length ? <ConcernFilter {...{ filters, setFilters }} /> : null}
+      <ConcernFilter
+        {...{ filters, setFilters, active, monitoring, resolved }}
+        total={allConcerns?.length ?? 0}
+      />
 
       {isLoading ? <HealthConcernSkeleton /> : null}
       {!isLoading && concerns && concerns.length === 0 ? (
         <NoConcernFound />
       ) : null}
       {concerns && concerns.length > 0 ? (
-        <section className="h-auto flex flex-col gap-4 pt-8 w-full">
-          <div className="flex gap-4 flex-col">
+        <section className="h-auto flex flex-col gap-4 w-full">
+          <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
             {concerns.map((concern) => (
-              <div
-                key={concern.id}
-                className="flex gap-4 border-[0.5px] rounded-xl flex-col sm:flex-row"
-              >
-                <div className="object-cover w-full sm:w-2/5 lg:w-1/4 max-h-48 sm:max-h-64 lg:max-h-48 overflow-hidden">
-                  <img
-                    src={S3_URL + "/" + concern.photo_url}
-                    alt=""
-                    className="size-full object-cover sm:rounded-l-xl rounded-t-xl rounded-b-none sm:rounded-r-none"
-                  />
-                </div>
-
-                <div className="flex gap-4 lg:flex-row flex-col p-6 w-full sm:w-3/5 lg:w-3/4">
-                  <div className="flex flex-col h-full lg:w-2/3 gap-2">
-                    <h3 className="text-md font-semibold text-primary">
-                      {concern.identified_species}
-                    </h3>
-                    <p className="text-sm">{concern.initial_context}</p>
-                    <p className="text-primary/50 text-xs">
-                      {formatRelativeDate(concern.reported_on)}
-                    </p>
-                  </div>
-
-                  <div className="flex lg:flex-col gap-2 lg:justify-center">
-                    {concern.status === "COMPLETED" ? (
-                      <div className="flex gap-2 lg:flex-col">
-                        <Recommendations
-                          open={recommendationsOpen}
-                          onOpenChange={setRecommendationsOpen}
-                          assessment_id={concern.assessment_id}
-                        />
-                        <AssessmentDialog
-                          open={assessmentOpen}
-                          onOpenChange={setAssessmentOpen}
-                          id={concern.id}
-                        />
-                      </div>
-                    ) : (
-                      <Button
-                        className={"lg:w-48"}
-                        onClick={() =>
-                          navigate(
-                            `${ROUTES.CONCERNSACTIVE}/${concern.assessment_id}`,
-                          )
-                        }
-                      >
-                        View Concern
-                      </Button>
-                    )}
-                    {!concern.plant_id ? (
-                      <Button
-                        className={"lg:w-48"}
-                        variant={"secondary"}
-                        onClick={() => {
-                          setShowForm(true);
-                          setPlantIdentity({
-                            species: concern.identified_species,
-                            photo_id: concern.photo_id,
-                            photo_url: concern.photo_url,
-                          } as PlantIdentificationResponse);
-                        }}
-                      >
-                        Add plant
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
+              <ConcernCard {...{ concern, handleReassessment, markResolved }} />
             ))}
           </div>
         </section>

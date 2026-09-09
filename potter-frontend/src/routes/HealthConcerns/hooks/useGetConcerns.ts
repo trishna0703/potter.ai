@@ -3,17 +3,21 @@ import { API_ENDPOINTS } from "#lib/endpoints";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-type Concern = {
+export type ConcernStatus = "OPEN" | "MONITORING" | "COMPLETED";
+export type Concern = {
   id: number;
-  status: string;
   plant_id: number | null;
-  initial_context: number;
-  reported_on: string;
   identified_species: string;
-  occurred_on: string;
+  name: string;
+  title: string;
   photo_url: string;
   photo_id: number;
+  occurred_on: string;
+  reported_on: string;
+  status: ConcernStatus;
+  initial_context: string;
   assessment_id: number;
+  is_reassessing: boolean;
 };
 
 export default function useGetConcerns() {

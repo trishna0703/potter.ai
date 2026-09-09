@@ -5,7 +5,7 @@ import { ROUTES } from "#lib/routes";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
-import { getToday } from "#lib/utils";
+import { getToday, showErrorToast } from "#lib/utils";
 import { useCreateOrUpdatePlant } from "../hooks/useCreatePlant";
 import usePlant from "../hooks/usePlant";
 import NoPlantsFound from "./NoPlantsFound";
@@ -13,6 +13,7 @@ import { CareScheduleDialog } from "#components/utils/CareScheduleDialog";
 import PlantCard from "./PlantCard";
 import AddNewPlantButton from "#components/utils/AddNewPlantButton";
 import { PlantIcon, PlusIcon } from "@phosphor-icons/react";
+import Overlay from "#components/layout/Overlay";
 
 const PlantsList = ({
   plantList,
@@ -37,33 +38,39 @@ const PlantsList = ({
   const { plantIdentity, setPlantIdentity } = usePlantIdentityStore();
   const { handleFileChange, handleUploadPlantPhoto } = usePhotoUpload();
   const navigate = useNavigate();
+  const [isRaisePending, setIsRaisePending] = useState(false);
 
   const raiseConcern = async (
     event: ChangeEvent<HTMLInputElement, Element>,
     id: number,
     species: string,
   ) => {
-    let new_evidence = await handleFileChange(event);
+    setIsRaisePending(true);
+    try {
+      let new_evidence = await handleFileChange(event);
 
-    if (new_evidence) {
-      let { photo_id, evidence_id } = await handleUploadPlantPhoto({
-        photo_url: new_evidence,
-        captured_on: getToday(),
-        plant_id: id,
-      });
-      setPlantIdentity({
-        ...plantIdentity,
-        photo_id,
-        evidence_id,
-        plant_id: id,
-        photo_url: new_evidence,
-        is_new_plant: false,
-        species: species,
-        confidence: 10,
-        found_plants: [],
-      });
-
-      navigate(ROUTES.RAISE);
+      if (new_evidence) {
+        let { photo_id, evidence_id } = await handleUploadPlantPhoto({
+          photo_url: new_evidence,
+          captured_on: getToday(),
+          plant_id: id,
+        });
+        setPlantIdentity({
+          ...plantIdentity,
+          photo_id,
+          evidence_id,
+          plant_id: id,
+          photo_url: new_evidence,
+          is_new_plant: false,
+          species: species,
+          confidence: 10,
+          found_plants: [],
+        });
+        setIsRaisePending(false);
+        navigate(ROUTES.RAISE);
+      }
+    } catch (err) {
+      showErrorToast(err);
     }
   };
 
@@ -75,7 +82,9 @@ const PlantsList = ({
       });
 
       invalidate.plants();
-    } catch (error) {}
+    } catch (error) {
+      showErrorToast(error);
+    }
   };
 
   useEffect(() => {
@@ -101,49 +110,52 @@ const PlantsList = ({
   }
 
   return (
-    <div className="w-full">
-      <ul className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-cols-1 gap-4">
-        {plantList?.map((plant: Plant) => (
-          <li key={plant.id} className="w-full">
-            <PlantCard
-              plant={plant}
-              editPlant={(plant: Plant) => setEditPlant(plant)}
-              markPlantDead={handleMarkPlantDead}
-              triggerCareEvent={(id: number) =>
-                setShowCareEventDialog({ plantId: id, show: true })
-              }
-              raiseConcern={raiseConcern}
-              isHealthy={
-                plant.status === "ACTIVE" &&
-                !unhealthyPlants?.includes(plant.id)
-              }
-            />
-          </li>
-        ))}
-        {plantList.length % 4 != 0 ? (
-          <>
-            <AddPlantCard />
-          </>
-        ) : null}
-        {(plantList.length + 2) % 4 == 0 ? (
-          <>
-            <FillerCard />
-          </>
-        ) : null}
-      </ul>
-      <CreatePlantForm
-        open={!!editPlant}
-        onClose={() => setEditPlant(undefined)}
-        plant={editPlant}
-      />
-      <CareScheduleDialog
-        open={showcareEventDialog.show}
-        onOpenChange={(val) =>
-          setShowCareEventDialog({ plantId: null, show: val })
-        }
-        plantId={showcareEventDialog.plantId || 0}
-      />
-    </div>
+    <>
+      {isRaisePending ? <Overlay /> : null}
+      <div className="w-full">
+        <ul className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-cols-1 gap-4">
+          {plantList?.map((plant: Plant) => (
+            <li key={plant.id} className="w-full">
+              <PlantCard
+                plant={plant}
+                editPlant={(plant: Plant) => setEditPlant(plant)}
+                markPlantDead={handleMarkPlantDead}
+                triggerCareEvent={(id: number) =>
+                  setShowCareEventDialog({ plantId: id, show: true })
+                }
+                raiseConcern={raiseConcern}
+                isHealthy={
+                  plant.status === "ACTIVE" &&
+                  !unhealthyPlants?.includes(plant.id)
+                }
+              />
+            </li>
+          ))}
+          {plantList.length % 4 != 0 ? (
+            <>
+              <AddPlantCard />
+            </>
+          ) : null}
+          {(plantList.length + 2) % 4 == 0 ? (
+            <>
+              <FillerCard />
+            </>
+          ) : null}
+        </ul>
+        <CreatePlantForm
+          open={!!editPlant}
+          onClose={() => setEditPlant(undefined)}
+          plant={editPlant}
+        />
+        <CareScheduleDialog
+          open={showcareEventDialog.show}
+          onOpenChange={(val) =>
+            setShowCareEventDialog({ plantId: null, show: val })
+          }
+          plantId={showcareEventDialog.plantId || 0}
+        />
+      </div>
+    </>
   );
 };
 

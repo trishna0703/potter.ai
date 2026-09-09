@@ -4,6 +4,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
+from app.schemas.concern import AssessmentStatus
 from app.services.assessment_ai import AssessmentAIService
 from app.schemas.websocket import AnswerMessage
 from app.services.assessment_context_service import AssessmentContextService
@@ -68,7 +69,7 @@ async def health_concern_websocket(
             context_service=context_service,
         )
 
-        if assessment.status == "COMPLETED":
+        if assessment.status == AssessmentStatus.COMPLETED:
             interaction = message_service.get_latest_assessment_message(
                 db,
                 assessment_id=assessment.id,

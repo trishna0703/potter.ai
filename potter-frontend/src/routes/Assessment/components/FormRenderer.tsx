@@ -13,7 +13,7 @@ const FormRenderer = ({
 
   switch (type) {
     case "boolean":
-    case "multiple_choice":
+    case "multi_choice":
     case "single_choice":
       return (
         <SelectHandler payload={latestMessage.payload} onSubmit={onSubmit} />

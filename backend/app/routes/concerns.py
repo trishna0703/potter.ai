@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from app.models import (
     User,
     HealthConcern,
@@ -14,6 +15,7 @@ from app.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, select
 from app.schemas.assessment import AssessmentMessageResponse
+from app.schemas.concern import AssessmentStatus, ConcernStatus
 from app.services.assessment_service import AssessmentService
 from app.services.health_concern_service import HealthConcernService
 from app.services.interaction_service import InteractionService
@@ -29,7 +31,7 @@ from typing import Literal
 
 router = APIRouter()
 
-ConcernStatus = Literal["OPEN", "RESOLVED", "ALL"]
+ConcernStatusForFilter = Literal["OPEN", "COMPLETED", "MONITORING", "ALL"]
 
 ConcernSortBy = Literal[
     "reported_on",
@@ -41,7 +43,7 @@ ConcernSortBy = Literal[
 @router.get("/")
 def get_concerns(
     query: str | None = None,
-    status: ConcernStatus = "OPEN",
+    status: ConcernStatusForFilter = ConcernStatus.OPEN,
     sort_by: ConcernSortBy = "reported_on",
     sort_order: Literal["asc", "desc"] = "desc",
     page: int = Query(1, ge=1),
@@ -167,8 +169,8 @@ def get_concerns(
     rows = db.execute(stmt).all()
 
     active_statuses = {
-        "WAITING_FOR_AI",
-        "WAITING_FOR_USER",
+        AssessmentStatus.WAITING_FOR_AI,
+        AssessmentStatus.WAITING_FOR_USER,
     }
 
     return [
@@ -178,6 +180,8 @@ def get_concerns(
             "identified_species": (
                 plant_species if plant_species is not None else identified_species
             ),
+            "name": concern.plant.name if concern.plant is not None else None,
+            "title": concern.title,
             "photo_url": photo_url,
             "photo_id": photo_id,
             "occurred_on": concern.occurred_on,
@@ -217,7 +221,7 @@ def raise_concern(
         new_assessment = assessment_service.get_or_create_assessment(
             db,
             concern_id=new_concern.id,
-            initial_status="WAITING_FOR_AI",
+            initial_status=AssessmentStatus.WAITING_FOR_AI,
         )
 
         link_evidence_to_Assessment(
@@ -229,9 +233,9 @@ def raise_concern(
         db.commit()
         db.refresh(new_concern)
 
-    except Exception:
+    except Exception as e:
         db.rollback()
-        raise
+        raise HTTPException(detail=str(e), status_code=501)
 
     return {
         "concern_id": new_concern.id,
@@ -271,7 +275,7 @@ def create_reassessment(
     assessment = assessment_service.create_assessment(
         db,
         concern_id=concern.id,
-        status="WAITING_FOR_AI",
+        status=AssessmentStatus.WAITING_FOR_AI,
     )
 
     link_evidence_to_Assessment(
@@ -297,7 +301,8 @@ def create_health_concern(
         submission_id=str(concern.submission_id),
         occurred_on=concern.occurred_on,
         initial_evidence_id=concern.evidence_id,
-        status="OPEN",
+        status=ConcernStatus.OPEN,
+        title=concern.title,
     )
 
     db.add(new_concern)
@@ -355,3 +360,29 @@ def get_assessment_by_id(
         )
     )
     return db.scalars(stmt).first()
+
+
+class UpdateStatusRequestModel(BaseModel):
+    status: str
+
+
+@router.patch("/{concern_id}/status")
+def update_concern_status(
+    concern_id: int,
+    payload: UpdateStatusRequestModel,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+
+    concern_service = HealthConcernService()
+
+    concern = concern_service.update_health_concern_status(
+        db=db, concern_id=concern_id, status=payload.status
+    )
+
+    if concern is None:
+        raise HTTPException(detail="Concern not found", status_code=404)
+
+    db.commit()
+
+    return concern

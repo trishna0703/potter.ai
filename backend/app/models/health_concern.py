@@ -23,6 +23,8 @@ class HealthConcern(Base):
         DateTime, default=datetime.today, nullable=False
     )
 
+    title: Mapped[str] = mapped_column(String(30), nullable=False)
+
     initial_evidence_id: Mapped[int] = mapped_column(
         ForeignKey("evidences.id"),
         nullable=False,

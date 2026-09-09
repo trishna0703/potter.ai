@@ -1,5 +1,6 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
+import { showErrorToast } from "#lib/utils";
 import type { CareScheduleFormData } from "@/types/care_events";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -93,6 +94,7 @@ const usecareEventScheduler = () => {
       resetForm();
       toast.success(`Care event scheduled successfully!`);
     } catch (err) {
+      showErrorToast(err);
     } finally {
       setIsSubmitting(false);
     }

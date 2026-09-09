@@ -6,14 +6,12 @@ type ConcernAnswers = {
 };
 
 const symptomLabels: Record<string, string> = {
-  leaf_drop: "leaves are falling off",
-  yellowing: "the leaves are turning yellow",
-  wilting: "the leaves are wilting or drooping",
-  spots: "there are spots or discoloration",
-  pests: "there may be pests or insects",
-  growth: "there are unusual growth changes",
-  stem: "there are changes to the stem",
-  soil: "there are changes to the soil",
+  leaf_drop: "falling leaves",
+  yellowing: "yellowing leaves",
+  wilting: "wilted or drooping leaves",
+  spots: "spots or discoloration",
+  pests: "pests or insects",
+  growth: "unusual growth changes",
 };
 
 const durationLabels: Record<string, string> = {
@@ -41,20 +39,20 @@ export function generateInitialContext(answers: ConcernAnswers): string {
   if (answers.symptoms) {
     const symptom = symptomLabels[answers.symptoms] ?? answers.symptoms;
 
-    parts.push(`The user reports that ${symptom}.`);
+    parts.push(`The plant has been suffering with ${symptom}.`);
   }
 
   if (answers.duration) {
     const duration = durationLabels[answers.duration] ?? answers.duration;
 
-    parts.push(`This has been happening for ${duration}.`);
+    parts.push(`This has been happening since ${duration}.`);
   }
 
-  if (answers.care_changes) {
+  if (answers.care_changes && answers.care_changes !== "nothing_changed") {
     const change =
       careChangeLabels[answers.care_changes] ?? answers.care_changes;
 
-    parts.push(`The user reports a recent change involving ${change}.`);
+    parts.push(`Recent changes in ${change}.`);
   }
 
   if (answers.additional_context) {

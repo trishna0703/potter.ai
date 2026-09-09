@@ -71,7 +71,7 @@ const PlantsPageHero = ({
                 />
                 <div>
                   <span className="text-primary-foreground text-md font-semibold">
-                    {totalPlants}
+                    {needAttention}
                   </span>
                   <p className="text-muted text-xs font-extralight">
                     Needs attention

@@ -1,6 +1,10 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
-import type { PlantPhotoUploadResponse, UploadPlantPhotoRequest } from "@/types/plantTypes";
+import { showErrorToast } from "#lib/utils";
+import type {
+  PlantPhotoUploadResponse,
+  UploadPlantPhotoRequest,
+} from "@/types/plantTypes";
 
 const usePhotoUpload = () => {
   const handleFileChange = async (
@@ -19,6 +23,7 @@ const usePhotoUpload = () => {
 
       return object_key as string;
     } catch (error) {
+      showErrorToast(error);
       console.error("Upload failed:", error);
     }
   };

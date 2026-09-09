@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.schemas.concern import AssessmentStatus, ConcernStatus
 from app.services.assessment_service import AssessmentService
 from app.services.interaction_service import InteractionService
 from app.services.assessment_ai import AssessmentAIService
@@ -110,7 +111,7 @@ class AssessmentFlowService:
         self.assessment_service.update_assessment_status(
             db,
             assessment_id=assessment.id,
-            status="WAITING_FOR_USER",
+            status=AssessmentStatus.WAITING_FOR_USER,
         )
 
         db.commit()
@@ -140,16 +141,14 @@ class AssessmentFlowService:
         self.assessment_service.update_assessment_status(
             db,
             assessment_id=assessment.id,
-            status="COMPLETED",
+            status=AssessmentStatus.COMPLETED,
         )
 
         concern_service = HealthConcernService()
 
         concern_service.update_health_concern_status(
-            db=db, concern_id=concern_id, status="COMPLETED"
+            db=db, concern_id=concern_id, status=ConcernStatus.MONITORING
         )
-
-        recommendation_service = RecommendationService()
 
         message = self.message_service.create_assessment_message(
             db,
@@ -214,7 +213,7 @@ class AssessmentFlowService:
         self.assessment_service.update_assessment_status(
             db,
             assessment_id=assessment.id,
-            status="WAITING_FOR_AI",
+            status=AssessmentStatus.WAITING_FOR_AI,
         )
 
         db.commit()
