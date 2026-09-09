@@ -52,7 +52,6 @@ const ConcernFilter = ({
     }));
   };
 
-
   const sortingOptions = [
     {
       label: "Newest first",
@@ -88,7 +87,7 @@ const ConcernFilter = ({
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       {/* Status */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-scroll w-full no-scrollbar">
         {filteringOptions.map(({ label, value }) => (
           <Button
             value={value}

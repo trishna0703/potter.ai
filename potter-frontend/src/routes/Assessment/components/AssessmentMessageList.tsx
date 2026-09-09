@@ -1,5 +1,8 @@
+import { cn } from "#lib/utils";
+import { formatRelativeDate } from "@/routes/HealthConcerns/utils/draft-concern-utils";
 import useActiveMessages from "@/store/ActiveConnectionStore";
 import type { AssessmentMessage } from "@/types/messages";
+import { LeafIcon } from "@phosphor-icons/react";
 
 type AssessmentMessageListProps = {
   messages: AssessmentMessage[];
@@ -62,7 +65,7 @@ const AssessmentMessageList = ({ messages }: AssessmentMessageListProps) => {
       <div className="flex flex-col gap-5">
         {sortedMessages.map((message) => {
           const isAssistant = message.role === "assistant";
-    
+
           const content =
             message.message_type === "question"
               ? getQuestionText(message)
@@ -82,28 +85,43 @@ const AssessmentMessageList = ({ messages }: AssessmentMessageListProps) => {
                 isAssistant ? "justify-start" : "justify-end",
               ].join(" ")}
             >
-              <div
-                className={[
-                  "max-w-[85%] rounded-2xl px-4 py-3 shadow-sm",
-                  isAssistant
-                    ? "rounded-bl-md border bg-card"
-                    : "rounded-br-md bg-primary text-primary-foreground",
-                ].join(" ")}
-              >
+              {isAssistant ? (
+                <span className="size-10 rounded-full bg-secondary text-primary flex items-center justify-center mr-2">
+                  <LeafIcon size={20} weight="fill" />
+                </span>
+              ) : null}
+              <div className="max-w-[85%]">
                 <div
                   className={[
-                    "mb-1.5 text-xs font-medium",
+                    "rounded-2xl px-4 py-3 shadow-sm",
                     isAssistant
-                      ? "text-muted-foreground"
-                      : "text-primary-foreground/70",
+                      ? "rounded-bl-md border bg-card"
+                      : "rounded-br-md bg-primary text-primary-foreground",
                   ].join(" ")}
                 >
-                  {isAssistant ? "Potter.ai" : "You"}
-                </div>
+                  <div
+                    className={[
+                      "mb-1.5 text-xs font-medium",
+                      isAssistant
+                        ? "text-muted-foreground"
+                        : "text-primary-foreground/70",
+                    ].join(" ")}
+                  >
+                    {isAssistant ? "Potter.ai" : "You"}
+                  </div>
 
-                <p className="whitespace-pre-wrap text-sm leading-6">
-                  {content}
-                </p>
+                  <p className="whitespace-pre-wrap text-sm leading-6">
+                    {content}
+                  </p>
+                </div>
+                <span
+                  className={cn(
+                    "text-xs text-muted-foreground/70 flex",
+                    isAssistant ? "" : "justify-end",
+                  )}
+                >
+                  {formatRelativeDate(message.created_at)}
+                </span>
               </div>
             </div>
           );

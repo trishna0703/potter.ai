@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from app.models import (
     User,
     HealthConcern,
@@ -232,9 +233,9 @@ def raise_concern(
         db.commit()
         db.refresh(new_concern)
 
-    except Exception:
+    except Exception as e:
         db.rollback()
-        raise
+        raise HTTPException(detail=str(e), status_code=501)
 
     return {
         "concern_id": new_concern.id,
@@ -301,6 +302,7 @@ def create_health_concern(
         occurred_on=concern.occurred_on,
         initial_evidence_id=concern.evidence_id,
         status=ConcernStatus.OPEN,
+        title=concern.title,
     )
 
     db.add(new_concern)
@@ -360,10 +362,14 @@ def get_assessment_by_id(
     return db.scalars(stmt).first()
 
 
+class UpdateStatusRequestModel(BaseModel):
+    status: str
+
+
 @router.patch("/{concern_id}/status")
 def update_concern_status(
     concern_id: int,
-    status: str,
+    payload: UpdateStatusRequestModel,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -371,7 +377,7 @@ def update_concern_status(
     concern_service = HealthConcernService()
 
     concern = concern_service.update_health_concern_status(
-        db=db, concern_id=concern_id, status=status
+        db=db, concern_id=concern_id, status=payload.status
     )
 
     if concern is None:

@@ -9,6 +9,7 @@ import useAssessmentConnection from "./hooks/useAssessmentConnection";
 import AssessmentSkeleton from "./components/AssessmentSkeleton";
 import useAssessmentMessages from "./hooks/useAssessmentMessages";
 import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 
 const ChatInterface = () => {
   const params = useParams();
@@ -21,6 +22,14 @@ const ChatInterface = () => {
 
   const { sendMessage } = useAssessmentConnection();
 
+  useEffect(() => {
+    if (latestMessage) {
+      document.getElementById("latest-message")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [latestMessage]);
   if (!assessmentId) return null;
 
   const historyMessages: AssessmentMessage[] =
@@ -39,31 +48,25 @@ const ChatInterface = () => {
   }
 
   return (
-    <div className="flex flex-col relative h-[calc(100vh-7rem)]">
+    <div className="flex flex-col relative h-[calc(100vh - 4rem)]">
       {/* Conversation history */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 max-h-max">
         <AssessmentMessageList messages={historyMessages} />
       </ScrollArea>
 
-      {messages.length === 0 && interactionState === "waiting_for_ai" && (
-        <div className="py-8 text-center absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-          <img src="/loading.svg" />
-          <p className="text-lg text-primary">Your assessment has started.</p>
-          <p className="text-sm text-muted-foreground">
-            Please wait while we analyse the issue.
-          </p>
-        </div>
-      )}
-
       {/* Current interaction */}
-      <div className="shrink-0 bg-background">
-        <div className="mx-auto w-full max-w-3xl px-4 py-6">
-          <LatestMessageSection
-            sendMessage={sendMessage}
-            assessment_id={Number(assessmentId)}
-          />
+      {latestMessage ? (
+        <div className="shrink-0 bg-card rounded-2xl" id="latest-message">
+          <div className="mx-auto w-full max-w-3xl px-4 py-6">
+            <LatestMessageSection
+              sendMessage={sendMessage}
+              assessment_id={Number(assessmentId)}
+            />
+          </div>
         </div>
-      </div>
+      ) : null}
+
+      
     </div>
   );
 };

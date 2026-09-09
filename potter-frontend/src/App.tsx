@@ -33,12 +33,12 @@ function App() {
               />
               {/* <Route path={ROUTES.SHELVES} element={<Shelves />} /> */}
               <Route path={ROUTES.CONCERNS} element={<HealthConcerns />} />
+            </Route>
+            <Route element={<ConcernLayout />}>
               <Route
                 path={"/concerns/active/:assessment_id"}
                 element={<ChatInterface />}
               />
-            </Route>
-            <Route element={<ConcernLayout />}>
               <Route path={ROUTES.RAISE} element={<RaiseConcern />} />
             </Route>
           </Route>

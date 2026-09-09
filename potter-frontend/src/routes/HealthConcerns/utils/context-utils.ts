@@ -6,14 +6,12 @@ type ConcernAnswers = {
 };
 
 const symptomLabels: Record<string, string> = {
-  leaf_drop: "leaves are falling off",
-  yellowing: "the leaves are turning yellow",
-  wilting: "the leaves are wilting or drooping",
-  spots: "there are spots or discoloration",
-  pests: "there may be pests or insects",
-  growth: "there are unusual growth changes",
-  stem: "there are changes to the stem",
-  soil: "there are changes to the soil",
+  leaf_drop: "falling leaves",
+  yellowing: "yellowing leaves",
+  wilting: "wilted or drooping leaves",
+  spots: "spots or discoloration",
+  pests: "pests or insects",
+  growth: "unusual growth changes",
 };
 
 const durationLabels: Record<string, string> = {

@@ -34,7 +34,7 @@ export type SingleChoiceQuestion = BaseQuestionPayload & {
 };
 
 export type MultipleChoiceQuestion = BaseQuestionPayload & {
-  input_type: "multiple_choice";
+  input_type: "multi_choice";
   options: QuestionOption[];
 };
 
@@ -109,8 +109,8 @@ export interface AnswerClientMessage {
 export type AssessmentClientMessage = AnswerClientMessage;
 
 export type AssessmentUIStatus =
-  | "connecting"
   | "waiting_for_ai"
+  | "connecting"
   | "waiting_for_user"
   | "error"
   | "disconnected";

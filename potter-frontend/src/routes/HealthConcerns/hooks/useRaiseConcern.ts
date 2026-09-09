@@ -47,9 +47,17 @@ const useRaiseConcern = () => {
     });
   };
 
+  const markConcernResolved = async (id: number) => {
+    return await apiClient(`/api/concerns/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: "COMPLETED" }),
+    });
+  };
+
   return {
     raiseConcern,
     reassess,
+    markConcernResolved,
   };
 };
 

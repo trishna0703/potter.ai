@@ -37,7 +37,7 @@ const SelectHandler = ({
         return;
       }
 
-      if (input_type === "multiple_choice" && multipleValues.length === 0) {
+      if (input_type === "multi_choice" && multipleValues.length === 0) {
         return;
       }
 
@@ -57,7 +57,7 @@ const SelectHandler = ({
         break;
       }
 
-      case "multiple_choice": {
+      case "multi_choice": {
         const selectedOptions = options.filter((option) =>
           multipleValues.includes(option.value),
         );
@@ -82,13 +82,14 @@ const SelectHandler = ({
 
   return (
     <div className="space-y-4">
-      <Label className="text-lg">{prompt}</Label>
+      <Label className="text-2xl font-bold text-title">{prompt}</Label>
 
       {input_type === "single_choice" && (
         <RadioGroup
           value={singleValue}
           onValueChange={setSingleValue}
           aria-labelledby={id}
+          className={" grid grid-cols-1 sm:grid-cols-2"}
         >
           {options.map((option) => (
             <Label
@@ -107,8 +108,8 @@ const SelectHandler = ({
         </RadioGroup>
       )}
 
-      {input_type === "multiple_choice" && (
-        <div className="space-y-3">
+      {input_type === "multi_choice" && (
+        <div className="space-y-3 grid grid-cols-1 sm:grid-cols-2">
           {options.map((option) => {
             const checked = multipleValues.includes(option.value);
 
@@ -165,8 +166,7 @@ const SelectHandler = ({
           disabled={
             required &&
             ((input_type === "single_choice" && !singleValue) ||
-              (input_type === "multiple_choice" &&
-                multipleValues.length === 0) ||
+              (input_type === "multi_choice" && multipleValues.length === 0) ||
               (input_type === "boolean" && !booleanValue))
           }
         >

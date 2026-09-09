@@ -146,7 +146,7 @@ const RaiseConcern = () => {
                         [question.name]: e.target.value,
                       }))
                     }
-                    className="bg-card w-full h-14"
+                    className="bg-card w-full h-14 text-sm"
                   />
                 </div>
               ) : null}

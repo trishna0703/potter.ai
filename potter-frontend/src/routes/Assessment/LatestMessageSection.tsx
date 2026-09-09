@@ -21,6 +21,7 @@ const QuestionAnswerView = ({
   const onSubmit = (value: AnswerValue, label: string | null) => {
     sendMessage(latestMessage.interaction_id, value, label);
   };
+  console.log({ interactionState });
 
   return interactionState == "waiting_for_user" ? (
     <FormRenderer onSubmit={onSubmit} latestMessage={latestMessage} />
