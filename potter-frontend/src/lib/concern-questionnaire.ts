@@ -6,52 +6,35 @@ export const QUESTIONNAIRE = [
     description: "Choose the symptoms that best describe the problem.",
     choices: [
       {
+        icon: "/yellowing.png",
         value: "yellowing",
         label: "Leaves are turning yellow",
         description: "Some or all leaves are becoming yellow or pale.",
       },
       {
-        value: "wilting",
-        label: "Leaves are wilting or drooping",
-        description: "The plant looks limp, weak, or unusually droopy.",
-      },
-      {
-        value: "spots",
-        label: "Spots or discoloration",
-        description: "You notice brown, black, white, or unusual marks.",
-      },
-      {
+        icon: "/wilting.png",
         value: "leaf_drop",
         label: "Leaves are falling off",
         description: "The plant is losing leaves unexpectedly.",
       },
       {
+        icon: "/growth.png",
         value: "growth",
         label: "Unusual or slow growth",
         description:
           "The plant isn't growing normally or new growth looks unusual.",
       },
       {
+        icon: "/bugs.png",
         value: "pests",
         label: "I see pests or insects",
         description: "You notice bugs, webbing, eggs, or other signs of pests.",
       },
-      {
-        value: "stem",
-        label: "Something looks wrong with the stem",
-        description:
-          "The stem is soft, damaged, discolored, or changing shape.",
-      },
-      {
-        value: "soil",
-        label: "Something looks wrong with the soil",
-        description:
-          "You notice mold, unusual moisture, odor, or other soil changes.",
-      },
     ],
     input: {
-      label: "Something else",
-      placeholder: "Describe what you're noticing…",
+      label: "Something else?",
+      placeholder:
+        "Describe what you're noticing. Clarity will help us with the diagnosis.",
     },
   },
   {
@@ -60,10 +43,6 @@ export const QUESTIONNAIRE = [
     prompt: "How long has this been happening?",
     description: "An approximate timeframe is enough.",
     choices: [
-      {
-        value: "today",
-        label: "Today",
-      },
       {
         value: "few_days",
         label: "A few days",
@@ -80,15 +59,16 @@ export const QUESTIONNAIRE = [
         value: "month_plus",
         label: "More than a month",
       },
-      {
-        value: "unsure",
-        label: "I'm not sure",
-      },
     ],
+    input: {
+      label: "Don't know?",
+      placeholder:
+        "If you don't know or know exactly when it started happening, mention here.",
+    },
   },
   {
     name: "care_changes",
-    required: false,
+    required: true,
     prompt: "Have you changed anything about the plant's care recently?",
     description: "For example, watering, light, location, soil, or fertilizer.",
     choices: [
@@ -97,33 +77,30 @@ export const QUESTIONNAIRE = [
         label: "Watering",
       },
       {
-        value: "light",
+        value: "light_or_location",
         label: "Light or location",
       },
       {
-        value: "soil",
+        value: "soil_or_repotting",
         label: "Soil or repotting",
+      },
+      {
+        value: "temperature_or_environment",
+        label: "Temperature or environment",
       },
       {
         value: "fertilizer",
         label: "Fertilizer or nutrients",
       },
       {
-        value: "temperature",
-        label: "Temperature or environment",
-      },
-      {
-        value: "none",
+        value: "nothing_changed",
         label: "Nothing changed",
-      },
-      {
-        value: "unsure",
-        label: "I'm not sure",
       },
     ],
     input: {
       label: "Something else",
-      placeholder: "Tell us about the change…",
+      placeholder:
+        "Tell us about the change… (If you moved it from the nursery to your home, mention the change in environment. This will help us better.)",
     },
   },
-];
+] as const;

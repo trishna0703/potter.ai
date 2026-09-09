@@ -135,7 +135,7 @@ export const useCreatePlantOperations = ({
       invalidate.plantDetails(newPlant.id);
       onClose();
     } catch (e) {
-      showErrorToast("Something went wrong.");
+      showErrorToast(e);
     }
   };
 

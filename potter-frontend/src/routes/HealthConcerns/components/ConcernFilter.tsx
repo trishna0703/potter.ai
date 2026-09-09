@@ -1,6 +1,5 @@
 import Search from "#components/utils/Search";
 import useDebounce from "#hooks/useDebounce";
-import { SortAscendingIcon, SortDescendingIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,15 +9,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "#components/ui/tabs";
 import type { ConcernFilters } from "../HealthConcerns";
+import { cn } from "#lib/utils";
 
 interface ConcernFilterProps {
+  active: number;
+  monitoring: number;
+  resolved: number;
+  total: number;
   filters: ConcernFilters;
   setFilters: React.Dispatch<React.SetStateAction<ConcernFilters>>;
 }
 
-const ConcernFilter = ({ filters, setFilters }: ConcernFilterProps) => {
+const ConcernFilter = ({
+  active,
+  resolved,
+  monitoring,
+  total,
+  filters,
+  setFilters,
+}: ConcernFilterProps) => {
   const [search, setSearch] = useState(filters.query);
 
   const debouncedSearch = useDebounce(search, 500);
@@ -42,83 +52,89 @@ const ConcernFilter = ({ filters, setFilters }: ConcernFilterProps) => {
     }));
   };
 
-  const toggleSortOrder = () => {
-    setFilters((prev) => ({
-      ...prev,
-      sort_order: prev.sort_order === "asc" ? "desc" : "asc",
-      page: 1,
-    }));
-  };
 
   const sortingOptions = [
     {
-      label: "Reported On",
+      label: "Newest first",
       value: "reported_on",
+      order: "asc",
     },
     {
-      label: "Occurred On",
-      value: "occurred_on",
-    },
-    {
-      label: "Species",
-      value: "species",
+      label: "Newest last",
+      value: "reported_on",
+      order: "desc",
     },
   ];
 
   const filteringOptions = [
     {
-      label: "Open",
+      label: `All ${total ? `(${total})` : ""}`,
+      value: "ALL",
+    },
+    {
+      label: `Needs Attention ${active ? `(${active})` : ""}`,
       value: "OPEN",
     },
     {
-      label: "Closed",
-      value: "CLOSED",
+      label: `Monitoring ${monitoring ? `(${monitoring})` : ""}`,
+      value: "MONITORING",
+    },
+    {
+      label: `Resolved ${resolved ? `(${resolved})` : ""}`,
+      value: "COMPLETED",
     },
   ];
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      {/* Search */}
-      <Search
-        value={search}
-        onChange={setSearch}
-        placeholder="Search concerns..."
-        className="w-full md:max-w-72"
-      />
+      {/* Status */}
+      <div className="flex gap-2">
+        {filteringOptions.map(({ label, value }) => (
+          <Button
+            value={value}
+            variant={filters.status === value ? "secondary" : "outline"}
+            className={cn(
+              "min-w-20 rounded-full data-active:bg-secondary data-active:text-primary text-xs h-10! px-4",
+              filters.status !== value
+                ? "bg-card/70 border-muted text-muted-foreground"
+                : "",
+            )}
+            onClick={() =>
+              updateFilter("status", value as ConcernFilters["status"])
+            }
+            key={value}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        {/* Status */}
-        <Tabs
-          value={filters.status}
-          onValueChange={(value) =>
-            updateFilter("status", value as ConcernFilters["status"])
-          }
-          className="w-full sm:w-max"
-        >
-          <TabsList className="h-10! w-full rounded-full bg-secondary/30 p-0">
-            {filteringOptions.map(({ label, value }) => (
-              <TabsTrigger
-                value={value}
-                className="min-w-20 rounded-full data-active:bg-secondary data-active:text-primary"
-                key={value}
-              >
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-
+      <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-3">
+        {/* Search */}
+        <Search
+          value={search}
+          onChange={setSearch}
+          placeholder="Search concerns..."
+          className="w-full md:max-w-72"
+        />
         {/* Sort */}
         <Select
           value={
-            sortingOptions.find((opt) => opt.value === filters.sort_by)?.value
+            sortingOptions.find((opt) => opt.value === filters.sort_by)?.label
           }
-          onValueChange={(value) =>
-            updateFilter("sort_by", value as ConcernFilters["sort_by"])
-          }
+          onValueChange={(value) => {
+            let sortOrder = sortingOptions.find(
+              (opt) => opt.value === filters.sort_by,
+            )?.order;
+            updateFilter("sort_by", value as ConcernFilters["sort_by"]);
+            updateFilter(
+              "sort_order",
+              sortOrder as ConcernFilters["sort_order"],
+            );
+          }}
         >
-          <SelectTrigger className="h-10! w-42 border-[0.5px] border-muted bg-card">
+          <SelectTrigger className="h-10! w-48 border-[0.5px] border-muted bg-card">
             <p className="text-muted-foreground">Sort By:</p>
 
             <SelectValue placeholder="Sort by" />
@@ -132,24 +148,6 @@ const ConcernFilter = ({ filters, setFilters }: ConcernFilterProps) => {
             ))}
           </SelectContent>
         </Select>
-
-        {/* Sort direction */}
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={toggleSortOrder}
-          title={
-            filters.sort_order === "asc" ? "Sort ascending" : "Sort descending"
-          }
-          className="size-10 border-[0.5px] border-muted bg-card"
-        >
-          {filters.sort_order === "asc" ? (
-            <SortAscendingIcon size={20} />
-          ) : (
-            <SortDescendingIcon size={20} />
-          )}
-        </Button>
       </div>
     </div>
   );

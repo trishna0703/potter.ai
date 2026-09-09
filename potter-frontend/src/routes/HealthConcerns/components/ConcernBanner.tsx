@@ -35,62 +35,54 @@ const ConcernBanner = ({
           </p>
         </div>
 
-        {needAttention ? (
-          <div className="relative z-1 flex gap-4">
-            {/* Need Attention count */}
-            {needAttention && needAttention > 0 ? (
-              <div className="bg-secondary/30 px-4 py-2 rounded-lg flex items-center gap-2">
-                <WarningDiamondIcon
-                  size={24}
-                  weight="light"
-                  className="text-ochre"
-                />
-                <div>
-                  <span className="text-primary-foreground text-md font-semibold">
-                    {needAttention}
-                  </span>
-                  <p className="text-muted text-xs font-extralight">
-                    Needs attention
-                  </p>
-                </div>
+        <div className="relative z-1 flex gap-4">
+          {/* Need Attention count */}
+          {needAttention && needAttention > 0 ? (
+            <div className="bg-secondary/30 px-4 py-2 rounded-lg flex items-center gap-2">
+              <WarningDiamondIcon
+                size={24}
+                weight="light"
+                className="text-ochre"
+              />
+              <div>
+                <span className="text-primary-foreground text-md font-semibold">
+                  {needAttention}
+                </span>
+                <p className="text-muted text-xs font-extralight">
+                  Needs attention
+                </p>
               </div>
-            ) : null}
+            </div>
+          ) : null}
 
-            {resolved ? (
-              <div className="bg-secondary/30 px-4 py-2 rounded-lg flex items-center gap-2">
-                <PlantIcon
-                  size={24}
-                  weight="light"
-                  className="text-green-300"
-                />
-                <div>
-                  <span className="text-primary-foreground text-md font-semibold">
-                    {resolved}
-                  </span>
-                  <p className="text-muted text-xs font-extralight">Resolved</p>
-                </div>
+          {resolved ? (
+            <div className="bg-secondary/30 px-4 py-2 rounded-lg flex items-center gap-2">
+              <PlantIcon size={24} weight="light" className="text-green-300" />
+              <div>
+                <span className="text-primary-foreground text-md font-semibold">
+                  {resolved}
+                </span>
+                <p className="text-muted text-xs font-extralight">Resolved</p>
               </div>
-            ) : null}
+            </div>
+          ) : null}
 
-            {monitoring ? (
-              <div className="bg-secondary/30 px-4 py-2 rounded-lg flex items-center gap-2">
-                <ClockClockwiseIcon
-                  size={24}
-                  weight="light"
-                  className="text-muted"
-                />
-                <div>
-                  <span className="text-primary-foreground text-md font-semibold">
-                    {monitoring}
-                  </span>
-                  <p className="text-muted text-xs font-extralight">
-                    Monitoring
-                  </p>
-                </div>
+          {monitoring ? (
+            <div className="bg-secondary/30 px-4 py-2 rounded-lg flex items-center gap-2">
+              <ClockClockwiseIcon
+                size={24}
+                weight="light"
+                className="text-muted"
+              />
+              <div>
+                <span className="text-primary-foreground text-md font-semibold">
+                  {monitoring}
+                </span>
+                <p className="text-muted text-xs font-extralight">Monitoring</p>
               </div>
-            ) : null}
-          </div>
-        ) : null}
+            </div>
+          ) : null}
+        </div>
       </div>
     </section>
   );

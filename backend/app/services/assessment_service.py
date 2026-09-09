@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.models.assessment import Assessment
 from app.models.assessment_message import AssessmentMessage
+from app.schemas.concern import AssessmentStatus
 
 
 class AssessmentService(BaseModel):
@@ -193,7 +194,7 @@ class AssessmentService(BaseModel):
             select(Assessment)
             .where(
                 Assessment.concern_id == concern_id,
-                Assessment.status == "COMPLETED",
+                Assessment.status == AssessmentStatus.COMPLETED,
             )
             .order_by(Assessment.id.desc())
             .limit(1)

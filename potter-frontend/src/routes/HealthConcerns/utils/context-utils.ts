@@ -41,20 +41,20 @@ export function generateInitialContext(answers: ConcernAnswers): string {
   if (answers.symptoms) {
     const symptom = symptomLabels[answers.symptoms] ?? answers.symptoms;
 
-    parts.push(`The user reports that ${symptom}.`);
+    parts.push(`The plant has been suffering with ${symptom}.`);
   }
 
   if (answers.duration) {
     const duration = durationLabels[answers.duration] ?? answers.duration;
 
-    parts.push(`This has been happening for ${duration}.`);
+    parts.push(`This has been happening since ${duration}.`);
   }
 
-  if (answers.care_changes) {
+  if (answers.care_changes && answers.care_changes !== "nothing_changed") {
     const change =
       careChangeLabels[answers.care_changes] ?? answers.care_changes;
 
-    parts.push(`The user reports a recent change involving ${change}.`);
+    parts.push(`Recent changes in ${change}.`);
   }
 
   if (answers.additional_context) {

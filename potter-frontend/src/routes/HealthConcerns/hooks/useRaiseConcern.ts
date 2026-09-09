@@ -1,5 +1,6 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
+import { useMutation } from "@tanstack/react-query";
 
 interface RaiseConcernPayload {
   submission_id: string;
@@ -24,12 +25,16 @@ interface ReassessResponse {
 }
 
 const useRaiseConcern = () => {
-  const raiseConcern = async (
-    payload: RaiseConcernPayload,
-  ): Promise<NewConcernResponse> => {
-    return await apiClient(API_ENDPOINTS.CONCERN_ASSESSMENT, {
-      method: "POST",
-      body: JSON.stringify(payload),
+  const raiseConcern = () => {
+    return useMutation({
+      mutationKey: ["raise-concern"],
+      mutationFn: async (
+        payload: RaiseConcernPayload,
+      ): Promise<NewConcernResponse> =>
+        await apiClient(API_ENDPOINTS.CONCERN_ASSESSMENT, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        }),
     });
   };
 

@@ -5,7 +5,7 @@ import { ROUTES } from "#lib/routes";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import usePlantIdentityStore from "@/store/PlantIdentificationStore";
 import usePhotoUpload from "@/routes/HealthConcerns/hooks/usePhotoUpload";
-import { getToday } from "#lib/utils";
+import { getToday, showErrorToast } from "#lib/utils";
 import { useCreateOrUpdatePlant } from "../hooks/useCreatePlant";
 import usePlant from "../hooks/usePlant";
 import NoPlantsFound from "./NoPlantsFound";
@@ -75,7 +75,9 @@ const PlantsList = ({
       });
 
       invalidate.plants();
-    } catch (error) {}
+    } catch (error) {
+      showErrorToast(error);
+    }
   };
 
   useEffect(() => {

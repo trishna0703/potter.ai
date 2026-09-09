@@ -9,6 +9,7 @@ import HealthConcerns from "./routes/HealthConcerns/HealthConcerns";
 import RaiseConcern from "./routes/HealthConcerns/RaiseConcern";
 import ChatInterface from "./routes/Assessment/ChatInterface";
 import Schedules from "./routes/Plants/ManageSchedules/Schedules";
+import ConcernLayout from "./routes/HealthConcerns/components/ConcernLayout";
 
 const queryClient = new QueryClient();
 function App() {
@@ -20,7 +21,10 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
-              <Route path={ROUTES.DASHBOARD} element={<Navigate to="/plants" replace />} />
+              <Route
+                path={ROUTES.DASHBOARD}
+                element={<Navigate to="/plants" replace />}
+              />
               <Route path={ROUTES.PLANTS} element={<Plants />} />
 
               <Route
@@ -29,11 +33,13 @@ function App() {
               />
               {/* <Route path={ROUTES.SHELVES} element={<Shelves />} /> */}
               <Route path={ROUTES.CONCERNS} element={<HealthConcerns />} />
-              <Route path={ROUTES.RAISE} element={<RaiseConcern />} />
               <Route
                 path={"/concerns/active/:assessment_id"}
                 element={<ChatInterface />}
               />
+            </Route>
+            <Route element={<ConcernLayout />}>
+              <Route path={ROUTES.RAISE} element={<RaiseConcern />} />
             </Route>
           </Route>
         </Routes>

@@ -9,6 +9,7 @@ class RequestModel(BaseModel):
     photo_id: int
     initial_context: str
     occurred_on: date
+    title: str
     evidence_id: int
     plant_id: int | None = None
 
@@ -20,4 +21,3 @@ class ResponseModel(BaseModel):
 
 class ReassessmentRequestModel(BaseModel):
     concern_id: int
-
