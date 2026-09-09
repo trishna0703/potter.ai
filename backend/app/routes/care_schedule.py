@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.models.user import User
 from app.schemas.care_schedule import (
     CareScheduleCreate,
     CareScheduleResponse,
@@ -11,7 +12,10 @@ from app.services.care_event_service import CareScheduleService
 from app.routes.users import get_current_user
 from fastapi import BackgroundTasks
 
-from app.services.google_calendar import GoogleCalendarService
+from app.services.google_calendar import (
+    GoogleCalendarService,
+    schedule_first_calendar_event_background,
+)
 
 router = APIRouter()
 
@@ -51,7 +55,7 @@ def create_care_schedule(
 
         if schedule.auto_schedule:
             background_tasks.add_task(
-                GoogleCalendarService.schedule_first_calendar_event,
+                schedule_first_calendar_event_background,
                 schedule_id=schedule.id,
                 user_id=current_user.id,
             )
@@ -135,9 +139,27 @@ def update_care_schedule(
     db.refresh(schedule)
 
     background_tasks.add_task(
-        GoogleCalendarService.run_sync_updated_schedule,
+        schedule_first_calendar_event_background,
         schedule.id,
         current_user.id,
     )
 
     return schedule
+
+
+@router.delete("/{schedule_id}")
+def mark_schedule_deleted(
+    schedule_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        service = CareScheduleService(db)
+        service.delete_schedule(schedule_id=schedule_id, user_id=current_user.id)
+
+        db.commit()
+
+    except ModuleNotFoundError:
+        raise HTTPException(detail="Schedule not found", status_code=404)
+
+    return True

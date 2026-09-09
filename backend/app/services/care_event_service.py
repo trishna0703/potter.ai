@@ -303,3 +303,19 @@ class CareScheduleService:
         self.db.flush()
 
         return schedule
+
+    def delete_schedule(self, *, schedule_id: int, user_id: int):
+
+        schedule = self.get_schedule_for_user(
+            schedule_id=schedule_id,
+            user_id=user_id,
+        )
+
+        if schedule is None or schedule.deleted_by_user is not False:
+            raise ModuleNotFoundError
+
+        schedule.deleted_by_user = True
+
+        self.db.flush()
+
+        return True

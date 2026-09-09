@@ -780,3 +780,24 @@ class GoogleCalendarService:
 
         finally:
             db.close()
+
+
+def schedule_first_calendar_event_background(
+    schedule_id: int,
+    user_id: int,
+) -> None:
+    db = SessionLocal()
+
+    try:
+        service = GoogleCalendarService(db=db)
+
+        service.schedule_first_calendar_event(
+            schedule_id=schedule_id,
+            user_id=user_id,
+        )
+
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()

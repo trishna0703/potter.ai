@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { CareSchedule, UpdateScheduleType } from "@/types/care_events";
-import { cn } from "#lib/utils";
+import { cn, showErrorToast } from "#lib/utils";
 import WarningDialog from "#components/utils/WarningDialog";
 import useCalendarConnectionStatus from "#hooks/useCalendarConnectionStatus";
 import ConnectGoogleCalendarButton from "#components/utils/ConnectGoogleCalendarButton";
@@ -115,7 +115,6 @@ export default function CareScheduleCard({
   const { data: calendarConnection } = useCalendarConnectionStatus();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [toggleFor, setToggleFor] = useState<"is_active" | "auto-schedule">();
   const [showWarning, setShowWarning] = useState(false);
 
   const [description, setDescription] = useState(schedule.description ?? "");
@@ -309,12 +308,11 @@ export default function CareScheduleCard({
 
       <div className="flex h-full justify-between w-2/5 items-end lg:items-center flex-col-reverse lg:flex-row">
         <div className="flex flex-col gap-3 lg:w-1/2">
-          <div className="flex flex-col gap-3 sm:items-start items-end">
+          <div className="flex flex-col gap-3 items-start">
             <div className="flex items-center w-full gap-3">
               <Switch
                 checked={Boolean(schedule.auto_schedule)}
                 onCheckedChange={async (checked) => {
-                  setToggleFor("auto-schedule");
                   try {
                     await onUpdate(schedule.id, {
                       auto_schedule: checked,
@@ -324,18 +322,15 @@ export default function CareScheduleCard({
                         ? "Auto-scheduling enabled. Future events will be added by Potter on your calendar."
                         : "Auto-scheduling disabled.",
                     );
-                  } catch (err) {}
-                  setToggleFor(undefined);
+                  } catch (err) {
+                    showErrorToast(err);
+                  }
                 }}
                 className={"cursor-pointer"}
                 disabled={!calendarConnection?.connected || !schedule.is_active}
               />
 
               <span className="text-xs whitespace-nowrap">Add to Calendar</span>
-
-              {toggleFor === "auto-schedule" && (
-                <Loader className="size-3! loader" />
-              )}
             </div>
             {calendarConnection?.connected ? null : (
               <ConnectGoogleCalendarButton
@@ -344,22 +339,23 @@ export default function CareScheduleCard({
               />
             )}
           </div>
-          <div className="flex items-center w-full gap-3 sm:justify-start justify-end">
+          <div className="flex items-center w-full gap-3 justify-start">
             <Switch
               checked={schedule.is_active}
               onCheckedChange={async (checked) => {
-                setToggleFor("is_active");
-                await onUpdate(schedule.id, {
-                  is_active: checked,
-                  auto_schedule: false,
-                });
-                setToggleFor(undefined);
+                try {
+                  await onUpdate(schedule.id, {
+                    is_active: checked,
+                    auto_schedule: false,
+                  });
+                } catch (error) {
+                  showErrorToast(error);
+                }
               }}
               className={"cursor-pointer"}
             />
 
             <span className="text-xs">Active</span>
-            {toggleFor === "is_active" && <Loader className="size-3! loader" />}
           </div>
         </div>
 
