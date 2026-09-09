@@ -75,9 +75,16 @@ def connect_google_calendar(
 
     db.commit()
 
-    flow = google_calendar_service.build_google_oauth_flow(
-        code_verifier=code_verifier,
-    )
+    try:
+        flow = google_calendar_service.build_google_oauth_flow(
+            code_verifier=code_verifier,
+        )
+        
+    except ValueError:
+        raise HTTPException(
+            status_code=500,
+            detail="Google Calendar OAuth configuration is invalid",
+        )
 
     authorization_url, _ = flow.authorization_url(
         access_type="offline",

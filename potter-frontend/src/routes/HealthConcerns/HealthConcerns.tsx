@@ -85,10 +85,12 @@ const HealthConcerns = ({}) => {
         resolved={resolved}
       />
 
-      <ConcernFilter
-        {...{ filters, setFilters, active, monitoring, resolved }}
-        total={allConcerns?.length ?? 0}
-      />
+      {allConcerns && allConcerns.length > 0 ? (
+        <ConcernFilter
+          {...{ filters, setFilters, active, monitoring, resolved }}
+          total={allConcerns?.length ?? 0}
+        />
+      ) : null}
 
       {isLoading ? <HealthConcernSkeleton /> : null}
       {!isLoading && concerns && concerns.length === 0 ? (

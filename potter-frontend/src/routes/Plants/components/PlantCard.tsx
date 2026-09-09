@@ -135,18 +135,13 @@ export default function PlantCard({
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          className="mt-4 w-full rounded-full border-[0.5px] border-muted"
+        <Link
+          to={`/plants/schedules/${plant.id}`}
+          className="gap-1 mt-3 text-primary text-xs border-[0.5px] rounded-full p-1.5 bg-muted/40 flex justify-center items-center"
         >
-          <Link
-            to={`/plants/schedules/${plant.id}`}
-            className="flex gap-1 items-center text-primary text-xs"
-          >
-            View Care
-            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        </Button>
+          View Care
+          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </Link>
       </div>
     </article>
   );

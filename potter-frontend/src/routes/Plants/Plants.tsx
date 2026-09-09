@@ -40,6 +40,7 @@ const Plants = () => {
   const { allPlants, invalidate } = usePlant();
   const { getConcerns } = useGetConcerns();
   const { data: plantList, isLoading, isError, refetch } = allPlants(query);
+  const { data: allPlantsList } = allPlants("");
   const { data: concerns } = getConcerns();
 
   const handleRetry = async () => {
@@ -52,11 +53,13 @@ const Plants = () => {
   return (
     <div className="flex flex-col gap-5">
       <PlantsPageHero
-        totalPlants={plantList?.length}
+        totalPlants={allPlantsList?.length}
         needAttention={concerns?.length}
       />
 
-      {plantList?.length ? <Navigator {...{ filters, setFilters }} /> : null}
+      {allPlantsList?.length ? (
+        <Navigator {...{ filters, setFilters }} />
+      ) : null}
 
       {isLoading ? <PlantListSkeleton /> : null}
 
