@@ -233,11 +233,6 @@ class GoogleCalendarService:
         self,
         redirect_uri: str,
     ) -> str:
-        if not redirect_uri.startswith("/"):
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid redirect URI",
-            )
 
         if redirect_uri.startswith("//"):
             raise HTTPException(
