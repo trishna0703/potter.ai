@@ -24,21 +24,31 @@ class RecommendationAIService:
         context: dict,
     ) -> AIRecommendationResponse:
 
-        response = self.client.responses.create(
+        response = self.chat.completions.create(
             model=settings.ai_model,
-            instructions=RECOMMENDATION_PROMPT,
-            input=json.dumps(context, default=str),
-            text={
-                "format": {
-                    "type": "json_schema",
+            messages=[
+                {
+                    "role": "system",
+                    "content": RECOMMENDATION_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": json.dumps(context, default=str),
+                },
+            ],
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
                     "name": "recommendation_interaction",
                     "strict": True,
                     "schema": AIResponseAdapter.json_schema(),
-                }
+                },
             },
         )
 
-        if not response.output_text:
+        output = response.choices[0].message.content
+
+        if not output:
             raise ValueError("AI returned an empty response.")
 
-        return AIResponseAdapter.validate_json(response.output_text)
+        return AIResponseAdapter.validate_json(output)

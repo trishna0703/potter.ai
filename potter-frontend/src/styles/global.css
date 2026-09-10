@@ -9,6 +9,8 @@
 }
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant 2xl (@media (min-width: 1900px) and (orientation: landscape));
+@custom-variant 3xl (@media (min-width: 2400px) and (orientation: landscape));
 
 @theme inline {
   /* ─────────────────────────────────────────
@@ -411,3 +413,4 @@
    justify-content:center;
    gap: 4px;
 }
+
