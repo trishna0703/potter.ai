@@ -24,7 +24,7 @@ class RecommendationAIService:
         context: dict,
     ) -> AIRecommendationResponse:
 
-        response = self.chat.completions.create(
+        response = self.client.chat.completions.create(
             model=settings.ai_model,
             messages=[
                 {
