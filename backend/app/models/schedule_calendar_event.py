@@ -2,6 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import (
     DateTime,
+    Index,
     Integer,
     String,
     ForeignKey,
@@ -14,15 +15,25 @@ from app.database import Base
 class CareScheduleCalendarEvent(Base):
     __tablename__ = "care_schedule_calendar_events"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-
-    care_schedule_id: Mapped[int] = mapped_column(
-        ForeignKey("care_schedules.id"), nullable=False, unique=True
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
     )
 
-    google_event_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    care_schedule_id: Mapped[int] = mapped_column(
+        ForeignKey("care_schedules.id"),
+        nullable=False,
+    )
 
-    calendar_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    google_event_id: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    calendar_id: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
 
     event_start_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -46,5 +57,19 @@ class CareScheduleCalendarEvent(Base):
     )
 
     care_schedule: Mapped["CareSchedule"] = relationship(
-        back_populates="calendar_event",
+        back_populates="calendar_events",
+    )
+
+    __table_args__ = (
+        Index(
+            "ix_care_schedule_calendar_events_schedule_start",
+            "care_schedule_id",
+            "event_start_at",
+        ),
+        Index(
+            "uq_care_schedule_active_event",
+            "care_schedule_id",
+            unique=True,
+            postgresql_where=(status == "ACTIVE"),
+        ),
     )

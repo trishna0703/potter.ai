@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
+from app.models.care_event import CareEvent
 from app.models.care_schedule import CareSchedule
 from app.models.plant import Plant
 from app.models.schedule_calendar_event import CareScheduleCalendarEvent
@@ -152,6 +153,33 @@ class CareScheduleService:
             return None
 
         return candidate
+
+    def get_next_occurrence_after(
+        self,
+        schedule: CareSchedule,
+        occurrence: datetime,
+    ) -> datetime | None:
+        tz = ZoneInfo(schedule.timezone)
+
+        occurrence = occurrence.astimezone(tz)
+
+        if schedule.frequency_type == "DAYS":
+            next_date = occurrence.date() + timedelta(days=schedule.interval)
+
+        elif schedule.frequency_type == "WEEKS":
+            next_date = occurrence.date() + timedelta(weeks=schedule.interval)
+
+        else:
+            raise ValueError(f"Unsupported frequency type: {schedule.frequency_type}")
+
+        if schedule.ends_on is not None and next_date > schedule.ends_on:
+            return None
+
+        return datetime.combine(
+            next_date,
+            schedule.scheduled_time,
+            tzinfo=tz,
+        )
 
     def _get_user_plant(
         self,
@@ -319,3 +347,26 @@ class CareScheduleService:
         self.db.flush()
 
         return True
+
+    def create_care_event_history(
+        self,
+        plant_id: int,
+        care_schedule_id: int,
+        care_type: str,
+        status: str,
+        occurred_on: datetime,
+        source: str,
+        description: str | None = None,
+    ) -> None:
+        event = CareEvent(
+            plant_id=plant_id,
+            care_schedule_id=care_schedule_id,
+            care_type=care_type,
+            status=status,
+            occurred_on=occurred_on,
+            source=source,
+            description=description,
+        )
+
+        self.db.add(event)
+        self.db.flush()

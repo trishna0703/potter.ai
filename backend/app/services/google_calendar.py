@@ -27,6 +27,10 @@ from app.models.plant import Plant
 from app.models.schedule_calendar_event import CareScheduleCalendarEvent
 from app.models.session import UserSession
 from app.services.care_event_service import CareScheduleService
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+
+from sqlalchemy import select
 
 if settings.environment == "development":
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -780,6 +784,136 @@ class GoogleCalendarService:
 
         finally:
             db.close()
+
+    def process_daily_calendar_events(self) -> None:
+        """
+        Process all active calendar events that were scheduled
+        for today and have already passed.
+
+        This method is intended to run once per day at 11 PM.
+        """
+
+        stmt = (
+            select(CareScheduleCalendarEvent)
+            .join(
+                CareSchedule,
+                CareSchedule.id == CareScheduleCalendarEvent.care_schedule_id,
+            )
+            .where(
+                CareScheduleCalendarEvent.status == "ACTIVE",
+                CareSchedule.is_active.is_(True),
+                CareSchedule.auto_schedule.is_(True),
+                CareSchedule.deleted_by_user.is_(False),
+            )
+            .with_for_update()
+        )
+
+        calendar_events = self.db.scalars(stmt).all()
+
+        for calendar_event in calendar_events:
+            self._process_due_calendar_event(calendar_event)
+
+    def _process_due_calendar_event(
+        self,
+        calendar_event: CareScheduleCalendarEvent,
+    ) -> None:
+
+        schedule = calendar_event.care_schedule
+
+        tz = ZoneInfo(schedule.timezone)
+
+        now = datetime.now(tz)
+
+        event_start = calendar_event.event_start_at.astimezone(tz)
+
+        if event_start.date() != now.date():
+            return
+
+        if event_start > now:
+            return
+
+        if calendar_event.status != "ACTIVE":
+            return
+
+        connection = self.get_google_calendar_connection_for_user(
+            user_id=schedule.plant.user_id,
+        )
+
+        if connection is None:
+            return
+
+        previous_occurrence = calendar_event.event_start_at
+
+        calendar_event.status = "INACTIVE"
+
+        self.care_schedule_service.create_care_event_history(
+            plant_id=schedule.plant.id,
+            care_schedule_id=schedule.id,
+            care_type=schedule.care_type,
+            occurred_on=previous_occurrence,
+            status="INCOMPLETE",
+            source="POTTER",
+            description="",
+        )
+
+        next_occurrence = self.care_schedule_service.get_next_occurrence_after(
+            schedule=schedule,
+            occurrence=previous_occurrence,
+        )
+
+        if next_occurrence is None:
+            self.db.flush()
+            return
+
+        google_event = self.create_schedule_calendar_event(
+            schedule=schedule,
+            connection=connection,
+            next_occurrence=next_occurrence,
+        )
+
+        self.save_schedule_calendar_event(
+            schedule=schedule,
+            google_event=google_event,
+            next_occurrence=next_occurrence,
+        )
+
+        self.db.flush()
+
+    @classmethod
+    def run_daily_calendar_sync(cls) -> None:
+        db = SessionLocal()
+
+        try:
+            service = cls(db)
+
+            service.process_daily_calendar_events()
+
+            db.commit()
+
+        except Exception as exc:
+            db.rollback()
+
+            print(f"Failed to run daily Google Calendar sync: {exc}")
+
+            raise
+
+        finally:
+            db.close()
+
+
+def run_cron_to_handle_schedules() -> None:
+    db = SessionLocal()
+
+    try:
+        service = GoogleCalendarService(db=db)
+
+        service.run_daily_calendar_sync()
+
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 
 def schedule_first_calendar_event_background(

@@ -88,9 +88,8 @@ class CareSchedule(Base):
         back_populates="care_schedule",
     )
 
-    calendar_event: Mapped["CareScheduleCalendarEvent | None"] = relationship(
+    calendar_events: Mapped[list["CareScheduleCalendarEvent"]] = relationship(
         back_populates="care_schedule",
-        uselist=False,
     )
 
     __table_args__ = (
