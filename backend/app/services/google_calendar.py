@@ -900,6 +900,146 @@ class GoogleCalendarService:
         finally:
             db.close()
 
+    def backfill_existing_calendar_events(self) -> None:
+        """
+        One-time migration for calendar events created before the
+        recurring calendar cron was introduced.
+
+        For each existing ACTIVE event that has already passed:
+        - mark the calendar event INACTIVE
+        - create a CareEvent with INCOMPLETE status
+        - advance the schedule until the next future occurrence
+        - create a new Google Calendar event for that occurrence
+        - create a new ACTIVE CareScheduleCalendarEvent
+        """
+
+        stmt = (
+            select(CareScheduleCalendarEvent)
+            .join(
+                CareSchedule,
+                CareSchedule.id == CareScheduleCalendarEvent.care_schedule_id,
+            )
+            .where(
+                CareScheduleCalendarEvent.status == "ACTIVE",
+                CareSchedule.is_active.is_(True),
+                CareSchedule.auto_schedule.is_(True),
+                CareSchedule.deleted_by_user.is_(False),
+            )
+            .with_for_update()
+        )
+
+        calendar_events = self.db.scalars(stmt).all()
+
+        for calendar_event in calendar_events:
+            try:
+                self._backfill_calendar_event(calendar_event)
+
+            except Exception as exc:
+                print(
+                    "Failed to backfill calendar event " f"{calendar_event.id}: {exc}"
+                )
+
+                self.db.rollback()
+
+    def _backfill_calendar_event(
+        self,
+        calendar_event: CareScheduleCalendarEvent,
+    ) -> None:
+
+        schedule = calendar_event.care_schedule
+        tz = ZoneInfo(schedule.timezone)
+
+        now = datetime.now(tz)
+
+        event_start = calendar_event.event_start_at.astimezone(tz)
+
+        # This event is still upcoming.
+        if event_start > now:
+            return
+
+        # Re-check after acquiring the row lock.
+        if calendar_event.status != "ACTIVE":
+            return
+
+        connection = self.get_google_calendar_connection_for_user(
+            user_id=schedule.plant.user_id,
+        )
+
+        if connection is None:
+            return
+
+        previous_occurrence = calendar_event.event_start_at
+
+        # The old scheduled occurrence has passed.
+        calendar_event.status = "INACTIVE"
+
+        # Record that the scheduled care happened,
+        # but we don't know whether the user actually did it.
+        self.care_schedule_service.create_care_event_history(
+            plant_id=schedule.plant.id,
+            care_schedule_id=schedule.id,
+            care_type=schedule.care_type,
+            occurred_on=previous_occurrence,
+            status="INCOMPLETE",
+            source="POTTER",
+            description="",
+        )
+
+        # Start from the old occurrence and advance until
+        # we reach an occurrence that is actually in the future.
+        next_occurrence = self.care_schedule_service.get_next_occurrence_after(
+            schedule=schedule,
+            occurrence=previous_occurrence,
+        )
+
+        while next_occurrence is not None and next_occurrence <= now:
+            next_occurrence = self.care_schedule_service.get_next_occurrence_after(
+                schedule=schedule,
+                occurrence=next_occurrence,
+            )
+
+        # Schedule has ended.
+        if next_occurrence is None:
+            self.db.flush()
+            return
+
+        # Create the new Google Calendar event.
+        google_event = self.create_schedule_calendar_event(
+            schedule=schedule,
+            connection=connection,
+            next_occurrence=next_occurrence,
+        )
+
+        # Create the new ACTIVE database event.
+        self.save_schedule_calendar_event(
+            schedule=schedule,
+            google_event=google_event,
+            next_occurrence=next_occurrence,
+        )
+
+        self.db.flush()
+
+    @classmethod
+    def run_backfill_existing_calendar_events(cls) -> None:
+        db = SessionLocal()
+
+        try:
+            service = cls(db)
+
+            service.backfill_existing_calendar_events()
+
+            db.commit()
+
+        except Exception as exc:
+            db.rollback()
+
+            print(f"Failed to backfill existing calendar events: {exc}")
+
+            raise
+
+        finally:
+            db.close()
+
 
 def run_cron_to_handle_schedules() -> None:
     db = SessionLocal()
