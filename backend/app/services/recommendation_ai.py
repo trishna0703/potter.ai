@@ -41,13 +41,60 @@ class RecommendationAIService:
                 "json_schema": {
                     "name": "recommendation_interaction",
                     "strict": True,
-                    "schema": AIResponseAdapter.json_schema(),
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": ["recommendation_options"],
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["recommendation"],
+                                        },
+                                        "id": {"type": "string"},
+                                        "title": {"type": "string"},
+                                        "summary": {"type": "string"},
+                                        "steps": {
+                                            "type": "array",
+                                            "items": {"type": "string"},
+                                        },
+                                        "expected_result": {"type": "string"},
+                                        "recommendation_score": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 5,
+                                        },
+                                    },
+                                    "required": [
+                                        "type",
+                                        "id",
+                                        "title",
+                                        "summary",
+                                        "steps",
+                                        "expected_result",
+                                        "recommendation_score",
+                                    ],
+                                    "additionalProperties": False,
+                                },
+                            },
+                        },
+                        "required": ["type", "options"],
+                        "additionalProperties": False,
+                    },
                 },
             },
         )
 
         output = response.choices[0].message.content
-
+        print("========== AI RAW OUTPUT ==========")
+        print(output)
+        print("===================================")
         if not output:
             raise ValueError("AI returned an empty response.")
 
