@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, logger
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
@@ -155,16 +155,45 @@ async def health_concern_websocket(
 
                     recommendation_service = RecommendationService()
 
-                    ai_recommendation = recommendation_service.initialize(
-                        db=db,
-                        user_id=user.id,
-                        assessment_id=assessment_id,
-                    )
+                    try:
 
-                    await send_recommendations(websocket, ai_recommendation)
+                        ai_recommendation = recommendation_service.initialize(
+                            db=db,
+                            user_id=user.id,
+                            assessment_id=assessment_id,
+                        )
 
-                    await websocket.close(code=1000)
-                    return
+                        await send_recommendations(websocket, ai_recommendation)
+
+                        await websocket.close(code=1000)
+                        return
+
+                    except ValueError as e:
+                        await websocket.send_json(
+                            {
+                                "type": "error",
+                                "message": str(e),
+                            }
+                        )
+
+                        await websocket.close(code=1011)
+                        return
+
+                    except Exception:
+                        logger.exception(
+                            "Failed to initialize recommendation",
+                            extra={
+                                "assessment_id": assessment_id,
+                                "user_id": user.id,
+                            },
+                        )
+
+                        await websocket.send_json(
+                            {
+                                "type": "error",
+                                "message": "Failed to generate recommendations.",
+                            }
+                        )
 
             except ValueError as exc:
                 await websocket.send_json(
