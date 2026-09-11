@@ -854,6 +854,7 @@ class GoogleCalendarService:
             status="INCOMPLETE",
             source="POTTER",
             description="",
+            was_action_taken=False,
         )
 
         next_occurrence = self.care_schedule_service.get_next_occurrence_after(
@@ -983,6 +984,7 @@ class GoogleCalendarService:
             status="INCOMPLETE",
             source="POTTER",
             description="",
+            was_action_taken=False,
         )
 
         # Start from the old occurrence and advance until

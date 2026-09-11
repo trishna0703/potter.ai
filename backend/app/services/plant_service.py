@@ -26,3 +26,14 @@ class PlantService(BaseModel):
         found_plants = db.scalars(stmt).all()
 
         return found_plants
+
+    def does_plant_belong_to_user(
+        self, plant_id: int, user_id: int, db: Session
+    ) -> bool:
+        stmt = select(Plant).where(Plant.id == plant_id, Plant.user_id == user_id)
+        plant = db.scalar(stmt)
+
+        if plant is None:
+            return False
+
+        return True

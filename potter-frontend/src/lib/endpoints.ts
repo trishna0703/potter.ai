@@ -26,4 +26,7 @@ export const API_ENDPOINTS = {
     `${API_URL}/schedules/plant/${plantId}`,
   GET_SCHEDULE_BY_ID: (scheduleId: number) =>
     `${API_URL}/schedules/${scheduleId}`,
+  PENDING_EVENTS_FOR_UPDATES: `${API_URL}/care-events/`,
+  UPDATE_PENDING_EVENT_STATUS: (plantId: number, eventId: number) =>
+    `${API_URL}/care-events/${plantId}/events/${eventId}`,
 };

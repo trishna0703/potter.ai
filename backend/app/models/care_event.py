@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, DateTime, ForeignKey
+from sqlalchemy import Boolean, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -25,13 +25,17 @@ class CareEvent(Base):
     occurred_on: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
-        nullable=False
+        nullable=False,
     )
 
     status: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
-        default="DONE",
+        default="INCOMPLETE",
+    )
+
+    was_action_taken: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
     )
 
     source: Mapped[str] = mapped_column(

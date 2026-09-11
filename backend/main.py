@@ -4,6 +4,7 @@ from app.config import settings
 from app.routes import (
     assessment_websocket,
     auth,
+    care_events,
     identify,
     users,
     plants,
@@ -45,3 +46,4 @@ app.include_router(upload.router, prefix="/api/uploads")
 app.include_router(identify.router, prefix="/api/identify")
 app.include_router(care_schedule.router, prefix="/api/schedules")
 app.include_router(integrations.router, prefix="/api")
+app.include_router(care_events.router, prefix="/api/care-events")

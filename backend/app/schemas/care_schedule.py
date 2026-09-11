@@ -1,11 +1,12 @@
 from datetime import date, datetime, time
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field, ConfigDict
 
 
 class CareScheduleCreate(BaseModel):
-    care_type: str = Field(min_length=1, max_length=100)
+    care_type: CareTypes
     description: str | None = Field(default=None, max_length=2000)
 
     frequency_type: Literal["DAYS", "WEEKS"]
@@ -24,7 +25,7 @@ class CareScheduleResponse(BaseModel):
 
     id: int
     plant_id: int
-    care_type: str
+    care_type: CareTypes
     description: str | None
     frequency_type: str
     interval: int
@@ -47,3 +48,37 @@ class CareScheduleUpdate(BaseModel):
     timezone: str | None = None
     is_active: bool | None = None
     auto_schedule: bool | None = None
+
+
+class CareTypes(str, Enum):
+    WATER = "WATER"
+    FERTILIZER = "FERTILIZER"
+    REPOT = "REPOT"
+    COMPOST = "COMPOST"
+    PRUNING = "PRUNING"
+    SUNBATHING = "SUNBATHING"
+    OTHER = "OTHER"
+
+
+class CareEventStatus(str, Enum):
+    DONE = "DONE"
+    INCOMPLETE = "INCOMPLETE"
+
+
+class CareEventSource(str, Enum):
+    CARE_EVENT = "CARE_EVENT"
+    CALENDAR_EVENT = "CALENDAR_EVENT"
+
+
+class CareEventResponseModel(BaseModel):
+    id: int
+    source: CareEventSource
+    plant_id: int
+    plant_name: str
+    care_type: CareTypes
+    occurred_on: datetime
+
+
+class CareEventUpdateRequest(BaseModel):
+    source: CareEventSource
+    was_action_taken: bool
