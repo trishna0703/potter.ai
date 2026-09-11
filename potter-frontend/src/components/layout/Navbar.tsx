@@ -1,5 +1,5 @@
 import { AvatarFallback, Avatar, AvatarImage } from "#components/ui/avatar";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useUserStore from "../../store/UserStore";
 
 import { Button } from "@/components/ui/button";
@@ -104,10 +104,14 @@ const Navbar = () => {
   return (
     <>
       <nav className="px-4 py-2.5 flex items-center justify-between md:justify-end">
-        <div aria-label="logo" className="flex md:hidden gap-2 items-center">
+        <Link
+          to={"/plants"}
+          aria-label="logo"
+          className="flex md:hidden gap-2 items-center"
+        >
           <LeafIcon size={32} weight="fill" color="var(--primary)" />
           <span className="text-title text-4xl font-bold">Potter.ai</span>
-        </div>
+        </Link>
         <div className="flex gap-4">
           <PendingEventsDrawer />
           <AddNewPlantButton />

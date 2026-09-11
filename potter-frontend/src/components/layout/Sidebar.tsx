@@ -7,15 +7,19 @@ import {
   LeafIcon,
   PottedPlantIcon,
 } from "@phosphor-icons/react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const Sidebar = () => {
   return (
     <aside className="w-58 min-h-dvh bg-card p-4 md:flex flex-col hidden">
-      <div aria-label="logo" className="flex gap-2 items-center pb-6 px-3">
+      <Link
+        to={"/plants"}
+        aria-label="logo"
+        className="flex gap-2 items-center pb-6 px-3"
+      >
         <LeafIcon size={32} weight="fill" color="var(--primary)" />
         <span className="text-title text-4xl font-bold">Potter.ai</span>
-      </div>
+      </Link>
       <nav className="space-y-2">
         <NavLink
           to={ROUTES.DASHBOARD}
