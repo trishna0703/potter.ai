@@ -1,7 +1,16 @@
 type FrequencyType = "DAYS" | "WEEKS";
 
+export type CareTypes =
+  | "WATER"
+  | "FERTILIZER"
+  | "REPOT"
+  | "COMPOST"
+  | "PRUNING"
+  | "SUNBATHING"
+  | "OTHER";
+
 export interface CareScheduleFormData {
-  careType: string | null;
+  careType: CareTypes | null;
   description: string;
   frequencyType: FrequencyType;
   interval: string;
@@ -15,7 +24,7 @@ export interface CareScheduleFormData {
 export interface CareSchedule {
   id: number;
   plant_id: number;
-  care_type: string;
+  care_type: CareTypes;
   description: string | null;
   frequency_type: FrequencyType;
   interval: number;
@@ -38,3 +47,20 @@ export type UpdateScheduleType = {
   is_active?: boolean;
   auto_schedule?: boolean;
 };
+
+export type EventSourceType = "CARE_EVENT" | "CALENDAR_EVENT";
+export interface PendingEvents {
+  id: number;
+  source: EventSourceType;
+  plant_id: number;
+  plant_name: string;
+  care_type: CareTypes;
+  occurred_on: string;
+}
+
+export interface UpdateEventPayloadType {
+  plant_id: number;
+  event_id: number;
+  source: EventSourceType;
+  was_action_taken: boolean;
+}

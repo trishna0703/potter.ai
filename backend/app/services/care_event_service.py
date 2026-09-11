@@ -9,6 +9,8 @@ from app.models.care_event import CareEvent
 from app.models.care_schedule import CareSchedule
 from app.models.plant import Plant
 from app.models.schedule_calendar_event import CareScheduleCalendarEvent
+from app.schemas.care_schedule import CareTypes
+
 
 
 class CareScheduleService:
@@ -20,7 +22,7 @@ class CareScheduleService:
         *,
         user_id: int,
         plant_id: int,
-        care_type: str,
+        care_type: CareTypes,
         description: str | None,
         frequency_type: str,
         interval: int,
@@ -81,7 +83,7 @@ class CareScheduleService:
         self,
         *,
         plant_id: int,
-        care_type: str,
+        care_type: CareTypes,
     ) -> CareSchedule | None:
         stmt = select(CareSchedule).where(
             CareSchedule.plant_id == plant_id,
@@ -352,10 +354,11 @@ class CareScheduleService:
         self,
         plant_id: int,
         care_schedule_id: int,
-        care_type: str,
+        care_type: CareTypes,
         status: str,
         occurred_on: datetime,
         source: str,
+        was_action_taken: bool,
         description: str | None = None,
     ) -> None:
         event = CareEvent(
@@ -366,6 +369,7 @@ class CareScheduleService:
             occurred_on=occurred_on,
             source=source,
             description=description,
+            was_action_taken=was_action_taken,
         )
 
         self.db.add(event)

@@ -29,6 +29,7 @@ import { format } from "date-fns";
 import usecareEventScheduler from "#hooks/useCareEventScheduler";
 import ConnectGoogleCalendarButton from "./ConnectGoogleCalendarButton";
 import useCalendarConnectionStatus from "#hooks/useCalendarConnectionStatus";
+import type { ChangeEvent } from "react";
 
 type FrequencyType = "DAYS" | "WEEKS";
 
@@ -38,6 +39,37 @@ interface CareScheduleDialogProps {
   plantId: number;
   onCreated?: () => void;
 }
+
+const CareTypeOptions = [
+  {
+    label: "Water",
+    value: "WATER",
+  },
+  {
+    label: "Add Fertilizer",
+    value: "FERTILIZER",
+  },
+  {
+    label: "Add Compost",
+    value: "COMPOST",
+  },
+  {
+    label: "Repot",
+    value: "REPOT",
+  },
+  {
+    label: "Prune",
+    value: "PRUNING",
+  },
+  {
+    label: "Sunbath",
+    value: "SUNBATHING",
+  },
+  {
+    label: "Other",
+    value: "OTHER",
+  },
+];
 
 export function CareScheduleDialog({
   open,
@@ -82,7 +114,10 @@ export function CareScheduleDialog({
               <Label htmlFor="care-type">Care type</Label>
 
               <Select
-                value={formData.careType?.toLocaleLowerCase()}
+                value={
+                  CareTypeOptions.find((c) => c.value === formData.careType)
+                    ?.label
+                }
                 name="careType"
                 onValueChange={(value) =>
                   handleChange({
@@ -90,21 +125,22 @@ export function CareScheduleDialog({
                       name: "careType",
                       value: value,
                     },
-                  } as any)
+                  } as ChangeEvent<HTMLSelectElement>)
                 }
               >
-                <SelectTrigger id="care-type" className="w-full text-sm capitalize">
+                <SelectTrigger
+                  id="care-type"
+                  className="w-full text-sm capitalize"
+                >
                   <SelectValue placeholder="Select care type" />
                 </SelectTrigger>
 
                 <SelectContent className="p-1">
-                  <SelectItem value="WATER">Water</SelectItem>
-                  <SelectItem value="FERTILIZER">Fertilize</SelectItem>
-                  <SelectItem value="REPOT">Repot</SelectItem>
-                  <SelectItem value="COMPOST">Add compost</SelectItem>
-                  <SelectItem value="PRUNING">Prune</SelectItem>
-                  <SelectItem value="SUNBATHING">Sunbathing</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
+                  {CareTypeOptions.map(({ label, value }) => (
+                    <SelectItem value={value} key={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -127,7 +163,9 @@ export function CareScheduleDialog({
                   />
 
                   <Select
-                    value={(formData.frequencyType)?.toLocaleLowerCase() as FrequencyType}
+                    value={
+                      formData.frequencyType?.toLocaleLowerCase() as FrequencyType
+                    }
                     name="frequencyType"
                     onValueChange={(value: FrequencyType | null) =>
                       handleChange({
@@ -174,7 +212,7 @@ export function CareScheduleDialog({
             </div>
             <div className="flex gap-4 sm:flex-row flex-col">
               <div className="px-1 space-y-2 sm:w-1/2">
-                <Label>Start date</Label>
+                <Label>Starting from</Label>
 
                 <Popover>
                   <PopoverTrigger className={"w-full"}>
@@ -209,8 +247,8 @@ export function CareScheduleDialog({
               {/* End date */}
               <div className="px-1 space-y-2 sm:w-1/2">
                 <Label>
-                  End date
-                  <span className="ml-1 text-muted-foreground">(optional)</span>
+                  End on
+                  <span className=" text-muted-foreground">(optional)</span>
                 </Label>
 
                 <Popover>
@@ -264,7 +302,7 @@ export function CareScheduleDialog({
             <div className="px-1 space-y-2">
               <Label htmlFor="description">
                 Notes
-                <span className="ml-1 text-muted-foreground">(optional)</span>
+                <span className=" text-muted-foreground">(optional)</span>
               </Label>
 
               <Textarea
@@ -308,7 +346,10 @@ export function CareScheduleDialog({
               </div>
               <div className="flex justify-end pt-2">
                 <ConnectGoogleCalendarButton
-                  returnTo={window.location.pathname + `?process=care-event-scheduler&plantId=${plantId}`}
+                  returnTo={
+                    window.location.pathname +
+                    `?process=care-event-scheduler&plantId=${plantId}`
+                  }
                   status={calendarConnection?.connected}
                 />
               </div>

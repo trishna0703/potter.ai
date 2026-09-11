@@ -30,7 +30,12 @@ class Plant(Base):
     status: Mapped[str | None] = mapped_column(String, nullable=True)
 
     avatar_id: Mapped[int | None] = mapped_column(
-        ForeignKey("plant_photos.id"), nullable=True
+        ForeignKey(
+            "plant_photos.id",
+            name="fk_plants_avatar_id",
+            use_alter=True,
+        ),
+        nullable=True,
     )
 
     user: Mapped["User"] = relationship(back_populates="plants")

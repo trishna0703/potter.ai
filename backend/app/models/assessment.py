@@ -21,7 +21,11 @@ class Assessment(Base):
     )
 
     current_interaction_id: Mapped[int | None] = mapped_column(
-        ForeignKey("assessment_messages.id"),
+        ForeignKey(
+            "assessment_messages.id",
+            name="fk_assessments_current_interaction_id",
+            use_alter=True,
+        ),
         nullable=True,
     )
 

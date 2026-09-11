@@ -16,6 +16,7 @@ import { cn } from "#lib/utils";
 import useAuth, { useLogout } from "@/routes/Login/useAuth";
 import AddNewPlantButton from "#components/utils/AddNewPlantButton";
 import { LeafIcon } from "@phosphor-icons/react";
+import PendingEventsDrawer from "#components/utils/PendingEventsDrawer";
 
 type MenuType = {
   label: string;
@@ -67,9 +68,9 @@ const Menu = () => {
         render={
           <Button
             variant="ghost"
-            className="relative h-8 w-8 rounded-full cursor-pointer"
+            className="relative size-9 rounded-full cursor-pointer"
           >
-            <Avatar>
+            <Avatar className={"size-9"}>
               <AvatarImage src={user?.avatar} />
 
               <AvatarFallback>
@@ -103,14 +104,12 @@ const Navbar = () => {
   return (
     <>
       <nav className="px-4 py-2.5 flex items-center justify-between md:justify-end">
-        <div
-          aria-label="logo"
-          className="flex md:hidden gap-2 items-center"
-        >
+        <div aria-label="logo" className="flex md:hidden gap-2 items-center">
           <LeafIcon size={32} weight="fill" color="var(--primary)" />
           <span className="text-title text-4xl font-bold">Potter.ai</span>
         </div>
         <div className="flex gap-4">
+          <PendingEventsDrawer />
           <AddNewPlantButton />
           <Menu />
         </div>
