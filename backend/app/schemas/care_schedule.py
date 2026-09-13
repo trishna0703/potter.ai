@@ -9,7 +9,7 @@ class CareScheduleCreate(BaseModel):
     care_type: CareTypes
     description: str | None = Field(default=None, max_length=2000)
 
-    frequency_type: Literal["DAYS", "WEEKS"]
+    frequency_type: ScheduleFrequencyType
     interval: int = Field(gt=0)
 
     scheduled_time: time
@@ -18,6 +18,8 @@ class CareScheduleCreate(BaseModel):
     starts_on: date
     ends_on: date | None = None
     auto_schedule: bool
+
+    recommendation_id: int | None
 
 
 class CareScheduleResponse(BaseModel):
@@ -58,6 +60,12 @@ class CareTypes(str, Enum):
     PRUNING = "PRUNING"
     SUNBATHING = "SUNBATHING"
     OTHER = "OTHER"
+
+
+class ScheduleFrequencyType(str, Enum):
+    DAYS = "DAYS"
+    WEEKS = "WEEKS"
+    MONTHS = "MONTHS"
 
 
 class CareEventStatus(str, Enum):

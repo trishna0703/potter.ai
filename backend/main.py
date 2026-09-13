@@ -5,6 +5,7 @@ from app.routes import (
     assessment_websocket,
     auth,
     care_events,
+    care_schedule_recommendations,
     identify,
     users,
     plants,
@@ -47,3 +48,6 @@ app.include_router(identify.router, prefix="/api/identify")
 app.include_router(care_schedule.router, prefix="/api/schedules")
 app.include_router(integrations.router, prefix="/api")
 app.include_router(care_events.router, prefix="/api/care-events")
+app.include_router(
+    care_schedule_recommendations.router, prefix="/api/care-schedule-recommendations"
+)

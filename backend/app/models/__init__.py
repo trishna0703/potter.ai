@@ -18,3 +18,5 @@ from .plant_identification import PlantIdentification
 from .care_schedule import CareSchedule
 from .calendar_connection import GoogleCalendarConnection
 from .schedule_calendar_event import CareScheduleCalendarEvent
+from .care_schedule_recommendation import CareScheduleRecommendation
+from .species_care_knowledge import SpeciesCareKnowledge

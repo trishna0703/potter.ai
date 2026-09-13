@@ -10,15 +10,26 @@ import { Calendar, Plus } from "lucide-react";
 import CareScheduleCard from "./components/CareScheduleCard";
 import ScheduleHero from "./components/ScheduleHero";
 import { CareScheduleDialog } from "#components/utils/CareScheduleDialog";
-import type { UpdateScheduleType } from "@/types/care_events";
+import {
+  type ScheduleRecommendation,
+  type UpdateScheduleType,
+} from "@/types/care_events";
 import CareTip from "./components/CareTip";
+import useScheduleRecommendations from "../hooks/useScheduleReommendations";
 
 const Schedules = () => {
   const params = useParams();
   const plantId = Number(params?.plant_id);
   const { getPlantDetail } = usePlant();
   const [showEventDialog, setShowEventDialog] = useState(false);
-
+  const [shouldPrefill, setShouldPrefill] = useState<boolean>(false);
+  const { generateScheduleRecommendations } = useScheduleRecommendations();
+  const {
+    mutateAsync: generateSchedules,
+    isPending: isLoadingRecommendations,
+  } = generateScheduleRecommendations();
+  const [recommendedSchedules, setRecommendedSchedules] =
+    useState<ScheduleRecommendation>();
   const {
     getAllSchedules,
     updateSchedule,
@@ -34,9 +45,13 @@ const Schedules = () => {
   );
 
   useEffect(() => {
-    if (plantId) {
+    if ((!schedules || !schedules.length) && !isSchedulesLoading) {
+      generateSchedules({ plantId, care_type: "WATER" }).then((res) => {
+        setRecommendedSchedules(res);
+        console.log({ res });
+      });
     }
-  }, [plantId]);
+  }, [plantId, schedules]);
 
   const handleUpdate = async (
     scheduleId: number,
@@ -96,9 +111,9 @@ const Schedules = () => {
               </h2>
 
               <p className="mt-1 text-muted-foreground text-xs">
-                {schedules && schedules.length > 0 ?
-                  `${schedules.length} reminder${schedules.length > 1 ? "s" : ""} for a healthier, happier ${plant.name ?? plant.species ?? "plant"}` :
-                  "Set up gentle reminders for your plant."}
+                {schedules && schedules.length > 0
+                  ? `${schedules.length} reminder${schedules.length > 1 ? "s" : ""} for a healthier, happier ${plant.name ?? plant.species ?? "plant"}`
+                  : "Set up gentle reminders for your plant."}
               </p>
             </div>
           </div>
@@ -116,9 +131,31 @@ const Schedules = () => {
             <Plus /> Add
           </Button>
         </div>
-
+        {isLoadingRecommendations && (
+          <div className="p-4 rounded-2xl border flex gap-4 mt-2 items-center">
+            <img src="/loading.svg" alt="" className="size-10" />
+            <p className="text-muted-foreground text-sm">
+              Analysing your plant's needs...
+            </p>
+          </div>
+        )}
         {schedules && schedules.length === 0 ? (
-          <EmptyScheduleState />
+          <div className="space-y-2 pt-2">
+            {recommendedSchedules ? (
+              <ScheduleRecommendationCard
+                schedule={{
+                  ...recommendedSchedules,
+                  plantName: plant.name,
+                  species: plant.species,
+                }}
+                saveSchedule={() => {
+                  setShowEventDialog(true);
+                  setShouldPrefill(true);
+                }}
+              />
+            ) : null}
+            <EmptyScheduleState />
+          </div>
         ) : (
           <div className="mt-5 grid gap-4">
             {schedules &&
@@ -141,7 +178,11 @@ const Schedules = () => {
         open={showEventDialog}
         onOpenChange={setShowEventDialog}
         plantId={plantId}
-        onCreated={() => invalidateSchedules(plantId)}
+        onCreated={() => {
+          invalidateSchedules(plantId);
+          setRecommendedSchedules(undefined);
+        }}
+        prefillData={shouldPrefill ? recommendedSchedules : null}
       />
     </div>
   );
@@ -149,6 +190,44 @@ const Schedules = () => {
 
 export default Schedules;
 
+function ScheduleRecommendationCard({
+  schedule,
+  saveSchedule,
+}: {
+  schedule: ScheduleRecommendation & {
+    plantName: string | null;
+    species: string;
+  };
+  saveSchedule: () => void;
+}) {
+  return (
+    <div className="p-4 rounded-2xl border flex flex-col gap-4">
+      <div className="flex justify-between">
+        <div className="space-y-2">
+          <h3 className="text-md font-semibold">
+            Recommended {schedule.care_type} schedule for{" "}
+            {schedule.plantName ?? `your ${schedule.species}`}
+          </h3>
+          <p className="text-sm">
+            <span className="text-muted-foreground">Every:</span>{" "}
+            <span className="text-primary text-medium">
+              {schedule.interval} {schedule.frequency_type}
+            </span>
+          </p>
+        </div>
+        <Button variant={"secondary"} onClick={saveSchedule}>
+          Save Schedule
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground">{schedule.reasoning}</p>
+      <p className="bg-terracotta/20 rounded-xl text-xs text-muted-foreground p-3">
+        Keep in mind: This is a suggested schedule based on your plant's details
+        and species needs. If it doesn't work for your routine, you can reject
+        it and set your own schedule.
+      </p>
+    </div>
+  );
+}
 function EmptyScheduleState() {
   return (
     <div className="mt-5 rounded-2xl border border-dashed p-8 text-center">
