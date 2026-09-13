@@ -29,15 +29,17 @@ import { format } from "date-fns";
 import usecareEventScheduler from "#hooks/useCareEventScheduler";
 import ConnectGoogleCalendarButton from "./ConnectGoogleCalendarButton";
 import useCalendarConnectionStatus from "#hooks/useCalendarConnectionStatus";
-import type { ChangeEvent } from "react";
+import { useEffect, type ChangeEvent } from "react";
+import type { ScheduleRecommendation } from "@/types/care_events";
 
-type FrequencyType = "DAYS" | "WEEKS";
+type FrequencyType = "DAYS" | "WEEKS" | "MONTHS";
 
 interface CareScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plantId: number;
   onCreated?: () => void;
+  prefillData?: ScheduleRecommendation | null;
 }
 
 const CareTypeOptions = [
@@ -76,6 +78,7 @@ export function CareScheduleDialog({
   onOpenChange,
   plantId,
   onCreated,
+  prefillData,
 }: CareScheduleDialogProps) {
   if (!open) return null;
   const { data: calendarConnection } = useCalendarConnectionStatus();
@@ -95,6 +98,18 @@ export function CareScheduleDialog({
     onOpenChange(false);
     onCreated?.();
   };
+
+  useEffect(() => {
+    if (prefillData) {
+      setFormData((prev) => ({
+        ...prev,
+        careType: prefillData.care_type,
+        frequencyType: prefillData.frequency_type,
+        interval: prefillData.interval,
+        recommendation_id: prefillData.id,
+      }));
+    }
+  }, [prefillData]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -308,7 +323,7 @@ export function CareScheduleDialog({
               <Textarea
                 id="description"
                 name="description"
-                value={formData.description}
+                value={formData.description ?? ""}
                 onChange={handleChange}
                 placeholder="Add any instructions or important notes..."
                 maxLength={2000}

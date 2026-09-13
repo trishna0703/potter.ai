@@ -1,7 +1,10 @@
 import apiClient from "#lib/client";
 import { API_ENDPOINTS } from "#lib/endpoints";
 import { showErrorToast } from "#lib/utils";
-import type { CareScheduleFormData } from "@/types/care_events";
+import type {
+  CareScheduleFormData,
+  CareSchedulePayload,
+} from "@/types/care_events";
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,7 +21,7 @@ const initialFormData: CareScheduleFormData = {
   careType: null,
   description: "",
   frequencyType: "DAYS",
-  interval: "1",
+  interval: 1,
   scheduledTime: "20:00",
   startsOn: new Date(),
   endsOn: undefined,
@@ -45,7 +48,6 @@ const usecareEventScheduler = () => {
   ) => {
     const { name, value } = e.target;
 
-    console.log({ name, value });
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -74,7 +76,7 @@ const usecareEventScheduler = () => {
       setIsSubmitting(true);
       setError(null);
 
-      let payload = {
+      let payload: CareSchedulePayload = {
         care_type: formData.careType,
         description: formData.description || null,
         frequency_type: formData.frequencyType,
@@ -85,6 +87,10 @@ const usecareEventScheduler = () => {
         ends_on: formData.endsOn ? format(formData.endsOn, "yyyy-MM-dd") : null,
         auto_schedule: formData.autoSchedule,
       };
+
+      if (formData.recommendation_id) {
+        payload.recommendation_id = formData.recommendation_id;
+      }
 
       await apiClient(API_ENDPOINTS.SCHEDULE_CARE_EVENT(plantId), {
         method: "POST",

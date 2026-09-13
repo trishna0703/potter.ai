@@ -9,8 +9,7 @@ from app.models.care_event import CareEvent
 from app.models.care_schedule import CareSchedule
 from app.models.plant import Plant
 from app.models.schedule_calendar_event import CareScheduleCalendarEvent
-from app.schemas.care_schedule import CareTypes
-
+from app.schemas.care_schedule import CareTypes, ScheduleFrequencyType
 
 
 class CareScheduleService:
@@ -24,7 +23,7 @@ class CareScheduleService:
         plant_id: int,
         care_type: CareTypes,
         description: str | None,
-        frequency_type: str,
+        frequency_type: ScheduleFrequencyType,
         interval: int,
         scheduled_time: time,
         timezone: str,

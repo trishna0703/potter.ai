@@ -12,6 +12,9 @@ from app.services.care_event_service import CareScheduleService
 from app.routes.users import get_current_user
 from fastapi import BackgroundTasks
 
+from app.services.care_schedule_recommendation_service import (
+    CareScheduleRecommendationService,
+)
 from app.services.google_calendar import (
     GoogleCalendarService,
     schedule_first_calendar_event_background,
@@ -49,6 +52,14 @@ def create_care_schedule(
             ends_on=payload.ends_on,
             auto_schedule=payload.auto_schedule,
         )
+
+        if payload.recommendation_id:
+            recommendation_service = CareScheduleRecommendationService(db)
+            recommendation_service.accept_recommendation(
+                recommendation_id=payload.recommendation_id,
+                plant_id=plant_id,
+                care_type=payload.care_type,
+            )
 
         db.commit()
         db.refresh(schedule)

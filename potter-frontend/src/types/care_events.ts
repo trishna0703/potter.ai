@@ -11,14 +11,28 @@ export type CareTypes =
 
 export interface CareScheduleFormData {
   careType: CareTypes | null;
-  description: string;
+  description: string | null;
   frequencyType: FrequencyType;
-  interval: string;
+  interval: number;
   scheduledTime: string;
   startsOn: Date;
   endsOn?: Date;
   autoSchedule: boolean;
   timezone: string;
+  recommendation_id?: number;
+}
+
+export interface CareSchedulePayload {
+  care_type: CareTypes;
+  description: string | null;
+  frequency_type: FrequencyType;
+  interval: number;
+  scheduled_time: string;
+  timezone: string;
+  starts_on: string;
+  ends_on: string | null;
+  auto_schedule: boolean;
+  recommendation_id?: number;
 }
 
 export interface CareSchedule {
@@ -64,3 +78,12 @@ export interface UpdateEventPayloadType {
   source: EventSourceType;
   was_action_taken: boolean;
 }
+
+export type ScheduleRecommendation = {
+  id: number;
+  interval: number;
+  care_type: CareTypes;
+  frequency_type: FrequencyType;
+  reasoning: string | null;
+  plant_id: number;
+};
