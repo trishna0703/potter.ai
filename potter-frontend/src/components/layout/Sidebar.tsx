@@ -4,14 +4,18 @@ import {
   HandHeartIcon,
   PottedPlantIcon,
 } from "@phosphor-icons/react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const Sidebar = () => {
   return (
     <aside className="w-58 min-h-dvh bg-card p-4 md:flex flex-col hidden">
-      <div aria-label="logo" className="flex gap-2 items-center pb-6 px-3">
+      <Link
+        to={"/plants"}
+        aria-label="logo"
+        className="flex gap-2 items-center pb-6 px-3"
+      >
         <img src="/Potter-logo.png" alt="logo" className="w-36" />
-      </div>
+      </Link>
       <nav className="space-y-2">
         <NavLink
           to={ROUTES.DASHBOARD}

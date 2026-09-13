@@ -57,7 +57,7 @@ const PendingEventsDrawer = () => {
           </DrawerDescription>
         </DrawerHeader>
         <div className="p-4 max-h-[100vh - 5rem] overflow-y-scroll no-scrollbar">
-          {!pendingEvents?.length && (
+          {!isLoading && !pendingEvents?.length && (
             <div className="text-sm text-muted-foreground">
               No new updates. Check back later.
             </div>
