@@ -10,6 +10,8 @@ import RaiseConcern from "./routes/HealthConcerns/RaiseConcern";
 import ChatInterface from "./routes/Assessment/ChatInterface";
 import Schedules from "./routes/Plants/ManageSchedules/Schedules";
 import ConcernLayout from "./routes/HealthConcerns/components/ConcernLayout";
+import Privacy from "./routes/Privacy/Privacy";
+import Terms from "./routes/Privacy/Terms";
 
 const queryClient = new QueryClient();
 function App() {
@@ -18,6 +20,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path={ROUTES.LOGIN} element={<Login />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
@@ -31,7 +35,6 @@ function App() {
                 path={ROUTES.SCHEDULES + "/:plant_id"}
                 element={<Schedules />}
               />
-              {/* <Route path={ROUTES.SHELVES} element={<Shelves />} /> */}
               <Route path={ROUTES.CONCERNS} element={<HealthConcerns />} />
             </Route>
             <Route element={<ConcernLayout />}>

@@ -1,10 +1,7 @@
-// src/components/Sidebar.tsx
-
 import { ROUTES } from "#lib/routes";
 import {
   ArchiveIcon,
   HandHeartIcon,
-  LeafIcon,
   PottedPlantIcon,
 } from "@phosphor-icons/react";
 import { Link, NavLink } from "react-router-dom";
@@ -17,8 +14,7 @@ const Sidebar = () => {
         aria-label="logo"
         className="flex gap-2 items-center pb-6 px-3"
       >
-        <LeafIcon size={32} weight="fill" color="var(--primary)" />
-        <span className="text-title text-4xl font-bold">Potter.ai</span>
+        <img src="/Potter-logo.png" alt="logo" className="w-36" />
       </Link>
       <nav className="space-y-2">
         <NavLink

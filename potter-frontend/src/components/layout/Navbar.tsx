@@ -15,7 +15,6 @@ import { useRef } from "react";
 import { cn } from "#lib/utils";
 import useAuth, { useLogout } from "@/routes/Login/useAuth";
 import AddNewPlantButton from "#components/utils/AddNewPlantButton";
-import { LeafIcon } from "@phosphor-icons/react";
 import PendingEventsDrawer from "#components/utils/PendingEventsDrawer";
 
 type MenuType = {
@@ -105,12 +104,11 @@ const Navbar = () => {
     <>
       <nav className="px-4 py-2.5 flex items-center justify-between md:justify-end">
         <Link
-          to={"/plants"}
+          to="/plants"
           aria-label="logo"
           className="flex md:hidden gap-2 items-center"
         >
-          <LeafIcon size={32} weight="fill" color="var(--primary)" />
-          <span className="text-title text-4xl font-bold">Potter.ai</span>
+          <img src="/Potter-logo.png" alt="logo" className="w-36" />
         </Link>
         <div className="flex gap-4">
           <PendingEventsDrawer />
