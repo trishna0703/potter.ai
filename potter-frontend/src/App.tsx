@@ -12,6 +12,7 @@ import Schedules from "./routes/Plants/ManageSchedules/Schedules";
 import ConcernLayout from "./routes/HealthConcerns/components/ConcernLayout";
 import Privacy from "./routes/Privacy/Privacy";
 import Terms from "./routes/Privacy/Terms";
+import Landing from "./routes/Landing/Landing";
 
 const queryClient = new QueryClient();
 function App() {
@@ -19,6 +20,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path={ROUTES.LOGIN} element={<Login />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
