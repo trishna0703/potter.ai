@@ -16,12 +16,15 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import type {
-  CareTypes,
   PendingEvents,
   UpdateEventPayloadType,
 } from "@/types/care_events";
 import type { UseMutationResult } from "@tanstack/react-query";
-import { formatOccurredOn, getCareEventSubtitle } from "#lib/utils";
+import {
+  formatOccurredOn,
+  getCareEventSubtitle,
+  getEventIcon,
+} from "#lib/utils";
 
 const PendingEventsDrawer = () => {
   const { getPendingEvents, updatePendingEvent } = useEventNotifier();
@@ -86,26 +89,6 @@ const PendingEventsDrawer = () => {
 };
 
 export default PendingEventsDrawer;
-
-const getEventIcon = (type: CareTypes) => {
-  switch (type) {
-    case "WATER":
-      return "/icons/water.png";
-    case "FERTILIZER":
-    case "COMPOST":
-      return "/icons/fertilize.png";
-    case "PRUNING":
-      return "/icons/prune.png";
-    case "SUNBATHING":
-      return "/icons/sunbath.png";
-    case "REPOT":
-      return "/icons/repot.png";
-    case "OTHER":
-      return "/icons/plant-icon.png";
-    default:
-      return "/icons/plant-icon.png";
-  }
-};
 
 const SingleEvent = ({
   event,

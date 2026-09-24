@@ -16,6 +16,7 @@ import {
 } from "@/types/care_events";
 import CareTip from "./components/CareTip";
 import useScheduleRecommendations from "../hooks/useScheduleReommendations";
+import CareEventHistory from "./components/CareEventHistory";
 
 const Schedules = () => {
   const params = useParams();
@@ -172,6 +173,8 @@ const Schedules = () => {
         <div className="mt-6">
           <CareTip />
         </div>
+
+        <CareEventHistory {...{plantId}}/>
       </section>
 
       <CareScheduleDialog

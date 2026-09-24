@@ -25,7 +25,13 @@ export const formatLabel = (value: string): string => {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-export function formatOccurredOn(dateString: string): string {
+export function formatOccurredOn(
+  dateString: string,
+  opt: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "short",
+  },
+): string {
   const date = new Date(dateString);
   const now = new Date();
 
@@ -48,10 +54,7 @@ export function formatOccurredOn(dateString: string): string {
     return "Testerday";
   }
 
-  return date.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-  });
+  return date.toLocaleDateString("en-IN", opt);
 }
 
 export function getCareEventSubtitle(
@@ -72,3 +75,57 @@ export function getCareEventSubtitle(
 
   return "";
 }
+
+export const getEventIcon = (type: CareTypes) => {
+  switch (type) {
+    case "WATER":
+      return "/icons/water.png";
+    case "FERTILIZER":
+    case "COMPOST":
+      return "/icons/fertilize.png";
+    case "PRUNING":
+      return "/icons/prune.png";
+    case "SUNBATHING":
+      return "/icons/sunbath.png";
+    case "REPOT":
+      return "/icons/repot.png";
+    case "OTHER":
+      return "/icons/plant-icon.png";
+    default:
+      return "/icons/plant-icon.png";
+  }
+};
+
+export const getRelativeTime = (date: Date | string): string => {
+  const targetDate = new Date(date);
+  const now = new Date();
+
+  const diffMs = targetDate.getTime() - now.getTime();
+  const isFuture = diffMs > 0;
+  const diffDays = Math.floor(Math.abs(diffMs) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 1) {
+    return "today";
+  }
+
+  let value: number;
+  let unit: string;
+
+  if (diffDays < 7) {
+    value = diffDays;
+    unit = "day";
+  } else if (diffDays < 30) {
+    value = Math.floor(diffDays / 7);
+    unit = "week";
+  } else if (diffDays < 365) {
+    value = Math.floor(diffDays / 30);
+    unit = "month";
+  } else {
+    value = Math.floor(diffDays / 365);
+    unit = "year";
+  }
+
+  const result = `${value} ${unit}${value !== 1 ? "s" : ""}`;
+
+  return isFuture ? `in ${result}` : `${result} ago`;
+};
