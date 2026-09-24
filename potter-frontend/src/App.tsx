@@ -13,6 +13,7 @@ import ConcernLayout from "./routes/HealthConcerns/components/ConcernLayout";
 import Privacy from "./routes/Privacy/Privacy";
 import Terms from "./routes/Privacy/Terms";
 import Landing from "./routes/Landing/Landing";
+import Layout from "#components/layout/Layout";
 
 const queryClient = new QueryClient();
 function App() {
@@ -20,10 +21,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<Landing />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+          </Route>
           <Route path={ROUTES.LOGIN} element={<Login />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
