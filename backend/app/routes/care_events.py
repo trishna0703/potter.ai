@@ -199,3 +199,24 @@ def update_care_event(
     db.commit()
 
     return {"message": "Care event updated successfully."}
+
+
+@router.get("/{plant_id}/history")
+def get_event_history_for_plant(
+    plant_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    plant_service = PlantService()
+
+    if not plant_service.does_plant_belong_to_user(
+        plant_id=plant_id, user_id=current_user.id, db=db
+    ):
+        raise HTTPException(
+            detail="Plant does not belong to this user.",
+            status_code=403,
+        )
+
+    stmt = select(CareEvent).where(CareEvent.plant_id == plant_id)
+
+    return db.scalars(stmt).all()

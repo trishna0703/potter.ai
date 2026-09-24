@@ -87,3 +87,14 @@ export type ScheduleRecommendation = {
   reasoning: string | null;
   plant_id: number;
 };
+
+export type CareEventType = {
+  id: number;
+  plant_id: number;
+  care_type: CareTypes;
+  description: string | null;
+  occurred_on: string;
+  status: "DONE" | "INCOMPLETE";
+  was_action_taken: boolean;
+  source: EventSourceType;
+};

@@ -16,7 +16,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "#components/ui/dropdown-menu";
 import PhotoPicker from "#components/utils/PhotoPicker";
@@ -208,10 +207,10 @@ const PlantMenu = ({
             Mark dead
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className={"hover:bg-terracotta/20 cursor-pointer"}>
+        {/* <DropdownMenuSeparator /> */}
+        {/* <DropdownMenuItem className={"hover:bg-terracotta/20 cursor-pointer"}>
           Delete
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
       </DropdownMenuContent>
     </DropdownMenu>
   );
